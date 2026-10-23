@@ -150,6 +150,15 @@ const MIGRATIONS: string[] = [
   CREATE INDEX tutor_messages_conv ON tutor_messages(conversation_id, created_at);
   CREATE INDEX tutor_messages_user ON tutor_messages(user_id, created_at);
   `,
+  /* v2: pilot access and consent records */ `
+  ALTER TABLE users ADD COLUMN invite_code TEXT;
+  ALTER TABLE users ADD COLUMN is_minor INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE users ADD COLUMN guardian_name TEXT;
+  ALTER TABLE users ADD COLUMN guardian_email TEXT;
+  ALTER TABLE users ADD COLUMN consent_at TEXT;
+  ALTER TABLE users ADD COLUMN consent_version TEXT;
+  CREATE INDEX tutor_messages_time ON tutor_messages(role, created_at);
+  `,
 ];
 
 export type Db = DatabaseSync;

@@ -642,3 +642,45 @@ a.row:hover .row-title,
   accent-color: var(--pen);
   flex: none;
 }
+
+/* ---------- Sign-up consent & account ---------- */
+.age-choice {
+  display: grid;
+  gap: var(--s2);
+}
+.age-choice legend {
+  font-size: var(--t-sm);
+  margin-bottom: var(--s2);
+}
+.age-choice .radio-row {
+  align-items: center;
+  padding: var(--s2) var(--s3);
+}
+.guardian {
+  display: grid;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border-left: 4px solid var(--hl);
+  background: var(--paper-2);
+  border-radius: var(--r-ctl);
+}
+.guardian-note {
+  margin: 0;
+  font-size: var(--t-sm);
+}
+.consent {
+  align-items: flex-start;
+  line-height: 1.45;
+}
+.consent input {
+  margin-top: 2px;
+}
+.account .sheet + .sheet {
+  margin-top: var(--s4);
+}
+.danger-zone {
+  border-color: var(--red);
+}
+.danger-zone .btn {
+  margin-top: var(--s2);
+}

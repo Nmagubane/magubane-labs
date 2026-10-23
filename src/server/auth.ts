@@ -56,10 +56,50 @@ export function userForSession(db: Db, token: string | undefined): UserDto | nul
   return { id: row.id, email: row.email, displayName: row.display_name, role: row.role };
 }
 
-export function createUser(db: Db, input: { email: string; password: string; displayName: string }): UserDto {
+export interface NewUser {
+  email: string;
+  password: string;
+  displayName: string;
+  inviteCode?: string | null;
+  isMinor?: boolean;
+  guardianName?: string | null;
+  guardianEmail?: string | null;
+  consentVersion?: string | null;
+}
+
+export function createUser(db: Db, input: NewUser): UserDto {
   const id = newId('usr');
-  run(db, 'INSERT INTO users (id, email, password_hash, display_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)', id, input.email, hashPassword(input.password), input.displayName, 'student', now().toISOString());
+  const t = now().toISOString();
+  run(
+    db,
+    `INSERT INTO users (id, email, password_hash, display_name, role, created_at, invite_code, is_minor, guardian_name, guardian_email, consent_at, consent_version)
+     VALUES (?, ?, ?, ?, 'student', ?, ?, ?, ?, ?, ?, ?)`,
+    id,
+    input.email,
+    hashPassword(input.password),
+    input.displayName,
+    t,
+    input.inviteCode ?? null,
+    input.isMinor ? 1 : 0,
+    input.guardianName ?? null,
+    input.guardianEmail ?? null,
+    input.consentVersion ? t : null,
+    input.consentVersion ?? null,
+  );
   return { id, email: input.email, displayName: input.displayName, role: 'student' };
+}
+
+/** Permanently removes a learner and everything recorded about them. */
+export function deleteUser(db: Db, userId: string): void {
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    for (const table of ['responses', 'question_instances', 'mastery_snapshots', 'lesson_progress', 'tutor_messages']) run(db, `DELETE FROM ${table} WHERE user_id = ?`, userId);
+    run(db, 'DELETE FROM users WHERE id = ?', userId); // cascades: sessions, profile, skill states, activities, exams, conversations
+    db.exec('COMMIT');
+  } catch (e) {
+    db.exec('ROLLBACK');
+    throw e;
+  }
 }
 
 /**

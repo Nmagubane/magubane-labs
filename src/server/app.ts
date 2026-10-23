@@ -3,17 +3,18 @@ import type { Db } from './db.ts';
 import { one } from './db.ts';
 import { Router, HttpError, readJson, sendJson, parseCookies, setCookie, securityHeaders, serveStatic, RateLimiter, type Ctx } from './http.ts';
 import { config } from './config.ts';
-import { createSession, destroySession, userForSession, createUser, verifyPassword, burnPasswordCheck } from './auth.ts';
+import { createSession, destroySession, userForSession, createUser, deleteUser, verifyPassword, burnPasswordCheck } from './auth.ts';
 import { getProfile, saveProfile } from './learner.ts';
 import { createActivity, getActivityState, nextQuestion, answerQuestion, takeHint, submitActivity, getResults, listActivities } from './activities.ts';
 import { catalogue, skillDetail, workedExample, home, progress, listExams, createExam, deleteExam, examDetail } from './insights.ts';
 import { tutorStatus, listConversations, createConversation, getConversation, deleteConversation, streamReply } from './tutor.ts';
-import { SignupBody, LoginBody, ProfileBody, CreateActivityBody, NextQuestionBody, AnswerBody, ExamBody, TutorConversationBody, TutorMessageBody, type MeResponse, type UserDto } from '../shared/api.ts';
+import { SignupBody, DeleteAccountBody, PRIVACY_VERSION, type PublicConfig, LoginBody, ProfileBody, CreateActivityBody, NextQuestionBody, AnswerBody, ExamBody, TutorConversationBody, TutorMessageBody, type MeResponse, type UserDto } from '../shared/api.ts';
 import { CURRICULA } from '../shared/curriculum/catalogue.ts';
 
 const COOKIE = 'ml_session';
 const loginLimiter = new RateLimiter(10, 15 * 60_000);
-const signupLimiter = new RateLimiter(5, 60 * 60_000);
+// Generous per network: a whole class behind one school IP may sign up in the same lesson.
+const signupLimiter = new RateLimiter(config.signupRatePerHour, 60 * 60_000);
 
 function requireUser(ctx: Ctx): UserDto {
   if (!ctx.user) throw new HttpError(401, 'unauthenticated', 'Please log in.');
@@ -26,9 +27,24 @@ export function buildRouter(db: Db): Router {
   // ---- auth ----
   r.post('/api/auth/signup', async (ctx) => {
     if (!signupLimiter.take(ctx.ip)) throw new HttpError(429, 'rate_limited', 'Too many sign-ups from this network. Try again later.');
+    if (config.signupMode === 'closed') throw new HttpError(403, 'signup_closed', 'Sign-ups are closed at the moment.');
     const body = await readJson(ctx, SignupBody);
+    let inviteCode: string | null = null;
+    if (config.signupMode === 'invite') {
+      inviteCode = (body.accessCode ?? '').toUpperCase();
+      if (!inviteCode || !config.inviteCodes.includes(inviteCode)) throw new HttpError(403, 'bad_access_code', "That access code isn't valid. Check it with the person who invited you.", { fieldErrors: { accessCode: ["That access code isn't valid"] } });
+    }
     if (one(db, 'SELECT 1 FROM users WHERE email = ?', body.email)) throw new HttpError(409, 'email_taken', 'An account with that email already exists. Log in instead.');
-    const user = createUser(db, body);
+    const user = createUser(db, {
+      email: body.email,
+      password: body.password,
+      displayName: body.displayName,
+      inviteCode,
+      isMinor: body.ageGroup === 'minor',
+      guardianName: body.ageGroup === 'minor' ? (body.guardianName ?? null) : null,
+      guardianEmail: body.ageGroup === 'minor' ? (body.guardianEmail ?? null) : null,
+      consentVersion: PRIVACY_VERSION,
+    });
     setCookie(ctx.res, COOKIE, createSession(db, user.id, config.sessionDays), { maxAge: config.sessionDays * 86400, secure: !config.dev });
     return { user, profile: null } satisfies MeResponse;
   });
@@ -50,6 +66,18 @@ export function buildRouter(db: Db): Router {
   r.post('/api/auth/logout', (ctx) => {
     const token = parseCookies(ctx.req.headers.cookie)[COOKIE];
     if (token) destroySession(db, token);
+    setCookie(ctx.res, COOKIE, '', { maxAge: 0, secure: !config.dev });
+    return { ok: true };
+  });
+
+  r.get('/api/config', () => ({ signupMode: config.signupMode, contactEmail: config.contactEmail, tutorEnabled: config.anthropicKey !== null, privacyVersion: PRIVACY_VERSION }) satisfies PublicConfig);
+
+  r.post('/api/account/delete', async (ctx) => {
+    const user = requireUser(ctx);
+    const body = await readJson(ctx, DeleteAccountBody);
+    const row = one<{ password_hash: string }>(db, 'SELECT password_hash FROM users WHERE id = ?', user.id);
+    if (!row || !verifyPassword(body.password, row.password_hash)) throw new HttpError(401, 'bad_credentials', "That password isn't right.");
+    deleteUser(db, user.id);
     setCookie(ctx.res, COOKIE, '', { maxAge: 0, secure: !config.dev });
     return { ok: true };
   });
@@ -124,6 +152,15 @@ export function buildRouter(db: Db): Router {
 
 const STREAMED = Symbol('streamed');
 
+function clientIp(req: import('node:http').IncomingMessage): string {
+  if (config.trustProxy) {
+    const fwd = req.headers['x-forwarded-for'];
+    const first = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return req.socket.remoteAddress ?? 'unknown';
+}
+
 export function createApp(db: Db): Server {
   const router = buildRouter(db);
   return createServer(async (req, res) => {
@@ -141,7 +178,7 @@ export function createApp(db: Db): Server {
       params: {},
       query: url.searchParams,
       user: userForSession(db, parseCookies(req.headers.cookie)[COOKIE]),
-      ip: req.socket.remoteAddress ?? 'unknown',
+      ip: clientIp(req),
     };
     try {
       // CSRF: state-changing requests must carry our header (cross-site forms can't set it; SameSite=Lax covers the rest).

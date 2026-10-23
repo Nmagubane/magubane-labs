@@ -1,0 +1,38 @@
+# Render Blueprint: New > Blueprint in the Render dashboard, then pick this repo.
+# Secrets marked `sync: false` are asked for when you create the service.
+services:
+  - type: web
+    name: magubane-labs
+    runtime: node
+    region: frankfurt # closest Render region to South Africa
+    plan: starter # a persistent disk needs a paid instance
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: DATABASE_PATH
+        value: /var/data/magubane.db
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SIGNUP_MODE
+        value: invite
+      - key: INVITE_CODES # comma-separated, e.g. FAMILY-2026,SOWETO-PILOT
+        sync: false
+      - key: CONTACT_EMAIL # shown on the privacy page for data requests
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TUTOR_MODEL
+        value: claude-sonnet-5-5
+      - key: TUTOR_DAILY_LIMIT # messages per learner per 24 hours
+        value: "40"
+      - key: TUTOR_GLOBAL_DAILY_LIMIT # messages across the whole site per 24 hours
+        value: "600"

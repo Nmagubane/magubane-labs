@@ -135,6 +135,7 @@ export function securityHeaders(res: ServerResponse, dev: boolean): void {
   res.setHeader('referrer-policy', 'same-origin');
   res.setHeader('x-frame-options', 'DENY');
   res.setHeader('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+  if (!dev) res.setHeader('strict-transport-security', 'max-age=31536000; includeSubDomains');
   res.setHeader(
     'content-security-policy',
     [

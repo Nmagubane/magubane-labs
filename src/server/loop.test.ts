@@ -31,6 +31,7 @@ before(async () => {
   });
   await new Promise<void>((r) => fakeAnthropic.listen(0, r));
   process.env.ANTHROPIC_API_KEY = 'test-key';
+  process.env.SIGNUP_RATE_PER_HOUR = '1000';
   process.env.ANTHROPIC_BASE_URL = `http://127.0.0.1:${(fakeAnthropic.address() as AddressInfo).port}`;
   const { openDb } = await import('./db.ts');
   const { createApp } = await import('./app.ts');
@@ -92,10 +93,10 @@ test('the complete learning loop', async () => {
   const neo = new Client();
 
   // 1. Create an account
-  const signup = await neo.call('POST', '/api/auth/signup', { displayName: 'Thandiwe Nkosi', email: 'thandiwe@example.com', password: 'correct horse battery' });
+  const signup = await neo.call('POST', '/api/auth/signup', { displayName: 'Thandiwe Nkosi', email: 'thandiwe@example.com', password: 'correct horse battery', ageGroup: 'minor', guardianName: 'Nomsa Nkosi', guardianEmail: 'nomsa@example.com', consent: true });
   assert.equal(signup.user.displayName, 'Thandiwe Nkosi');
   assert.ok(neo.cookie.startsWith('ml_session='));
-  await neo.call('POST', '/api/auth/signup', { displayName: 'X', email: 'thandiwe@example.com', password: 'another password' }, 409);
+  await neo.call('POST', '/api/auth/signup', { displayName: 'X', email: 'thandiwe@example.com', password: 'another password', ageGroup: 'adult', consent: true }, 409);
 
   // 2. Onboarding
   const me = await neo.call('GET', '/api/me');
@@ -266,13 +267,13 @@ test('the complete learning loop', async () => {
 
 test('security: CSRF header, authorisation, validation', async () => {
   const a = new Client();
-  await a.call('POST', '/api/auth/signup', { displayName: 'Sipho', email: 'sipho@example.com', password: 'longenough1' });
+  await a.call('POST', '/api/auth/signup', { displayName: 'Sipho', email: 'sipho@example.com', password: 'longenough1', ageGroup: 'adult', consent: true });
   await a.call('PUT', '/api/profile', { grade: 8, curriculumId: 'za-caps', subjects: ['mathematics'], goals: [], dailyMinutes: 20 });
   const act = await a.call('POST', '/api/activities', { kind: 'practice', skillId: 'integers' });
   const q = await a.call('POST', `/api/activities/${act.id}/next`, {});
 
   const b = new Client();
-  await b.call('POST', '/api/auth/signup', { displayName: 'Lindiwe', email: 'lindiwe@example.com', password: 'longenough2' });
+  await b.call('POST', '/api/auth/signup', { displayName: 'Lindiwe', email: 'lindiwe@example.com', password: 'longenough2', ageGroup: 'adult', consent: true });
   await b.call('GET', `/api/activities/${act.id}`, undefined, 404);
   await b.call('POST', `/api/questions/${q.question.id}/answer`, { response: '1', timeMs: 10 }, 404);
   await b.call('POST', `/api/questions/${q.question.id}/hint`, undefined, 404);
@@ -280,7 +281,46 @@ test('security: CSRF header, authorisation, validation', async () => {
   const noHeader = await fetch(`${base}/api/auth/logout`, { method: 'POST', headers: { cookie: a.cookie } });
   assert.equal(noHeader.status, 403);
   await a.call('PUT', '/api/profile', { grade: 99, curriculumId: 'za-caps', subjects: [], goals: [], dailyMinutes: 1 }, 422);
-  await a.call('POST', '/api/auth/signup', { displayName: 'x', email: 'not-an-email', password: 'short' }, 422);
+  await a.call('POST', '/api/auth/signup', { displayName: 'x', email: 'not-an-email', password: 'short', ageGroup: 'adult', consent: true }, 422);
   const health = await fetch(`${base}/api/health`);
   assert.match(health.headers.get('content-security-policy') ?? '', /default-src 'self'/);
+});
+
+test('pilot: invite codes, parent consent, account deletion', async () => {
+  const { config } = await import('./config.ts');
+  config.signupMode = 'invite';
+  config.inviteCodes = ['PILOT-SOWETO'];
+  try {
+    const c = new Client();
+    const base_ = { displayName: 'Ayanda', email: 'ayanda@example.com', password: 'longenough3', ageGroup: 'minor', guardianName: 'Zodwa', guardianEmail: 'zodwa@example.com', consent: true };
+    await c.call('POST', '/api/auth/signup', base_, 403);
+    await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'WRONG' }, 403);
+    await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto', guardianEmail: undefined }, 422);
+    await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto', guardianEmail: 'ayanda@example.com' }, 422);
+    await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto', consent: false }, 422);
+    const ok = await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto' });
+    const row = db.prepare('SELECT invite_code, is_minor, guardian_email, consent_at, consent_version FROM users WHERE id = ?').get(ok.user.id) as Record<string, unknown>;
+    assert.equal(row.invite_code, 'PILOT-SOWETO');
+    assert.equal(row.is_minor, 1);
+    assert.equal(row.guardian_email, 'zodwa@example.com');
+    assert.ok(row.consent_at && row.consent_version);
+    const cfg = await c.call('GET', '/api/config');
+    assert.equal(cfg.signupMode, 'invite');
+    assert.ok(!JSON.stringify(cfg).includes('PILOT-SOWETO'), 'codes are never exposed');
+
+    await c.call('PUT', '/api/profile', { grade: 9, curriculumId: 'za-caps', subjects: ['mathematics'], goals: [], dailyMinutes: 20 });
+    const act = await c.call('POST', '/api/activities', { kind: 'practice', skillId: 'integers' });
+    const q = await c.call('POST', `/api/activities/${act.id}/next`, {});
+    await c.call('POST', `/api/questions/${q.question.id}/answer`, { response: '1', timeMs: 1000 });
+    await c.call('POST', '/api/account/delete', { password: 'nope' }, 401);
+    await c.call('POST', '/api/account/delete', { password: 'longenough3' });
+    for (const t of ['users', 'responses', 'question_instances', 'activities', 'skill_states', 'mastery_snapshots', 'sessions']) {
+      const col = t === 'users' ? 'id' : 'user_id';
+      const n = (db.prepare(`SELECT COUNT(*) AS n FROM ${t} WHERE ${col} = ?`).get(ok.user.id) as { n: number }).n;
+      assert.equal(n, 0, `${t} still has rows after deletion`);
+    }
+    assert.equal((await c.call('GET', '/api/me')).user, null);
+  } finally {
+    config.signupMode = 'open';
+  }
 });

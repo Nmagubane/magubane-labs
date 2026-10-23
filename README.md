@@ -24,9 +24,21 @@ The demo login is `demo@magubane.local` / `learn-maths-daily`. You can also crea
 | Command | What it does |
 |---|---|
 | `npm run dev` | Client rebuilds on save (refresh the browser); server restarts on save |
-| `npm test` | 38 tests: every question generator (5 levels × 250 seeds, all self-checked and KaTeX-rendered), the mastery model, lesson content, and the full learning loop over HTTP, including the security rules |
+| `npm test` | 39 tests: every question generator (5 levels × 250 seeds, all self-checked and KaTeX-rendered), the mastery model, lesson content, and the full learning loop over HTTP, including security and the pilot consent rules |
 | `npm run typecheck` | Strict TypeScript across client, server and shared code |
 | `npm run build` then `npm start` | Production build and server |
+
+## Deploy (Render)
+
+`render.yaml` is a Render Blueprint: a Node web service in Frankfurt with a 1 GB persistent disk for the SQLite database.
+
+1. In Render: **New → Blueprint**, then connect this GitHub repo.
+2. Fill in the secrets it asks for: `INVITE_CODES` (comma-separated, e.g. `FAMILY-2026,SOWETO-PILOT`), `CONTACT_EMAIL` and `ANTHROPIC_API_KEY`.
+3. Deploy. Share `https://<your-service>.onrender.com/signup?code=YOUR-CODE` with the families in the pilot.
+
+Sign-up is **invite-only** in production. Under-18s must give a parent or guardian's name and email, and the parent ticks consent; both are recorded with the privacy-notice version. Learners can delete their account, and all their data, from *Your account*.
+
+**Backups:** the database is one file at `/var/data/magubane.db`. Back it up before you rely on it.
 
 ## What's in the slice
 

@@ -488,3 +488,36 @@
     padding: 4px var(--s2);
   }
 }
+
+.rail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+}
+.rail-links .btn {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ---------- Document pages (privacy) ---------- */
+.doc {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s4) var(--s8);
+}
+.doc-logo {
+  display: inline-block;
+  margin-bottom: var(--s6);
+  color: var(--ink);
+  text-decoration: none;
+}
+.doc h1 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin-bottom: var(--s3);
+}
+.doc h2 {
+  margin: var(--s6) 0 var(--s3);
+}
+.doc li + li {
+  margin-top: var(--s2);
+}

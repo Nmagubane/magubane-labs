@@ -15,11 +15,34 @@ export type { QuestionPayload, ResponseValue };
 
 // ---------- Requests ----------
 
-export const SignupBody = z.object({
-  displayName: z.string().trim().min(1, 'Tell us your name').max(40),
-  email: z.string().trim().toLowerCase().email('Enter a valid email address').max(120),
-  password: z.string().min(8, 'Use at least 8 characters').max(200),
-});
+export const PRIVACY_VERSION = '2026-10-pilot';
+
+export const SignupBody = z
+  .object({
+    displayName: z.string().trim().min(1, 'Tell us your name').max(40),
+    email: z.string().trim().toLowerCase().email('Enter a valid email address').max(120),
+    password: z.string().min(8, 'Use at least 8 characters').max(200),
+    accessCode: z.string().trim().max(40).optional(),
+    ageGroup: z.enum(['adult', 'minor'], { errorMap: () => ({ message: 'Tell us whether you are under 18' }) }),
+    guardianName: z.string().trim().max(80).optional(),
+    guardianEmail: z.string().trim().toLowerCase().max(120).optional(),
+    consent: z.literal(true, { errorMap: () => ({ message: 'Consent is needed to create an account' }) }),
+  })
+  .superRefine((v, ctx) => {
+    if (v.ageGroup !== 'minor') return;
+    if (!v.guardianName) ctx.addIssue({ code: 'custom', path: ['guardianName'], message: "Enter your parent or guardian's name" });
+    if (!v.guardianEmail || !z.string().email().safeParse(v.guardianEmail).success) ctx.addIssue({ code: 'custom', path: ['guardianEmail'], message: "Enter your parent or guardian's email" });
+    else if (v.guardianEmail === v.email) ctx.addIssue({ code: 'custom', path: ['guardianEmail'], message: "This must be your parent or guardian's own email, not yours" });
+  });
+
+export const DeleteAccountBody = z.object({ password: z.string().min(1).max(200) });
+
+export interface PublicConfig {
+  signupMode: 'invite' | 'open' | 'closed';
+  contactEmail: string | null;
+  tutorEnabled: boolean;
+  privacyVersion: string;
+}
 export const LoginBody = z.object({
   email: z.string().trim().toLowerCase().email().max(120),
   password: z.string().min(1).max(200),

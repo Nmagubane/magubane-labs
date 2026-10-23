@@ -242,6 +242,9 @@ export async function streamReply(db: Db, user: UserDto, conversationId: string,
   if (!config.anthropicKey) throw new HttpError(503, 'tutor_unconfigured', 'The tutor isn\'t connected yet. Add ANTHROPIC_API_KEY to .env and restart the server.');
   if (usedToday(db, user.id) >= config.tutorDailyLimit) throw new HttpError(429, 'tutor_daily_limit', 'You\'ve reached today\'s tutor limit. It resets in 24 hours. Practice and lessons are still available.');
   if (!perMinute.take(user.id)) throw new HttpError(429, 'tutor_rate', 'Slow down a little. Try again in a minute.');
+  const since = new Date(now().getTime() - 86_400_000).toISOString();
+  const siteToday = (one<{ n: number }>(db, `SELECT COUNT(*) AS n FROM tutor_messages WHERE role = 'user' AND created_at >= ?`, since)?.n ?? 0) as number;
+  if (siteToday >= config.tutorGlobalDailyLimit) throw new HttpError(429, 'tutor_site_limit', 'The tutor is very busy today and has reached its daily limit. Lessons, hints and worked solutions still work. Try the tutor again tomorrow.');
 
   const t = now().toISOString();
   if (content !== null) {

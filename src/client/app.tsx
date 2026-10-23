@@ -17,6 +17,8 @@ import { Tutor } from './features/tutor/Tutor.tsx';
 import { Progress } from './features/progress/Progress.tsx';
 import { Exams } from './features/exam/Exams.tsx';
 import { ExamDetail } from './features/exam/ExamDetail.tsx';
+import { Privacy } from './features/account/Privacy.tsx';
+import { Account } from './features/account/Account.tsx';
 
 const NAV: { to: string; label: string; icon: IconName; match: string[] }[] = [
   { to: '/home', label: 'Home', icon: 'home', match: ['/home'] },
@@ -43,6 +45,7 @@ const ROUTES: RouteDef[] = [
   { pattern: '/progress', render: () => <Progress /> },
   { pattern: '/exams', render: () => <Exams /> },
   { pattern: '/exams/:id', render: (p) => <ExamDetail key={p.id} id={p.id as string} /> },
+  { pattern: '/account', render: () => <Account /> },
 ];
 
 function Shell({ children }: { children: ReactNode }) {
@@ -77,9 +80,14 @@ function Shell({ children }: { children: ReactNode }) {
             <span className="rail-name">{me?.user?.displayName}</span>
             <span className="muted">Grade {me?.profile?.grade}</span>
           </p>
-          <button type="button" className="btn btn-quiet btn-sm" onClick={() => void logout()}>
-            Log out
-          </button>
+          <div className="rail-links">
+            <Link to="/account" className="btn btn-quiet btn-sm">
+              <span>Your account</span>
+            </Link>
+            <button type="button" className="btn btn-quiet btn-sm" onClick={() => void logout()}>
+              Log out
+            </button>
+          </div>
         </div>
       </aside>
       <header className="topbar">
@@ -91,10 +99,10 @@ function Shell({ children }: { children: ReactNode }) {
             <Icon name="progress" />
             <span>Progress</span>
           </Link>
-          <button type="button" className="topbar-link" onClick={() => void logout()}>
+          <Link to="/account" className={`topbar-link${path === '/account' ? ' active' : ''}`}>
             <Icon name="user" />
-            <span>Log out</span>
-          </button>
+            <span>Account</span>
+          </Link>
         </div>
       </header>
       <main id="main" className="main">
@@ -125,12 +133,14 @@ function Routes() {
   const publicPaths = ['/', '/welcome', '/login', '/signup'];
 
   useEffect(() => {
-    if (!me) return;
+    if (!me || path === '/privacy') return;
     if (!user && !publicPaths.includes(path)) navigate('/login', { replace: true });
     else if (user && (!profile || !profile.baselineCompleted) && path !== '/onboarding' && !path.startsWith('/tests/') && !path.startsWith('/results/')) navigate('/onboarding', { replace: true });
     else if (user && profile?.baselineCompleted && (publicPaths.includes(path) || path === '/onboarding')) navigate('/home', { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, path]);
+
+  if (path === '/privacy') return <Privacy />;
 
   if (!me) {
     if (error)
