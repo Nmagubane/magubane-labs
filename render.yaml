@@ -5,7 +5,7 @@ services:
     name: magubane-labs
     runtime: node
     region: frankfurt # closest Render region to South Africa
-    plan: starter # a persistent disk needs a paid instance
+    plan: 0.5c-512mb # smallest paid instance (0.5 CPU, 512 MB); a persistent disk needs a paid instance
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
