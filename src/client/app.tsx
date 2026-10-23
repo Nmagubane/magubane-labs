@@ -157,7 +157,9 @@ function Routes() {
   }
 
   if (!user) {
-    return <AuthPage mode={path === '/login' ? 'login' : 'signup'} />;
+    const mode = path === '/login' ? 'login' : 'signup';
+    // Keyed so switching between log-in and sign-up starts clean (no stale error from the other form).
+    return <AuthPage key={mode} mode={mode} />;
   }
   if (path === '/onboarding') return <Onboarding />;
 
