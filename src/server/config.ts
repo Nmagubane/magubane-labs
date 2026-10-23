@@ -16,7 +16,7 @@ export const config = {
   sessionDays: 30,
   anthropicKey: env.ANTHROPIC_API_KEY?.trim() || null,
   anthropicBaseUrl: (env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com').replace(/\/$/, ''),
-  tutorModel: env.TUTOR_MODEL?.trim() || 'claude-sonnet-5-5',
+  tutorModel: env.TUTOR_MODEL?.trim() || 'claude-haiku-5-5',
   tutorDailyLimit: Number(env.TUTOR_DAILY_LIMIT ?? 80),
   /** Site-wide cap on tutor messages per 24 hours: protects the API bill if sign-ups spike. */
   tutorGlobalDailyLimit: Number(env.TUTOR_GLOBAL_DAILY_LIMIT ?? 600),

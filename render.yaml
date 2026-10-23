@@ -31,7 +31,7 @@ services:
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: TUTOR_MODEL
-        value: claude-sonnet-5-5
+        value: claude-haiku-5-5 # cheapest; switch to claude-sonnet-5-5 for stronger reasoning
       - key: TUTOR_DAILY_LIMIT # messages per learner per 24 hours
         value: "40"
       - key: TUTOR_GLOBAL_DAILY_LIMIT # messages across the whole site per 24 hours
