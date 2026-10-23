@@ -20,7 +20,7 @@ before(async () => {
     req.on('data', (c) => (body += c));
     req.on('end', () => {
       lastUpstreamBody = JSON.parse(body);
-      assert.equal(req.headers['x-api-key'], 'test-key');
+      assert.equal(req.headers['x-api-key'], 'sk-ant-test-key');
       res.writeHead(200, { 'content-type': 'text/event-stream' });
       const send = (o: unknown) => res.write(`event: x\ndata: ${JSON.stringify(o)}\n\n`);
       send({ type: 'message_start', message: {} });
@@ -30,7 +30,7 @@ before(async () => {
     });
   });
   await new Promise<void>((r) => fakeAnthropic.listen(0, r));
-  process.env.ANTHROPIC_API_KEY = 'test-key';
+  process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
   process.env.SIGNUP_RATE_PER_HOUR = '1000';
   process.env.ANTHROPIC_BASE_URL = `http://127.0.0.1:${(fakeAnthropic.address() as AddressInfo).port}`;
   const { openDb } = await import('./db.ts');

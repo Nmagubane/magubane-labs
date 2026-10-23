@@ -14,7 +14,8 @@ export const config = {
   databasePath: resolve(env.DATABASE_PATH ?? './data/magubane.db'),
   clientDir: resolve(env.CLIENT_DIR ?? './dist/client'),
   sessionDays: 30,
-  anthropicKey: env.ANTHROPIC_API_KEY?.trim() || null,
+  /** Anything that isn't a real key (blank, "none", a placeholder) means the tutor is off. */
+  anthropicKey: /^sk-ant-/.test(env.ANTHROPIC_API_KEY?.trim() ?? '') ? (env.ANTHROPIC_API_KEY as string).trim() : null,
   anthropicBaseUrl: (env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com').replace(/\/$/, ''),
   tutorModel: env.TUTOR_MODEL?.trim() || 'claude-haiku-5-5',
   tutorDailyLimit: Number(env.TUTOR_DAILY_LIMIT ?? 80),

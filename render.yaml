@@ -28,7 +28,7 @@ services:
         sync: false
       - key: CONTACT_EMAIL # shown on the privacy page for data requests
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: ANTHROPIC_API_KEY # optional: type none to deploy without the tutor and add the key later
         sync: false
       - key: TUTOR_MODEL
         value: claude-haiku-5-5 # cheapest; switch to claude-sonnet-5-5 for stronger reasoning
