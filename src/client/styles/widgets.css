@@ -1,0 +1,724 @@
+/* ---------- Shared widget parts ---------- */
+.widget-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s1) var(--s3);
+  font-size: var(--t-lg);
+  margin: 0 0 var(--s3);
+  min-height: 2em;
+}
+.widget-readout .muted {
+  font-size: var(--t-sm);
+}
+.widget-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s3) var(--s5);
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+}
+.widget-buttons {
+  display: flex;
+  gap: var(--s2);
+}
+.slider {
+  display: grid;
+  gap: 4px;
+  min-width: 170px;
+  flex: 1 1 170px;
+  max-width: 280px;
+}
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s2);
+  font-size: var(--t-sm);
+  font-weight: 700;
+}
+.slider output {
+  color: var(--pen);
+}
+.slider input[type='range'] {
+  width: 100%;
+  height: 32px;
+  accent-color: var(--pen);
+  cursor: pointer;
+}
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+}
+.stepper-label {
+  font-size: var(--t-sm);
+  font-weight: 700;
+  margin-right: 2px;
+}
+.stepper output {
+  min-width: 2ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  font-weight: 700;
+  color: var(--pen);
+}
+.stepper .key {
+  min-width: 40px;
+  min-height: 40px;
+}
+
+/* ---------- Plot ---------- */
+.plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 460px;
+  touch-action: none;
+  font-family: var(--font);
+}
+.plot-grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.plot-axis {
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+.plot-tick {
+  fill: var(--ink-3);
+  font-size: 11px;
+}
+.plot-axis-label {
+  fill: var(--ink-2);
+  font-size: 13px;
+  font-style: italic;
+}
+.plot-line {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.plot-line-soft {
+  stroke: var(--ink-3);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.plot-point {
+  fill: var(--ink);
+  stroke: var(--paper);
+  stroke-width: 2;
+}
+.root-point {
+  fill: var(--pen);
+}
+.plot-point-label {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 3px;
+}
+.drag-point {
+  cursor: grab;
+  outline: none;
+}
+.drag-point:active {
+  cursor: grabbing;
+}
+.drag-hit {
+  fill: transparent;
+}
+.drag-dot {
+  fill: var(--pen);
+  stroke: var(--paper);
+  stroke-width: 3;
+}
+.drag-point:focus-visible .drag-hit {
+  fill: var(--pen-tint);
+  stroke: var(--pen);
+  stroke-width: 2;
+}
+.tri-run,
+.tri-rise {
+  stroke: var(--pen);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+.tri-label {
+  fill: var(--pen-strong);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- Equation balancer ---------- */
+.eqb {
+  display: grid;
+  gap: var(--s3);
+}
+.eqb-working {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.eqb-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  min-height: 44px;
+  padding: 2px var(--s2);
+  font-size: var(--t-xl);
+  border-bottom: 1px solid var(--rule);
+}
+.eqb-line:last-child {
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+}
+.eqb-line.messier .katex {
+  color: var(--ink-3);
+}
+.eqb-margin {
+  min-width: 4.5rem;
+  padding-left: var(--s3);
+  border-left: 2px solid var(--red);
+  font-size: var(--t-md);
+  color: var(--pen);
+}
+.eqb-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+}
+.eqb-label {
+  font-weight: 700;
+  font-size: var(--t-sm);
+  margin-right: var(--s1);
+}
+.eqb-ops {
+  display: inline-flex;
+  gap: 4px;
+}
+.eqb-xtoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--t-sm);
+}
+.eqb-xtoggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--pen);
+}
+.eqb-solved {
+  padding: var(--s3) var(--s4);
+  background: var(--tick-tint);
+  border-radius: var(--r-ctl);
+  font-size: var(--t-lg);
+}
+.eqb-solved .muted {
+  font-size: var(--t-sm);
+}
+.eqb-note {
+  padding: var(--s2) var(--s3);
+  background: var(--amber-tint);
+  border-radius: var(--r-ctl);
+  font-size: var(--t-sm);
+  margin: 0;
+}
+.eqb-foot {
+  display: flex;
+  gap: var(--s2);
+}
+
+/* ---------- Number line ---------- */
+.nl-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--font);
+}
+.nl-jump {
+  fill: none;
+  stroke: var(--pen);
+  stroke-width: 2.5;
+}
+.nl-arrowhead {
+  fill: var(--pen);
+}
+.nl-start {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+.nl-end {
+  fill: var(--pen);
+}
+
+/* ---------- Fraction bars ---------- */
+.fbars {
+  display: grid;
+  gap: var(--s3);
+}
+.fbars-row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  align-items: center;
+  gap: var(--s3);
+}
+.fbars-label {
+  font-size: var(--t-lg);
+}
+.fbar {
+  display: flex;
+  height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--paper);
+}
+.fbar-piece {
+  height: 100%;
+  border-right: 1px solid var(--ink-3);
+  transition: background-color 0.2s;
+}
+.fbar-piece:last-child {
+  border-right: 0;
+}
+.fbar-piece.on {
+  background: var(--pen);
+}
+
+/* ---------- Area model ---------- */
+.area-svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+  font-family: var(--font);
+}
+.area-x2 {
+  fill: var(--pen-tint);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.area-x {
+  fill: color-mix(in srgb, var(--pen) 22%, var(--paper));
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.area-c {
+  fill: color-mix(in srgb, var(--pen) 45%, var(--paper));
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.area-text {
+  fill: var(--ink);
+  font-size: 24px;
+  font-weight: 700;
+}
+.area-text-sm {
+  fill: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.area-dim {
+  fill: var(--ink-2);
+  font-size: 14px;
+  font-style: italic;
+}
+.area-target {
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-ctl);
+  background: var(--paper-2);
+  font-size: var(--t-md);
+}
+.area-target.hit {
+  background: var(--tick-tint);
+  font-weight: 700;
+}
+
+/* ---------- Force cart ---------- */
+.cart-svg,
+.proj-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--font);
+}
+.cart-body {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+.cart-wheel {
+  fill: var(--ink);
+}
+.cart-label {
+  fill: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+.force {
+  stroke-width: 4;
+}
+.force-push {
+  stroke: var(--pen);
+}
+.force-head-push {
+  fill: var(--pen);
+}
+.force-friction {
+  stroke: var(--ink-3);
+}
+.force-head-friction {
+  fill: var(--ink-3);
+}
+.force-label {
+  fill: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- Projectile lab ---------- */
+.traj {
+  stroke: var(--ink-3);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.traj-current {
+  stroke: var(--pen);
+  stroke-width: 2.5;
+  stroke-dasharray: none;
+}
+
+/* ---------- Circuit ---------- */
+.circuit {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+  font-family: var(--font);
+}
+.wire {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.resistor {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.cell-long {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+.cell-short {
+  stroke: var(--ink);
+  stroke-width: 5;
+}
+.meter {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.circuit-label {
+  fill: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+.circuit-meter {
+  fill: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.circ .q-figure {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+/* ---------- Atom ---------- */
+.atom-grid {
+  display: grid;
+  gap: var(--s4);
+  align-items: center;
+}
+@media (min-width: 640px) {
+  .atom-grid {
+    grid-template-columns: minmax(200px, 300px) 1fr;
+  }
+}
+.atom-svg {
+  width: 100%;
+  height: auto;
+}
+.e-shell {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+.electron,
+.atom-legend .electron {
+  fill: var(--pen);
+  background: var(--pen);
+}
+.proton,
+.atom-legend .proton {
+  fill: var(--ink);
+  background: var(--ink);
+}
+.neutron,
+.atom-legend .neutron {
+  fill: var(--paper);
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+  background: var(--paper);
+  border: 1.5px solid var(--ink-2);
+}
+.atom-facts {
+  display: grid;
+  gap: var(--s2);
+  margin: 0;
+}
+.atom-facts div {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: var(--s2);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: var(--s2);
+}
+.atom-facts dt {
+  color: var(--ink-3);
+  font-size: var(--t-sm);
+}
+.atom-facts dd {
+  margin: 0;
+  font-weight: 700;
+}
+.atom-legend {
+  display: flex;
+  gap: var(--s4);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  margin: var(--s3) 0 0;
+}
+.atom-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.atom-legend i {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+/* ---------- Chem balancer ---------- */
+.chemb {
+  display: grid;
+  gap: var(--s3);
+}
+.chemb-name {
+  font-weight: 700;
+  margin: 0;
+}
+.chemb-eq {
+  font-size: var(--t-xl);
+  gap: var(--s3);
+}
+.chemb-step {
+  display: inline-grid;
+  justify-items: center;
+  gap: 2px;
+}
+.chemb-c {
+  font-size: var(--t-lg);
+  font-weight: 700;
+  color: var(--pen);
+}
+.tally {
+  font-size: var(--t-sm);
+  max-width: 420px;
+  width: 100%;
+}
+.tally th,
+.tally td {
+  text-align: left;
+  padding: 4px var(--s3) 4px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.tally thead th {
+  color: var(--ink-3);
+  font-weight: 400;
+}
+.tally tr.ok td:last-child {
+  color: var(--tick);
+  font-weight: 700;
+}
+.tally tr.off td:last-child {
+  color: var(--ink-2);
+}
+
+/* ---------- Cell explorer ---------- */
+.cell {
+  display: grid;
+  gap: var(--s4);
+}
+.cell .segmented {
+  justify-self: start;
+}
+.cell-grid {
+  display: grid;
+  gap: var(--s4);
+}
+@media (min-width: 760px) {
+  .cell-grid {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+  }
+}
+.cell-svg {
+  width: 100%;
+  height: auto;
+  font-family: var(--font);
+}
+.cell-membrane {
+  fill: color-mix(in srgb, var(--paper) 85%, var(--desk));
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.organelle {
+  cursor: pointer;
+  outline: none;
+}
+.organelle > * {
+  fill: var(--paper-2);
+  stroke: var(--ink-2);
+  stroke-width: 2;
+  transition: fill 0.15s;
+}
+.org-golgi > *,
+.org-er > * {
+  fill: none;
+}
+.org-wall > * {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 6;
+}
+.org-vacuole > * {
+  fill: color-mix(in srgb, var(--pen) 8%, var(--paper));
+}
+.org-chloroplast > * {
+  fill: #3f8f4f;
+  stroke: #2a6b38;
+}
+.org-nucleus > * {
+  fill: color-mix(in srgb, var(--ink) 18%, var(--paper));
+}
+.org-ribosome > * {
+  fill: var(--ink-2);
+  stroke: none;
+}
+.organelle:hover > *,
+.organelle:focus-visible > * {
+  stroke: var(--pen);
+}
+.organelle.on > * {
+  stroke: var(--pen);
+  stroke-width: 3.5;
+}
+.org-golgi.on > *,
+.org-er.on > * {
+  stroke-width: 4;
+}
+.org-wall.on > * {
+  stroke-width: 7;
+}
+.cell-tag {
+  fill: var(--ink-2);
+  font-size: 12px;
+  stroke: none !important;
+  text-decoration: underline;
+}
+.org-membrane-hit.on .cell-tag,
+.org-cyto-hit.on .cell-tag {
+  fill: var(--pen);
+  font-weight: 700;
+}
+.org-membrane-hit > *,
+.org-cyto-hit > * {
+  stroke: none;
+  fill: var(--ink-2);
+}
+.cell-info h4 {
+  font-size: var(--t-lg);
+  margin-bottom: var(--s2);
+}
+.cell-list-label {
+  margin-top: var(--s4);
+  font-size: var(--t-sm);
+  font-weight: 700;
+}
+.cell-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+}
+
+/* ---------- Punnett ---------- */
+.punnett {
+  display: grid;
+  gap: var(--s4);
+}
+.punnett-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s3);
+}
+.punnett-x {
+  font-size: var(--t-xl);
+  color: var(--ink-2);
+}
+.punnett-table {
+  border-collapse: separate;
+  border-spacing: 4px;
+  font-size: var(--t-xl);
+  font-weight: 700;
+}
+.punnett-table th {
+  width: 64px;
+  height: 44px;
+  color: var(--ink-2);
+  font-size: var(--t-lg);
+}
+.punnett-table td {
+  width: 72px;
+  height: 64px;
+  text-align: center;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+}
+.punnett-live td.rec {
+  background: var(--pen-tint);
+  color: var(--pen-strong);
+}
+.punnett-blank {
+  color: var(--rule-strong);
+}
+.q-figure .punnett-table {
+  margin: 0 auto;
+}

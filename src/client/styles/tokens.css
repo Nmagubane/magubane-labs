@@ -1,0 +1,123 @@
+/* Magubane Labs — "study desk" design tokens. See docs/ARCHITECTURE.md §5. */
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/InstrumentSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/InstrumentSans-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/InstrumentSans-Italic.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  /* surfaces */
+  --desk: #eceeea;
+  --paper: #ffffff;
+  --paper-2: #f5f6f3;
+  --rule: #d8dcd5;
+  --rule-strong: #b8beb5;
+  --grid: rgb(35 71 214 / 0.055);
+  --grid-major: rgb(35 71 214 / 0.1);
+  /* ink */
+  --ink: #1a1d21;
+  --ink-2: #4a5159;
+  --ink-3: #6b737b;
+  --on-ink: #ffffff;
+  /* meaning */
+  --pen: #2347d6; /* things you manipulate; your input */
+  --pen-strong: #1a36a8;
+  --pen-tint: #e7ecfd;
+  --hl: #ffe14d; /* focus */
+  --hl-ink: #1a1d21;
+  --tick: #18804a; /* correct, mastered */
+  --tick-tint: #e2f2e9;
+  --red: #c4302b; /* incorrect — always with a ✗ and words */
+  --red-tint: #fbeae9;
+  --amber: #a86400; /* warnings, time running out */
+  --amber-tint: #fdf1dc;
+  /* mastery ramp: grey → pen tints → green */
+  --m-none: #d8dcd5;
+  --m-learning: #b3c1f4;
+  --m-developing: #7189ea;
+  --m-proficient: #2347d6;
+  --m-mastered: #18804a;
+
+  /* type: 16px base, ~1.25 ratio */
+  --font: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --t-xs: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-md: 1rem;
+  --t-lg: 1.25rem;
+  --t-xl: 1.5625rem;
+  --t-2xl: 1.953rem;
+  --t-3xl: 2.441rem;
+  --t-4xl: 3.052rem;
+
+  /* space: 4px base */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1rem;
+  --s5: 1.5rem;
+  --s6: 2rem;
+  --s7: 3rem;
+  --s8: 4rem;
+
+  /* shape: different radii for different roles */
+  --r-sheet: 12px;
+  --r-ctl: 6px;
+  --r-chip: 4px;
+  --shadow-float: 0 12px 32px rgb(26 29 33 / 0.16), 0 2px 6px rgb(26 29 33 / 0.08);
+
+  --rail: 232px;
+  --measure: 68ch;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --desk: #121417;
+    --paper: #1a1d21;
+    --paper-2: #212529;
+    --rule: #30353b;
+    --rule-strong: #474e56;
+    --grid: rgb(140 162 255 / 0.06);
+    --grid-major: rgb(140 162 255 / 0.11);
+    --ink: #e9ebe7;
+    --ink-2: #b6bcb3;
+    --ink-3: #8d948b;
+    --on-ink: #121417;
+    --pen: #8aa2ff;
+    --pen-strong: #b1c1ff;
+    --pen-tint: #222c52;
+    --hl: #5c4f12;
+    --hl-ink: #fff6c2;
+    --tick: #4fc283;
+    --tick-tint: #16301f;
+    --red: #ff7a72;
+    --red-tint: #3a1a19;
+    --amber: #f2b84b;
+    --amber-tint: #3a2c10;
+    --m-none: #30353b;
+    --m-learning: #34427a;
+    --m-developing: #5468c4;
+    --m-proficient: #8aa2ff;
+    --m-mastered: #4fc283;
+    --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5);
+  }
+}
