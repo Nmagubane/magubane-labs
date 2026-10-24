@@ -17,7 +17,7 @@ import { canAccessLearner } from './auth.ts';
 import { SignupBody, DeleteAccountBody, VerifyBody, ForgotBody, ResetBody, ChangePasswordBody, JoinClassBody, PRIVACY_VERSION, type PublicConfig, LoginBody, ProfileBody, CreateActivityBody, NextQuestionBody, AnswerBody, ExamBody, TutorConversationBody, TutorMessageBody, type MeResponse, type UserDto } from '../shared/api.ts';
 import { CreateClassBody, UpdateClassBody, CreateAssignmentBody, SendReportBody } from '../shared/api-teach.ts';
 import { passwordProblem } from '../shared/password.ts';
-import { CURRICULA } from '../shared/curriculum/catalogue.ts';
+import { CURRICULA, subjectsForGrade } from '../shared/curriculum/catalogue.ts';
 
 const COOKIE = 'ml_session';
 const loginLimiter = new RateLimiter(10, 15 * 60_000);
@@ -207,7 +207,10 @@ export function buildRouter(db: Db): Router {
   r.put('/api/profile', async (ctx) => {
     const user = requireLearner(ctx);
     const body = await readJson(ctx, ProfileBody);
-    saveProfile(db, user.id, body);
+    // Subjects must make sense for the grade (no Natural Sciences & Technology in Grade 10, say).
+    const subjects = body.subjects.filter((s) => subjectsForGrade(body.grade).includes(s));
+    if (!subjects.length) throw new HttpError(400, 'invalid', 'Choose at least one subject for that grade.');
+    saveProfile(db, user.id, { ...body, subjects });
     return getProfile(db, user.id);
   });
 

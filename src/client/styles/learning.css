@@ -1298,6 +1298,8 @@
 }
 .totals dd {
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: var(--t-lg);
   font-weight: 700;
 }

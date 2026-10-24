@@ -292,6 +292,28 @@ test('the complete learning loop', async () => {
   assert.equal((await neo.call('GET', '/api/progress')).totals.testsCompleted, 2);
 });
 
+test('learners can change grade and subjects later, and mastery is kept', async () => {
+  const k = new Client();
+  await k.signup({ displayName: 'Kabelo', email: 'kabelo@example.com', password: 'Grade-change-5', ageGroup: 'adult', consent: true });
+  await k.call('PUT', '/api/profile', { grade: 5, curriculumId: 'za-caps', subjects: ['mathematics', 'natural-sciences'], goals: [], dailyMinutes: 20 });
+  const act = await k.call('POST', '/api/activities', { kind: 'practice', skillId: 'place-value' });
+  const q = await k.call('POST', `/api/activities/${act.id}/next`, {});
+  const input = q.question.input;
+  await k.call('POST', `/api/questions/${q.question.id}/answer`, { response: input.kind === 'choice' ? input.options[0].id : '1', timeMs: 2000 });
+  const before = (await k.call('GET', '/api/catalogue')).subjects.find((s: { id: string }) => s.id === 'mathematics').topics.flatMap((t: { skills: { skillId: string; attempts?: number; mastery: number }[] }) => t.skills).find((s: { skillId: string }) => s.skillId === 'place-value');
+  // Grade 10: Natural Sciences & Technology no longer applies and is dropped; the rest is kept.
+  const p = await k.call('PUT', '/api/profile', { grade: 10, curriculumId: 'za-caps', subjects: ['mathematics', 'natural-sciences'], goals: [], dailyMinutes: 30 });
+  assert.equal(p.grade, 10);
+  assert.deepEqual(p.subjects, ['mathematics']);
+  assert.equal(p.dailyMinutes, 30);
+  await k.call('PUT', '/api/profile', { grade: 10, curriculumId: 'za-caps', subjects: ['natural-sciences'], goals: [], dailyMinutes: 30 }, 400);
+  const cat = await k.call('GET', '/api/catalogue');
+  assert.equal(cat.grade, 10);
+  const pv = cat.subjects.find((s: { id: string }) => s.id === 'mathematics').topics.flatMap((t: { skills: { skillId: string; inScope: boolean; mastery: number }[] }) => t.skills).find((s: { skillId: string }) => s.skillId === 'place-value');
+  assert.equal(pv.mastery, before.mastery, 'mastery survives a grade change');
+  assert.equal(pv.inScope, false, 'Grade 4 place value is outside the Grade 10 band');
+});
+
 test('security: CSRF header, authorisation, validation', async () => {
   const a = new Client();
   await a.signup({ displayName: 'Sipho', email: 'sipho@example.com', password: 'Long-enough-1', ageGroup: 'adult', consent: true });

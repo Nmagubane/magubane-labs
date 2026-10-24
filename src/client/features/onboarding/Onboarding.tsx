@@ -4,7 +4,7 @@ import { useSession } from '../../lib/session.tsx';
 import { useRouter } from '../../lib/router.tsx';
 import { Button, Logo } from '../../ui/primitives.tsx';
 import type { ActivityDto, ProfileDto, Goal } from '../../../shared/api.ts';
-import { SUBJECTS, type SubjectId, type CurriculumId } from '../../../shared/curriculum/catalogue.ts';
+import { SUBJECTS, subjectsForGrade, defaultSubjects, type SubjectId, type CurriculumId } from '../../../shared/curriculum/catalogue.ts';
 
 const GOALS: { id: Goal; label: string; detail: string }[] = [
   { id: 'pure-maths', label: 'Stay in pure Maths', detail: 'Keep Mathematics, not Maths Literacy, after Grade 9.' },
@@ -31,9 +31,8 @@ export function Onboarding() {
   const [error, setError] = useState<string | null>(null);
 
   const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
-  /** Which subjects make sense at a grade, and which to tick by default. */
-  const offered = (g: number | null): SubjectId[] => (g === null ? SUBJECTS.map((x) => x.id) : g <= 6 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : g === 7 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences', 'life-sciences']);
-  const defaults = (g: number): SubjectId[] => (g <= 6 ? ['mathematics', 'natural-sciences'] : g <= 9 ? ['mathematics', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences']);
+  const offered = (g: number | null): SubjectId[] => (g === null ? SUBJECTS.map((x) => x.id) : subjectsForGrade(g));
+  const defaults = defaultSubjects;
   const chooseGrade = (g: number) => {
     setGrade(g);
     if (!existing) setSubjects(defaults(g));

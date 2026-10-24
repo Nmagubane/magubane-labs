@@ -208,25 +208,30 @@
 }
 
 /* ---------- Auth ---------- */
+/* Phones: logo, then the form (people come here to log in), then the pitch and the try-one.
+   Wide screens: pitch on the left, form on the right. */
 .auth {
   min-height: 100dvh;
   display: grid;
-  gap: var(--s6);
-  padding: var(--s5) var(--s4) var(--s7);
+  grid-template-areas: 'brand' 'panel' 'intro';
+  gap: var(--s5);
+  padding: var(--s4) var(--s4) var(--s7);
   max-width: 1180px;
   margin: 0 auto;
 }
+.auth-brand { grid-area: brand; }
 .auth-intro {
+  grid-area: intro;
   display: grid;
   align-content: start;
   gap: var(--s4);
+  min-width: 0;
 }
 .auth-title {
-  font-size: clamp(2.1rem, 6vw, 3.6rem);
+  font-size: clamp(1.9rem, 6vw, 3.6rem);
   line-height: 1.04;
   letter-spacing: -0.03em;
   max-width: 14ch;
-  margin-top: var(--s5);
 }
 .auth-lead {
   font-size: var(--t-lg);
@@ -236,14 +241,13 @@
 .auth-demo {
   border: 1px solid var(--rule);
   border-radius: var(--r-sheet);
-  padding: var(--s4);
+  padding: var(--s4) var(--s5);
   margin-top: var(--s2);
 }
-.auth-demo-label {
-  font-weight: 700;
-}
 .auth-panel {
+  grid-area: panel;
   align-self: start;
+  min-width: 0;
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--r-sheet);
@@ -264,15 +268,40 @@
 @media (min-width: 960px) {
   .auth {
     grid-template-columns: 1.35fr 1fr;
-    gap: var(--s8);
-    padding: var(--s7) var(--s7);
+    grid-template-areas: 'brand brand' 'intro panel';
+    column-gap: var(--s8);
+    row-gap: var(--s5);
+    padding: var(--s6) var(--s7);
     align-items: start;
   }
+  .auth-title { margin-top: var(--s4); }
   .auth-panel {
-    margin-top: 5.5rem;
+    margin-top: var(--s4);
     padding: var(--s6);
   }
 }
+
+/* Try one (sign-in page) */
+.try { display: grid; gap: var(--s3); }
+.try-kicker { margin: 0; font-size: var(--t-sm); font-weight: 700; color: var(--ink-2); }
+.try-ask { margin: 0; font-size: var(--t-lg); font-weight: 700; }
+.try-work { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); font-size: 1.6rem; }
+.try-work li { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s1) var(--s4); }
+.try-work li + li { animation: try-in 0.25s var(--ease); }
+.try-margin { font-size: var(--t-sm); color: var(--pen); }
+.try-answer .katex { background: var(--hl); color: var(--hl-ink); padding: 0 6px; border-radius: 3px; }
+.try-q { margin: var(--s2) 0 var(--s2); font-weight: 600; }
+.try-step { color: var(--ink-3); font-weight: 700; }
+.try-choices { display: grid; gap: var(--s2); }
+.try-choice { min-height: 48px; text-align: left; padding: var(--s2) var(--s4); border: 2px solid var(--ink); border-radius: var(--r-ctl); background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+.try-choice:hover { background: var(--pen-tint); }
+.try-choice.off { border-color: var(--rule-strong); color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--ink-3); }
+.try-hint { margin: var(--s2) 0 0; padding: var(--s2) var(--s3); border-left: 4px solid var(--amber); background: var(--amber-tint); border-radius: var(--r-chip); }
+.try-tip { margin: var(--s2) 0 0; font-size: var(--t-sm); color: var(--ink-3); }
+.try-done p { margin: 0 0 var(--s2); }
+.try-actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
+@keyframes try-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .try-work li + li { animation: none; } }
 
 /* ---------- Onboarding ---------- */
 .onboard {

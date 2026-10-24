@@ -3,7 +3,7 @@ import { api, ApiError } from '../../lib/api.ts';
 import { useSession } from '../../lib/session.tsx';
 import { Link } from '../../lib/router.tsx';
 import { Button, TextInput, Logo } from '../../ui/primitives.tsx';
-import { EquationBalancer } from '../widgets/EquationBalancer.tsx';
+import { TryOne } from './TryOne.tsx';
 import { PasswordField, passwordOk } from './PasswordField.tsx';
 import type { MeResponse, PublicConfig } from '../../../shared/api.ts';
 
@@ -39,13 +39,14 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
   const [h, lead] = HEADINGS[mode];
   return (
     <main id="main" className="auth">
-      <section className="auth-intro">
+      <header className="auth-brand">
         <Logo />
+      </header>
+      <section className="auth-intro">
         <h1 className="auth-title">Build the minds that build the future.</h1>
-        <p className="auth-lead">Mathematics and science you work out with your own hands: equations you solve step by step, labs you run, and honest feedback on what to do next.</p>
+        <p className="auth-lead">Maths and science for Grades 4 to 12, worked out with your own hands: step-by-step problems, labs you can play with, and honest feedback on what to do next.</p>
         <div className="auth-demo graph-paper">
-          <p className="auth-demo-label">Try it now. Get x on its own, doing the same to both sides.</p>
-          <EquationBalancer a={3} b={5} c={0} d={20} />
+          <TryOne />
         </div>
       </section>
       <section className="auth-panel" aria-labelledby="auth-heading">

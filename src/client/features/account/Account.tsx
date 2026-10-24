@@ -8,6 +8,145 @@ import { Icon } from '../../ui/Icon.tsx';
 import { PasswordField, passwordOk } from '../auth/PasswordField.tsx';
 import { relativeDay } from '../../lib/format.ts';
 import type { MyClassDto } from '../../../shared/api-teach.ts';
+import type { ProfileDto } from '../../../shared/api.ts';
+import { SUBJECTS, subjectsForGrade, defaultSubjects, getSubject, type SubjectId } from '../../../shared/curriculum/catalogue.ts';
+
+const GRADES = [4, 5, 6, 7, 8, 9, 10, 11, 12];
+const MINUTES = [10, 20, 30, 45, 60];
+
+/** Grade, subjects and daily time. Changing grade keeps all mastery: it only moves the band of skills you see. */
+function LearningSettings() {
+  const { me, refresh } = useSession();
+  const profile = me!.profile!;
+  const [open, setOpen] = useState(false);
+  const [grade, setGrade] = useState(profile.grade);
+  const [subjects, setSubjects] = useState<SubjectId[]>(profile.subjects);
+  const [daily, setDaily] = useState(profile.dailyMinutes);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
+  const offered = subjectsForGrade(grade);
+  const chosen = subjects.filter((s) => offered.includes(s));
+  const start = () => {
+    setGrade(profile.grade);
+    setSubjects(profile.subjects);
+    setDaily(profile.dailyMinutes);
+    setErr(null);
+    setSaved(null);
+    setOpen(true);
+  };
+  const pickGrade = (g: number) => {
+    setGrade(g);
+    // Keep what still fits; if nothing does, start from the usual choice for that grade.
+    const keep = subjects.filter((s) => subjectsForGrade(g).includes(s));
+    setSubjects(keep.length ? keep : defaultSubjects(g));
+  };
+  const toggle = (s: SubjectId) => setSubjects(subjects.includes(s) ? subjects.filter((x) => x !== s) : [...subjects, s]);
+  const save = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    try {
+      await api.put<ProfileDto>('/api/profile', { grade, curriculumId: profile.curriculumId, subjects: chosen, goals: profile.goals, dailyMinutes: daily });
+      invalidate('/api/home', '/api/catalogue', '/api/progress', '/api/exams');
+      await refresh();
+      setSaved(grade !== profile.grade ? `Saved. You're now in Grade ${grade}. Skills you've already practised keep their mastery; Home and Learn now follow Grade ${grade}.` : 'Saved.');
+      setOpen(false);
+    } catch (x) {
+      setErr((x as ApiError).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section className="sheet">
+      <div className="sheet-head">
+        <h2 className="sheet-title">Grade and subjects</h2>
+        {!open ? (
+          <Button size="sm" variant="secondary" onClick={start} aria-label="Change grade and subjects">
+            Change
+          </Button>
+        ) : null}
+      </div>
+      {!open ? (
+        <>
+          <dl className="details">
+            <div>
+              <dt>Grade</dt>
+              <dd>Grade {profile.grade}</dd>
+            </div>
+            <div>
+              <dt>Subjects</dt>
+              <dd>{profile.subjects.map((s) => getSubject(s)?.name ?? s).join(', ')}</dd>
+            </div>
+            <div>
+              <dt>Time per day</dt>
+              <dd>{profile.dailyMinutes} minutes</dd>
+            </div>
+          </dl>
+          {saved ? (
+            <p className="note note-ok" role="status">
+              {saved}
+            </p>
+          ) : null}
+        </>
+      ) : (
+        <form onSubmit={save} className="settings-form" noValidate>
+          <fieldset>
+            <legend>Grade</legend>
+            <div className="grade-grid compact" role="radiogroup" aria-label="Grade">
+              {GRADES.map((g) => (
+                <button key={g} type="button" role="radio" aria-checked={grade === g} className={`grade-btn${grade === g ? ' on' : ''}`} onClick={() => pickGrade(g)}>
+                  <span className="grade-num num">{g}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Subjects</legend>
+            <div className="chip-row">
+              {SUBJECTS.filter((x) => offered.includes(x.id)).map((x) => (
+                <button key={x.id} type="button" className={`chip chip-lg${chosen.includes(x.id) ? ' on' : ''}`} aria-pressed={chosen.includes(x.id)} onClick={() => toggle(x.id)}>
+                  {chosen.includes(x.id) ? '✓ ' : ''}
+                  {x.name}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Time per day</legend>
+            <div className="chip-row" role="radiogroup" aria-label="Minutes per day">
+              {MINUTES.map((m) => (
+                <button key={m} type="button" role="radio" aria-checked={daily === m} className={`chip chip-lg${daily === m ? ' on' : ''}`} onClick={() => setDaily(m)}>
+                  {m} min
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          {grade !== profile.grade ? (
+            <p className="note">
+              Moving to Grade {grade} keeps everything you&apos;ve learnt. Your recommendations and the Learn page will follow Grade {grade} from now on.
+            </p>
+          ) : null}
+          {err ? (
+            <p className="form-error" role="alert">
+              {err}
+            </p>
+          ) : null}
+          <div className="row-actions">
+            <Button type="submit" busy={busy} disabled={!chosen.length}>
+              Save
+            </Button>
+            <Button type="button" variant="quiet" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+          {!chosen.length ? <p className="small muted">Choose at least one subject.</p> : null}
+        </form>
+      )}
+    </section>
+  );
+}
 
 export function Account() {
   const { me } = useSession();
@@ -17,24 +156,27 @@ export function Account() {
       <PageHeader title="Your account" />
       <section className="sheet">
         <h2 className="sheet-title">Details</h2>
-        <dl className="totals">
+        <dl className="details">
           <div>
             <dt>Name</dt>
             <dd>{me?.user?.displayName}</dd>
           </div>
           <div>
             <dt>Email</dt>
-            <dd>{me?.user?.email}</dd>
+            <dd className="details-email">{me?.user?.email}</dd>
           </div>
-          <div>
-            <dt>{teacher ? 'School' : 'Grade'}</dt>
-            <dd>{teacher ? me?.user?.school : me?.profile?.grade}</dd>
-          </div>
+          {teacher ? (
+            <div>
+              <dt>School</dt>
+              <dd>{me?.user?.school ?? 'Not given'}</dd>
+            </div>
+          ) : null}
         </dl>
         <p className="small" style={{ marginTop: 'var(--s4)' }}>
           <a href="/privacy">Read the privacy notice</a>
         </p>
       </section>
+      {!teacher && me?.profile ? <LearningSettings /> : null}
       {!teacher ? <MyClasses /> : null}
       {!teacher && me?.user ? (
         <section className="sheet">

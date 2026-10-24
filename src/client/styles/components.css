@@ -684,3 +684,22 @@ a.row:hover .row-title,
 .danger-zone .btn {
   margin-top: var(--s2);
 }
+
+/* ---------- Account details ---------- */
+/* Label above value on phones, side by side on wider screens. Long emails wrap instead of running off the card. */
+.details { margin: var(--s4) 0 0; padding-top: var(--s4); border-top: 1px solid var(--rule); display: grid; gap: var(--s3); }
+.details > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-width: 0; }
+.details dt { font-size: var(--t-sm); color: var(--ink-3); }
+.details dd { margin: 0; font-size: var(--t-lg); font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.details-email { font-size: var(--t-md) !important; }
+@media (min-width: 640px) {
+  .details > div { grid-template-columns: 9rem minmax(0, 1fr); align-items: baseline; gap: var(--s4); }
+}
+.sheet-head + .details { margin-top: var(--s3); }
+.settings-form { display: grid; gap: var(--s4); margin-top: var(--s4); }
+.settings-form fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: var(--s2); }
+.settings-form legend { font-weight: 700; margin-bottom: var(--s2); padding: 0; }
+.grade-grid.compact { display: flex; flex-wrap: wrap; gap: var(--s2); margin: 0; max-width: none; min-width: 0; }
+.grade-grid.compact .grade-btn { min-width: 0; width: 52px; min-height: 48px; padding: var(--s2) 0; }
+.grade-grid.compact .grade-num { font-size: var(--t-lg); }
+.chip-row { display: flex; flex-wrap: wrap; gap: var(--s2); }

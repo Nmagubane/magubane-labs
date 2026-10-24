@@ -799,3 +799,13 @@ export const skillsInSubject = (subjectId: SubjectId): Skill[] => SKILLS.filter(
 export function skillsForLearner(subjects: SubjectId[], grade: number): Skill[] {
   return SKILLS.filter((s) => subjects.includes(subjectOfSkill(s)) && s.grade <= grade + 1 && s.grade >= grade - 4);
 }
+
+/** Which subjects make sense at a grade. Natural Sciences & Technology stops after Grade 7. */
+export function subjectsForGrade(grade: number): SubjectId[] {
+  return grade <= 7 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences', 'life-sciences'];
+}
+
+/** What to tick by default for a new learner at a grade. */
+export function defaultSubjects(grade: number): SubjectId[] {
+  return grade <= 6 ? ['mathematics', 'natural-sciences'] : grade <= 9 ? ['mathematics', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences'];
+}
