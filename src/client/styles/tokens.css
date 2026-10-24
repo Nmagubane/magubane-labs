@@ -83,6 +83,31 @@
   --r-chip: 4px;
   --shadow-float: 0 12px 32px rgb(26 29 33 / 0.16), 0 2px 6px rgb(26 29 33 / 0.08);
 
+  /* lab colours: real-world things drawn in science labs */
+  --lab-water: #cfe3f6;
+  --lab-oil: #f3dd8a;
+  --lab-sea: #b9dbe6;
+  --lab-glycerine: #e6e2f1;
+  --lab-clear: #eef3f6;
+  --lab-hot: #e2531d;
+  --lab-rod: #b8beb5;
+  --lab-wax: #f3ead2;
+  --lab-plant: #3f8f3a;
+  --lab-plant-tint: #cfe8c9;
+  --lab-o2-rich: #c0392b;
+  --lab-o2-poor: #3b5ea8;
+  --lab-mum: #d9822b;
+  --lab-dad: #2347d6;
+  --lab-sky: #dcebf7;
+  --lab-soil: #8a6a4a;
+  --lab-sun: #f5b82e;
+  --lab-pale: #d9cf6a;
+  --lab-pot: #c4683f;
+  --lab-coin: #d9b44a;
+  --lab-copper: #c46d36;
+  --lab-night: #1f2a44;
+  --lab-moon: #f4efd9;
+
   --rail: 232px;
   --measure: 68ch;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -119,5 +144,28 @@
     --m-proficient: #8aa2ff;
     --m-mastered: #4fc283;
     --shadow-float: 0 12px 32px rgb(0 0 0 / 0.5);
+    --lab-water: #1f3a55;
+    --lab-oil: #5a4b17;
+    --lab-sea: #1d4450;
+    --lab-glycerine: #3a3550;
+    --lab-clear: #2a3036;
+    --lab-hot: #ff7a3d;
+    --lab-rod: #5b636b;
+    --lab-wax: #6b6350;
+    --lab-plant: #6cc266;
+    --lab-plant-tint: #1f3a1d;
+    --lab-o2-rich: #ff7a6e;
+    --lab-o2-poor: #8aa7f0;
+    --lab-mum: #f2a65a;
+    --lab-dad: #8aa2ff;
+    --lab-sky: #1a2a3a;
+    --lab-soil: #a8865f;
+    --lab-sun: #f5c14e;
+    --lab-pale: #a69c45;
+    --lab-pot: #a5583a;
+    --lab-coin: #c9a443;
+    --lab-copper: #d98450;
+    --lab-night: #0d1220;
+    --lab-moon: #f1ead0;
   }
 }

@@ -7,6 +7,7 @@ import './styles/layout.css';
 import './styles/components.css';
 import './styles/learning.css';
 import './styles/widgets.css';
+import './styles/teach.css';
 import { App } from './app.tsx';
 
 createRoot(document.getElementById('root') as HTMLElement).render(

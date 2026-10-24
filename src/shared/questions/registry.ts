@@ -7,6 +7,13 @@ import { gradient, straightLine } from './generators/math-functions.ts';
 import { speedDistanceTime, newtonsSecondLaw, projectileMotion, ohmsLaw } from './generators/science-physics.ts';
 import { atomicStructure, moles, balancingEquations } from './generators/science-chemistry.ts';
 import { cellStructure, monohybridCrosses } from './generators/science-biology.ts';
+import { statesOfMatter, density, acidsBases } from './generators/science-matter.ts';
+import { heatTransfer, mechanicalEnergy, circuits } from './generators/science-energy.ts';
+import { classification, foodChains, photosynthesis, bodySystems, cellDivision } from './generators/science-life.ts';
+import { placeValue, multiplication, fractionsBasic, decimals, perimeterArea } from './generators/math-lower.ts';
+import { exponents, quadraticFormula, sequences, trigRatios, finance, derivatives } from './generators/math-upper.ts';
+import { livingNonliving, plantNeeds, lifeCycles, matterProperties, metalsNonmetals, mixtures } from './generators/nst-life-matter.ts';
+import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './generators/nst-energy-earth.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
   integers,
@@ -30,6 +37,39 @@ export const TEMPLATES: QuestionTemplate[] = [
   balancingEquations,
   cellStructure,
   monohybridCrosses,
+  statesOfMatter,
+  density,
+  acidsBases,
+  heatTransfer,
+  mechanicalEnergy,
+  circuits,
+  classification,
+  foodChains,
+  photosynthesis,
+  bodySystems,
+  cellDivision,
+  placeValue,
+  multiplication,
+  fractionsBasic,
+  decimals,
+  perimeterArea,
+  exponents,
+  quadraticFormula,
+  sequences,
+  trigRatios,
+  finance,
+  derivatives,
+  livingNonliving,
+  plantNeeds,
+  lifeCycles,
+  matterProperties,
+  metalsNonmetals,
+  mixtures,
+  sound,
+  simpleCircuits,
+  earthMoon,
+  solarSystem,
+  structures,
 ];
 
 const byId = new Map(TEMPLATES.map((t) => [t.id, t]));

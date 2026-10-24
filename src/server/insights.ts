@@ -7,7 +7,7 @@ import { now } from './config.ts';
 import { getProfile, getStates, summarise, lessonsCompleted, recentMistakes, localDay, type Profile } from './learner.ts';
 import { activeAssessment } from './activities.ts';
 import type { UserDto, CatalogueResponse, SkillDetailResponse, HomeResponse, ProgressResponse, RecommendationDto, ExamDto, ExamDetailResponse, WorkedExample, ResultsDto } from '../shared/api.ts';
-import { SUBJECTS, getSkill, getTopic, getSubject, topicsInSubject, skillsInTopic, skillsForLearner, skillsInSubject, type SubjectId } from '../shared/curriculum/catalogue.ts';
+import { SUBJECTS, SKILLS, getSkill, getTopic, getSubject, topicsInSubject, skillsInTopic, skillsForLearner, skillsInSubject, type SubjectId } from '../shared/curriculum/catalogue.ts';
 import { getLesson } from '../shared/content/lessons.ts';
 import { mistakeInfo } from '../shared/questions/mistakes.ts';
 import { generateQuestion } from '../shared/questions/registry.ts';
@@ -25,10 +25,11 @@ function requireProfile(db: Db, user: UserDto): Profile {
 // ---------- catalogue & skills ----------
 
 export function catalogue(db: Db, user: UserDto): CatalogueResponse {
-  const profile = requireProfile(db, user);
+  // Teachers browse everything; learners see their own mastery and grade band.
+  const profile = user.role === 'teacher' ? { grade: 0, subjects: SUBJECTS.map((s) => s.id) } : requireProfile(db, user);
   const states = getStates(db, user.id);
   const done = lessonsCompleted(db, user.id);
-  const inScope = new Set(skillsForLearner(profile.subjects, profile.grade).map((s) => s.id));
+  const inScope = new Set(user.role === 'teacher' ? SKILLS.map((s) => s.id) : skillsForLearner(profile.subjects, profile.grade).map((s) => s.id));
   const at = now();
   const order = [...profile.subjects, ...SUBJECTS.map((s) => s.id).filter((id) => !profile.subjects.includes(id))];
   return {
@@ -55,7 +56,7 @@ export function catalogue(db: Db, user: UserDto): CatalogueResponse {
 }
 
 export function skillDetail(db: Db, user: UserDto, skillId: string): SkillDetailResponse {
-  requireProfile(db, user);
+  if (user.role !== 'teacher') requireProfile(db, user);
   const skill = getSkill(skillId);
   const lesson = skill ? getLesson(skill.lessonId) : undefined;
   if (!skill || !lesson) throw new HttpError(404, 'unknown_skill', 'That skill does not exist.');
@@ -337,7 +338,10 @@ export function createExam(db: Db, user: UserDto, body: { title: string; subject
   if (Number.isNaN(days) || days < 1) throw new HttpError(422, 'invalid', 'Choose a date after today.');
   if (days > 366) throw new HttpError(422, 'invalid', 'Choose a date within the next year.');
   const valid = new Set(skillsInSubject(body.subjectId).map((s) => s.id));
-  const skillIds = body.skillIds?.length ? body.skillIds.filter((id) => valid.has(id)) : skillsForLearner([body.subjectId], profile.grade).map((s) => s.id);
+  // Default: the subject's skills in the learner's grade band; if none (e.g. a Grade 5 choosing Physical Sciences), the nearest-grade ones.
+  const band = skillsForLearner([body.subjectId], profile.grade);
+  const nearest = band.length ? band : skillsInSubject(body.subjectId).sort((a, b) => Math.abs(a.grade - profile.grade) - Math.abs(b.grade - profile.grade)).slice(0, 4);
+  const skillIds = body.skillIds?.length ? body.skillIds.filter((id) => valid.has(id)) : nearest.map((s) => s.id);
   if (!skillIds.length) throw new HttpError(422, 'invalid', 'Pick at least one topic that will be in the exam.');
   const id = newId('exm');
   run(db, 'INSERT INTO exams (id, user_id, title, subject_id, exam_date, skill_ids, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', id, user.id, body.title, body.subjectId, body.examDate, JSON.stringify(skillIds), at.toISOString());

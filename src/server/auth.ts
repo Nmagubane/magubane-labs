@@ -42,9 +42,9 @@ export function destroySession(db: Db, token: string): void {
 
 export function userForSession(db: Db, token: string | undefined): UserDto | null {
   if (!token || token.length > 100) return null;
-  const row = one<{ id: string; email: string; display_name: string; role: UserDto['role']; expires_at: string }>(
+  const row = one<UserRow & { expires_at: string }>(
     db,
-    `SELECT u.id, u.email, u.display_name, u.role, s.expires_at
+    `SELECT u.id, u.email, u.display_name, u.role, u.email_verified_at, u.school, s.expires_at
      FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`,
     sha256(token),
   );
@@ -53,7 +53,37 @@ export function userForSession(db: Db, token: string | undefined): UserDto | nul
     destroySession(db, token);
     return null;
   }
-  return { id: row.id, email: row.email, displayName: row.display_name, role: row.role };
+  return toUserDto(row);
+}
+
+export interface UserRow {
+  id: string;
+  email: string;
+  display_name: string;
+  role: UserDto['role'];
+  email_verified_at: string | null;
+  school: string | null;
+}
+export const USER_COLS = 'id, email, display_name, role, email_verified_at, school';
+export function toUserDto(row: UserRow): UserDto {
+  return { id: row.id, email: row.email, displayName: row.display_name, role: row.role, emailVerified: !!row.email_verified_at, school: row.school };
+}
+export function getUser(db: Db, id: string): UserDto | null {
+  const row = one<UserRow>(db, `SELECT ${USER_COLS} FROM users WHERE id = ?`, id);
+  return row ? toUserDto(row) : null;
+}
+
+export function markEmailVerified(db: Db, userId: string): void {
+  run(db, 'UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?', now().toISOString(), userId);
+}
+
+export function setPassword(db: Db, userId: string, password: string): void {
+  run(db, 'UPDATE users SET password_hash = ? WHERE id = ?', hashPassword(password), userId);
+}
+
+/** Signs the user out everywhere (after a password change or reset). */
+export function destroyAllSessions(db: Db, userId: string): void {
+  run(db, 'DELETE FROM sessions WHERE user_id = ?', userId);
 }
 
 export interface NewUser {
@@ -65,6 +95,10 @@ export interface NewUser {
   guardianName?: string | null;
   guardianEmail?: string | null;
   consentVersion?: string | null;
+  role?: 'student' | 'teacher';
+  school?: string | null;
+  /** Only the demo seeder and tests create pre-verified accounts. */
+  verified?: boolean;
 }
 
 export function createUser(db: Db, input: NewUser): UserDto {
@@ -72,12 +106,13 @@ export function createUser(db: Db, input: NewUser): UserDto {
   const t = now().toISOString();
   run(
     db,
-    `INSERT INTO users (id, email, password_hash, display_name, role, created_at, invite_code, is_minor, guardian_name, guardian_email, consent_at, consent_version)
-     VALUES (?, ?, ?, ?, 'student', ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO users (id, email, password_hash, display_name, role, created_at, invite_code, is_minor, guardian_name, guardian_email, consent_at, consent_version, school, email_verified_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     id,
     input.email,
     hashPassword(input.password),
     input.displayName,
+    input.role ?? 'student',
     t,
     input.inviteCode ?? null,
     input.isMinor ? 1 : 0,
@@ -85,8 +120,10 @@ export function createUser(db: Db, input: NewUser): UserDto {
     input.guardianEmail ?? null,
     input.consentVersion ? t : null,
     input.consentVersion ?? null,
+    input.school ?? null,
+    input.verified ? t : null,
   );
-  return { id, email: input.email, displayName: input.displayName, role: 'student' };
+  return { id, email: input.email, displayName: input.displayName, role: input.role ?? 'student', emailVerified: !!input.verified, school: input.school ?? null };
 }
 
 /** Permanently removes a learner and everything recorded about them. */
@@ -94,6 +131,7 @@ export function deleteUser(db: Db, userId: string): void {
   db.exec('BEGIN IMMEDIATE');
   try {
     for (const table of ['responses', 'question_instances', 'mastery_snapshots', 'lesson_progress', 'tutor_messages']) run(db, `DELETE FROM ${table} WHERE user_id = ?`, userId);
+    run(db, 'DELETE FROM email_log WHERE learner_id = ?', userId);
     run(db, 'DELETE FROM users WHERE id = ?', userId); // cascades: sessions, profile, skill states, activities, exams, conversations
     db.exec('COMMIT');
   } catch (e) {
@@ -103,9 +141,11 @@ export function deleteUser(db: Db, userId: string): void {
 }
 
 /**
- * The single place that decides who may see a learner's data.
- * Today: only the learner themself. Parent/teacher access will be added here (guardianships, classes).
+ * The single place that decides who may see a learner's data:
+ * the learner themself, or a teacher of an active class the learner has joined.
  */
-export function canAccessLearner(viewer: UserDto, learnerId: string): boolean {
-  return viewer.id === learnerId;
+export function canAccessLearner(db: Db, viewer: UserDto, learnerId: string): boolean {
+  if (viewer.id === learnerId) return true;
+  if (viewer.role !== 'teacher' || !viewer.emailVerified) return false;
+  return !!one(db, 'SELECT 1 FROM class_members m JOIN classes c ON c.id = m.class_id WHERE m.learner_id = ? AND c.teacher_id = ? AND c.archived_at IS NULL', learnerId, viewer.id);
 }

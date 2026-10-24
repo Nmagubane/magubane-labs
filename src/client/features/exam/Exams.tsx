@@ -19,7 +19,8 @@ export function Exams() {
 
   const subject = cat.data?.subjects.find((s) => s.id === subjectId);
   const skills = useMemo(() => subject?.topics.flatMap((t) => t.skills.map((k) => ({ ...k, topic: t.name }))) ?? [], [subject]);
-  const selected = picked ?? new Set(skills.filter((k) => k.inScope).map((k) => k.skillId));
+  const inBand = skills.filter((k) => k.inScope);
+  const selected = picked ?? new Set((inBand.length ? inBand : skills).map((k) => k.skillId));
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
 
   if ((exams.loading && !exams.data) || (cat.loading && !cat.data)) return <Loading />;

@@ -13,6 +13,12 @@ let app: Server;
 let base = '';
 let db: import('./db.ts').Db;
 let lastUpstreamBody: { system: string; messages: { role: string; content: string }[] } | null = null;
+/** Every email the app sends, captured instead of delivered. */
+const outbox: { to: string; subject: string; text: string; attachments: { filename: string; content: Buffer }[] }[] = [];
+const lastCode = (email: string) => {
+  const m = [...outbox].reverse().find((x) => x.to === email && /\b\d{6}\b/.test(x.subject));
+  return m?.subject.match(/\b(\d{6})\b/)?.[1] ?? '';
+};
 
 before(async () => {
   fakeAnthropic = createServer((req, res) => {
@@ -33,8 +39,14 @@ before(async () => {
   process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
   process.env.SIGNUP_RATE_PER_HOUR = '1000';
   process.env.ANTHROPIC_BASE_URL = `http://127.0.0.1:${(fakeAnthropic.address() as AddressInfo).port}`;
+  process.env.EDUCATOR_CODES = 'TEACH-2026';
   const { openDb } = await import('./db.ts');
   const { createApp } = await import('./app.ts');
+  const { setTransport } = await import('./mailer.ts');
+  setTransport(async (m) => {
+    outbox.push({ to: m.to.email, subject: m.subject, text: m.text, attachments: m.attachments ?? [] });
+    return { status: 'sent' };
+  });
   db = openDb(':memory:');
   app = createApp(db);
   await new Promise<void>((r) => app.listen(0, r));
@@ -64,7 +76,15 @@ class Client {
       return text as T;
     }
   }
+  /** Sign up and confirm the email with the code that was "sent". */
+  async signup<T = any>(body: Record<string, unknown>): Promise<T> {
+    const out = await this.call<T>('POST', '/api/auth/signup', body);
+    await this.call('POST', '/api/auth/verify', { code: lastCode(String(body.email)) });
+    return out;
+  }
 }
+
+const backdateCodes = () => db.prepare("UPDATE email_codes SET created_at = '2000-01-01T00:00:00.000Z'").run();
 
 function secretOf(questionId: string): { answer: any; misconceptions: any[] } {
   const row = db.prepare('SELECT secret FROM question_instances WHERE id = ?').get(questionId) as { secret: string };
@@ -93,10 +113,17 @@ test('the complete learning loop', async () => {
   const neo = new Client();
 
   // 1. Create an account
-  const signup = await neo.call('POST', '/api/auth/signup', { displayName: 'Thandiwe Nkosi', email: 'thandiwe@example.com', password: 'correct horse battery', ageGroup: 'minor', guardianName: 'Nomsa Nkosi', guardianEmail: 'nomsa@example.com', consent: true });
+  const signup = await neo.call('POST', '/api/auth/signup', { displayName: 'Thandiwe Nkosi', email: 'thandiwe@example.com', password: 'Correct-horse-9', ageGroup: 'minor', guardianName: 'Nomsa Nkosi', guardianEmail: 'nomsa@example.com', consent: true });
   assert.equal(signup.user.displayName, 'Thandiwe Nkosi');
+  assert.equal(signup.user.emailVerified, false);
   assert.ok(neo.cookie.startsWith('ml_session='));
-  await neo.call('POST', '/api/auth/signup', { displayName: 'X', email: 'thandiwe@example.com', password: 'another password', ageGroup: 'adult', consent: true }, 409);
+  // Nothing works until the email is confirmed
+  await neo.call('GET', '/api/home', undefined, 403);
+  await neo.call('POST', '/api/auth/verify', { code: '000000' === lastCode('thandiwe@example.com') ? '111111' : '000000' }, 400);
+  const verified = await neo.call('POST', '/api/auth/verify', { code: lastCode('thandiwe@example.com') });
+  assert.equal(verified.user.emailVerified, true);
+  assert.ok(outbox.some((m) => m.to === 'nomsa@example.com' && /joined Magubane Labs/.test(m.subject)), 'guardian is told about the account');
+  await neo.call('POST', '/api/auth/signup', { displayName: 'X', email: 'thandiwe@example.com', password: 'Another-pass-7', ageGroup: 'adult', consent: true }, 409);
 
   // 2. Onboarding
   const me = await neo.call('GET', '/api/me');
@@ -260,20 +287,20 @@ test('the complete learning loop', async () => {
   assert.equal((await neo.call('GET', '/api/me')).user, null);
   await neo.call('GET', '/api/home', undefined, 401);
   await neo.call('POST', '/api/auth/login', { email: 'thandiwe@example.com', password: 'wrong password' }, 401);
-  const back = await neo.call('POST', '/api/auth/login', { email: 'THANDIWE@example.com', password: 'correct horse battery' });
+  const back = await neo.call('POST', '/api/auth/login', { email: 'THANDIWE@example.com', password: 'Correct-horse-9' });
   assert.equal(back.profile.grade, 10);
   assert.equal((await neo.call('GET', '/api/progress')).totals.testsCompleted, 2);
 });
 
 test('security: CSRF header, authorisation, validation', async () => {
   const a = new Client();
-  await a.call('POST', '/api/auth/signup', { displayName: 'Sipho', email: 'sipho@example.com', password: 'longenough1', ageGroup: 'adult', consent: true });
+  await a.signup({ displayName: 'Sipho', email: 'sipho@example.com', password: 'Long-enough-1', ageGroup: 'adult', consent: true });
   await a.call('PUT', '/api/profile', { grade: 8, curriculumId: 'za-caps', subjects: ['mathematics'], goals: [], dailyMinutes: 20 });
   const act = await a.call('POST', '/api/activities', { kind: 'practice', skillId: 'integers' });
   const q = await a.call('POST', `/api/activities/${act.id}/next`, {});
 
   const b = new Client();
-  await b.call('POST', '/api/auth/signup', { displayName: 'Lindiwe', email: 'lindiwe@example.com', password: 'longenough2', ageGroup: 'adult', consent: true });
+  await b.signup({ displayName: 'Lindiwe', email: 'lindiwe@example.com', password: 'Long-enough-2', ageGroup: 'adult', consent: true });
   await b.call('GET', `/api/activities/${act.id}`, undefined, 404);
   await b.call('POST', `/api/questions/${q.question.id}/answer`, { response: '1', timeMs: 10 }, 404);
   await b.call('POST', `/api/questions/${q.question.id}/hint`, undefined, 404);
@@ -292,13 +319,13 @@ test('pilot: invite codes, parent consent, account deletion', async () => {
   config.inviteCodes = ['PILOT-SOWETO'];
   try {
     const c = new Client();
-    const base_ = { displayName: 'Ayanda', email: 'ayanda@example.com', password: 'longenough3', ageGroup: 'minor', guardianName: 'Zodwa', guardianEmail: 'zodwa@example.com', consent: true };
+    const base_ = { displayName: 'Ayanda', email: 'ayanda@example.com', password: 'Long-enough-3', ageGroup: 'minor', guardianName: 'Zodwa', guardianEmail: 'zodwa@example.com', consent: true };
     await c.call('POST', '/api/auth/signup', base_, 403);
     await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'WRONG' }, 403);
     await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto', guardianEmail: undefined }, 422);
     await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto', guardianEmail: 'ayanda@example.com' }, 422);
     await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto', consent: false }, 422);
-    const ok = await c.call('POST', '/api/auth/signup', { ...base_, accessCode: 'pilot-soweto' });
+    const ok = await c.signup({ ...base_, accessCode: 'pilot-soweto' });
     const row = db.prepare('SELECT invite_code, is_minor, guardian_email, consent_at, consent_version FROM users WHERE id = ?').get(ok.user.id) as Record<string, unknown>;
     assert.equal(row.invite_code, 'PILOT-SOWETO');
     assert.equal(row.is_minor, 1);
@@ -313,13 +340,175 @@ test('pilot: invite codes, parent consent, account deletion', async () => {
     const q = await c.call('POST', `/api/activities/${act.id}/next`, {});
     await c.call('POST', `/api/questions/${q.question.id}/answer`, { response: '1', timeMs: 1000 });
     await c.call('POST', '/api/account/delete', { password: 'nope' }, 401);
-    await c.call('POST', '/api/account/delete', { password: 'longenough3' });
+    await c.call('POST', '/api/account/delete', { password: 'Long-enough-3' });
     for (const t of ['users', 'responses', 'question_instances', 'activities', 'skill_states', 'mastery_snapshots', 'sessions']) {
       const col = t === 'users' ? 'id' : 'user_id';
       const n = (db.prepare(`SELECT COUNT(*) AS n FROM ${t} WHERE ${col} = ?`).get(ok.user.id) as { n: number }).n;
       assert.equal(n, 0, `${t} still has rows after deletion`);
     }
     assert.equal((await c.call('GET', '/api/me')).user, null);
+  } finally {
+    config.signupMode = 'open';
+  }
+});
+
+test('security: password rules, email codes, password reset', async () => {
+  const c = new Client();
+  const base_ = { displayName: 'Bongani', email: 'bongani@example.com', ageGroup: 'adult', consent: true };
+  for (const [pw, why] of [
+    ['Short-1', 'at least 8'],
+    ['alllowercase-1', 'uppercase'],
+    ['ALLUPPERCASE-1', 'lowercase'],
+    ['No-numbers-here', 'number'],
+    ['NoSpecial123', 'special'],
+    ['Password1!', 'well known'],
+    ['Bongani-2026!', 'name or email'],
+  ] as const) {
+    const res = await c.call('POST', '/api/auth/signup', { ...base_, password: pw }, 422);
+    assert.match(JSON.stringify(res.error.details), new RegExp(why, 'i'), `${pw} should fail for: ${why}`);
+  }
+  const ok = await c.call('POST', '/api/auth/signup', { ...base_, password: 'Strong-enough-8' });
+  assert.equal(ok.user.emailVerified, false);
+  const code = lastCode('bongani@example.com');
+  assert.match(code, /^\d{6}$/);
+  // Stored only as a hash
+  assert.ok(!JSON.stringify(db.prepare('SELECT * FROM email_codes').all()).includes(code));
+  await c.call('POST', '/api/auth/resend', {}, 429); // too soon
+  for (let i = 0; i < 5; i++) await c.call('POST', '/api/auth/verify', { code: code === '123456' ? '654321' : '123456' }, 400);
+  const locked = await c.call('POST', '/api/auth/verify', { code }, 400);
+  assert.equal(locked.error.code, 'too_many_attempts');
+  backdateCodes();
+  await c.call('POST', '/api/auth/resend', {});
+  await c.call('POST', '/api/auth/verify', { code: lastCode('bongani@example.com') });
+  await c.call('PUT', '/api/profile', { grade: 8, curriculumId: 'za-caps', subjects: ['mathematics'], goals: [], dailyMinutes: 20 });
+
+  // Forgot password: same answer for unknown emails; a reset signs out other sessions
+  const other = new Client();
+  await other.call('POST', '/api/auth/login', { email: 'bongani@example.com', password: 'Strong-enough-8' });
+  const before_ = outbox.length;
+  await new Client().call('POST', '/api/auth/forgot', { email: 'nobody@example.com' });
+  assert.equal(outbox.length, before_, 'no email for unknown accounts');
+  const r = new Client();
+  await r.call('POST', '/api/auth/forgot', { email: 'bongani@example.com' });
+  const resetCode = lastCode('bongani@example.com');
+  await r.call('POST', '/api/auth/reset', { email: 'bongani@example.com', code: resetCode, password: 'weak' }, 422);
+  await r.call('POST', '/api/auth/reset', { email: 'bongani@example.com', code: resetCode, password: 'Brand-new-pass-4' });
+  await other.call('GET', '/api/home', undefined, 401);
+  await c.call('GET', '/api/home', undefined, 401);
+  await r.call('GET', '/api/home');
+  await r.call('POST', '/api/auth/reset', { email: 'bongani@example.com', code: resetCode, password: 'Another-pass-5' }, 400);
+  await new Client().call('POST', '/api/auth/login', { email: 'bongani@example.com', password: 'Brand-new-pass-4' });
+
+  // Change password needs the current one
+  await r.call('POST', '/api/account/password', { current: 'nope', next: 'Changed-pass-6' }, 401);
+  await r.call('POST', '/api/account/password', { current: 'Brand-new-pass-4', next: 'short' }, 422);
+  await r.call('POST', '/api/account/password', { current: 'Brand-new-pass-4', next: 'Changed-pass-6' });
+  await r.call('GET', '/api/home');
+});
+
+test('educator mode: classes, assignments, access rules, PDF reports', async () => {
+  const { config } = await import('./config.ts');
+  const { runWeeklyReports } = await import('./reports.ts');
+  config.signupMode = 'invite';
+  config.inviteCodes = ['PILOT-1'];
+  try {
+    // Teacher accounts need an educator code, not a learner invite code
+    const t = new Client();
+    const teacherBody = { accountType: 'teacher', displayName: 'Ms Dlamini', email: 'dlamini@school.example', password: 'Teach-well-2026', school: 'Thabo High', ageGroup: 'adult', consent: true };
+    await t.call('POST', '/api/auth/signup', { ...teacherBody, accessCode: 'PILOT-1' }, 403);
+    await t.call('POST', '/api/auth/signup', { ...teacherBody, accessCode: 'TEACH-2026', ageGroup: 'minor' }, 422);
+    const tch = await t.signup({ ...teacherBody, accessCode: 'teach-2026' });
+    assert.equal(tch.user.role, 'teacher');
+    await t.call('GET', '/api/home', undefined, 403); // teachers have no learner home
+
+    const cls = await t.call('POST', '/api/teach/classes', { name: '9B Natural Sciences', grade: 9, subjectId: 'physical-sciences' });
+    assert.match(cls.joinCode, /^[A-Z2-9]{6}$/);
+
+    // A class code works as an invite: a learner signs up with it and joins straight away
+    const l = new Client();
+    const lr = await l.signup({ displayName: 'Kagiso', email: 'kagiso@example.com', password: 'Learn-hard-77', classCode: cls.joinCode.toLowerCase(), ageGroup: 'minor', guardianName: 'Mpho', guardianEmail: 'mpho@example.com', consent: true });
+    assert.ok(outbox.some((m) => m.to === 'mpho@example.com' && /joined 9B Natural Sciences/.test(m.subject)), 'guardian told about the class');
+    assert.equal((await l.call('GET', '/api/classes')).length, 1);
+    await l.call('PUT', '/api/profile', { grade: 9, curriculumId: 'za-caps', subjects: ['physical-sciences', 'life-sciences'], goals: [], dailyMinutes: 30 });
+    await l.call('POST', '/api/teach/classes', { name: 'x', grade: 9, subjectId: 'mathematics' }, 403); // learners can't teach
+
+    // A second learner, not in the class
+    const outsider = new Client();
+    const or_ = await outsider.signup({ displayName: 'Zanele', email: 'zanele@example.com', password: 'Learn-hard-88', accessCode: 'PILOT-1', ageGroup: 'adult', consent: true });
+
+    // Teacher sets work; the learner sees it on Home and does it
+    const asg = await t.call('POST', `/api/teach/classes/${cls.id}/assignments`, { kind: 'practice', skillId: 'density', dueAt: '2099-01-01', questionCount: 3, note: 'Show your working' });
+    await t.call('POST', `/api/teach/classes/${cls.id}/assignments`, { kind: 'practice', skillId: 'density', dueAt: '2000-01-01' }, 422);
+    const home = await l.call('GET', '/api/home');
+    assert.equal(home.assignments.length, 1);
+    assert.equal(home.assignments[0].done, false);
+    const started = await l.call('POST', `/api/assignments/${asg.id}/start`);
+    assert.equal(started.kind, 'practice');
+    for (let i = 0; i < 3; i++) {
+      const item = await l.call('POST', `/api/activities/${started.activityId}/next`, {});
+      await l.call('POST', `/api/questions/${item.question.id}/answer`, { response: correctResponse(secretOf(item.question.id).answer), timeMs: 4000 });
+    }
+    await l.call('POST', `/api/activities/${started.activityId}/submit`);
+    assert.equal((await l.call('GET', '/api/home')).assignments[0].done, true);
+
+    // Teacher view: learner row, heatmap, assignment completion
+    const detail = await t.call('GET', `/api/teach/classes/${cls.id}`);
+    assert.equal(detail.learners.length, 1);
+    assert.equal(detail.learners[0].name, 'Kagiso');
+    assert.ok(detail.heat[lr.user.id].density, 'heatmap has the practised skill');
+    assert.equal(detail.assignments[0].completed, 1);
+    const learnerView = await t.call('GET', `/api/teach/learners/${lr.user.id}`);
+    assert.ok(learnerView.progress.subjects.length >= 1);
+    await t.call('GET', `/api/teach/learners/${or_.user.id}`, undefined, 404); // not in their class
+
+    // Another teacher can't see this class or learner
+    const t2 = new Client();
+    await t2.signup({ ...teacherBody, email: 'other@school.example', accessCode: 'TEACH-2026' });
+    await t2.call('GET', `/api/teach/classes/${cls.id}`, undefined, 404);
+    await t2.call('GET', `/api/reports/learner/${lr.user.id}`, undefined, 404);
+    await outsider.call('GET', `/api/reports/learner/${lr.user.id}`, undefined, 404);
+
+    // PDF reports: the teacher and the learner can download; the file is a real PDF with the right content
+    const pdfRes = await fetch(`${base}/api/reports/learner/${lr.user.id}`, { headers: { cookie: t.cookie } });
+    assert.equal(pdfRes.status, 200);
+    assert.equal(pdfRes.headers.get('content-type'), 'application/pdf');
+    const pdf = Buffer.from(await pdfRes.arrayBuffer());
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(pdf.includes('Kagiso'), 'report names the learner');
+    assert.ok(pdf.includes('%%EOF'));
+    assert.equal((await fetch(`${base}/api/reports/learner/${lr.user.id}`, { headers: { cookie: l.cookie } })).status, 200);
+    const classPdf = await fetch(`${base}/api/reports/class/${cls.id}`, { headers: { cookie: t.cookie } });
+    assert.equal(classPdf.status, 200);
+
+    // Teacher emails a report: guardian and teacher both get the PDF
+    const sent = await t.call('POST', `/api/teach/learners/${lr.user.id}/report`, { note: 'Great effort on density this week.' });
+    assert.deepEqual(sent.sentTo.map((s: any) => s.role).sort(), ['guardian', 'teacher']);
+    const toGuardian = [...outbox].reverse().find((m) => m.to === 'mpho@example.com' && /progress report/.test(m.subject))!;
+    assert.equal(toGuardian.attachments.length, 1);
+    assert.equal(toGuardian.attachments[0]!.content.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(toGuardian.text.includes('Great effort on density'));
+
+    // Weekly reports: sent on the report day, once per period
+    const sunday = new Date('2026-11-01T16:30:00Z'); // Sunday 18:30 in South Africa
+    db.prepare("UPDATE users SET created_at = '2026-01-01T00:00:00.000Z'").run();
+    const first = await runWeeklyReports(db, sunday);
+    assert.ok(first.guardians >= 1 && first.teachers >= 1, JSON.stringify(first));
+    const again = await runWeeklyReports(db, sunday);
+    assert.deepEqual(again, { guardians: 0, teachers: 0 }, 'never twice in one period');
+    assert.deepEqual(await runWeeklyReports(db, new Date('2026-11-02T16:30:00Z')), { guardians: 0, teachers: 0 }, 'only on the report day');
+
+    // The guardian can stop reports with the link in the email
+    const link = toGuardian.text.match(/http\S+unsubscribe\S+/)![0];
+    const u = new URL(link);
+    assert.equal((await fetch(`${base}${u.pathname}${u.search}`)).status, 200);
+    assert.equal((await fetch(`${base}${u.pathname}?l=${u.searchParams.get('l')}&t=forged`)).status, 400);
+    const after_ = await t.call('POST', `/api/teach/learners/${lr.user.id}/report`, {});
+    assert.deepEqual(after_.sentTo.map((s: any) => s.role), ['teacher']);
+
+    // Leaving the class ends the teacher's access
+    await l.call('DELETE', `/api/classes/${cls.id}`);
+    await t.call('GET', `/api/teach/learners/${lr.user.id}`, undefined, 404);
+    await t.call('GET', `/api/reports/learner/${lr.user.id}`, undefined, 404);
   } finally {
     config.signupMode = 'open';
   }

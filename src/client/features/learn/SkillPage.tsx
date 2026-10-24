@@ -12,8 +12,12 @@ import { InlineQuestion } from '../practice/InlineQuestion.tsx';
 import { BAND_LABEL, plural } from '../../lib/format.ts';
 import type { SkillDetailResponse, WorkedExample, ActivityDto, TutorConversationDetail } from '../../../shared/api.ts';
 import type { LessonBlock } from '../../../shared/content/types.ts';
+import { useSession } from '../../lib/session.tsx';
+import { AssignForm } from '../teach/AssignForm.tsx';
 
 export function SkillPage({ skillId }: { skillId: string }) {
+  const { me } = useSession();
+  const teacher = me?.user?.role === 'teacher';
   const { data, error, loading, reload } = useResource<SkillDetailResponse>(`/api/skills/${skillId}`);
   const [activity, setActivity] = useState<ActivityDto | null>(null);
   const [finished, setFinished] = useState(false);
@@ -22,6 +26,7 @@ export function SkillPage({ skillId }: { skillId: string }) {
   const { navigate } = useRouter();
 
   useEffect(() => {
+    if (teacher) return;
     let live = true;
     api
       .post<ActivityDto>('/api/activities', { kind: 'lesson', skillId })
@@ -30,7 +35,7 @@ export function SkillPage({ skillId }: { skillId: string }) {
     return () => {
       live = false;
     };
-  }, [skillId]);
+  }, [skillId, teacher]);
 
   if (loading && !data) return <Loading label="Opening the lesson" />;
   if (error && !data) return <ErrorState error={error} onRetry={() => void reload()} />;
@@ -88,9 +93,10 @@ export function SkillPage({ skillId }: { skillId: string }) {
         <article className="lesson-body">
           {lesson.blocks.map((b, i) => {
             const ci = b.kind === 'check' ? ++checkIndex : 0;
-            return <Block key={i} block={b} skillId={skillId} activityId={activity?.id ?? null} checkNumber={ci} />;
+            return <Block key={i} block={b} skillId={skillId} activityId={activity?.id ?? null} checkNumber={ci} teacher={teacher} />;
           })}
 
+          {teacher ? null : (
           <section className="lesson-end">
             {finished ? (
               <>
@@ -120,9 +126,27 @@ export function SkillPage({ skillId }: { skillId: string }) {
               </p>
             ) : null}
           </section>
+          )}
         </article>
 
         <aside className="lesson-side" aria-label="This skill">
+          {teacher ? (
+            <>
+              <div className="side-sheet">
+                <h2 className="side-title">Teach this</h2>
+                <p className="muted side-note">Present the lesson on a projector or smartboard, one step at a time. Labs stay interactive.</p>
+                <div className="side-actions">
+                  <Link to={`/teach/present/${skillId}`} className="btn btn-primary btn-md">
+                    <span>Present to the class</span>
+                  </Link>
+                </div>
+              </div>
+              <div className="side-sheet">
+                <h2 className="side-title">Assign it</h2>
+                <AssignForm skillId={skillId} compact />
+              </div>
+            </>
+          ) : (
           <div className="side-sheet">
             <h2 className="side-title">Your mastery</h2>
             <MasteryBar value={state.mastery} band={state.band} />
@@ -142,7 +166,8 @@ export function SkillPage({ skillId }: { skillId: string }) {
               </Button>
             </div>
           </div>
-          {skill.prerequisites.length ? (
+          )}
+          {skill.prerequisites.length && !teacher ? (
             <div className="side-sheet">
               <h2 className="side-title">Builds on</h2>
               <ul className="rows rows-tight">
@@ -159,7 +184,7 @@ export function SkillPage({ skillId }: { skillId: string }) {
               </ul>
             </div>
           ) : null}
-          {data.recentMistakes.length ? (
+          {data.recentMistakes.length && !teacher ? (
             <div className="side-sheet">
               <h2 className="side-title">Your recent mistakes here</h2>
               <ul className="mistake-list">
@@ -180,7 +205,7 @@ export function SkillPage({ skillId }: { skillId: string }) {
   );
 }
 
-function Block({ block, skillId, activityId, checkNumber }: { block: LessonBlock; skillId: string; activityId: string | null; checkNumber: number }) {
+export function Block({ block, skillId, activityId, checkNumber, teacher = false }: { block: LessonBlock; skillId: string; activityId: string | null; checkNumber: number; teacher?: boolean }) {
   switch (block.kind) {
     case 'text':
       return <RichBlocks text={block.body} className="lesson-text" />;
@@ -218,6 +243,7 @@ function Block({ block, skillId, activityId, checkNumber }: { block: LessonBlock
         </aside>
       );
     case 'check':
+      if (teacher) return <Example skillId={skillId} level={block.level} title={`Try this together (check ${checkNumber})`} />;
       return (
         <section className="lesson-check">
           <h3>Check {checkNumber}</h3>
@@ -227,7 +253,7 @@ function Block({ block, skillId, activityId, checkNumber }: { block: LessonBlock
   }
 }
 
-function Predict({ block }: { block: Extract<LessonBlock, { kind: 'predict' }> }) {
+export function Predict({ block }: { block: Extract<LessonBlock, { kind: 'predict' }> }) {
   const [choice, setChoice] = useState<number | null>(null);
   return (
     <section className="predict">
@@ -254,7 +280,7 @@ function Predict({ block }: { block: Extract<LessonBlock, { kind: 'predict' }> }
   );
 }
 
-function Example({ skillId, level }: { skillId: string; level: number }) {
+export function Example({ skillId, level, title = 'Worked example' }: { skillId: string; level: number; title?: string }) {
   const [ex, setEx] = useState<WorkedExample | null>(null);
   const [shown, setShown] = useState(1);
   const [error, setError] = useState<ApiError | null>(null);
@@ -271,7 +297,7 @@ function Example({ skillId, level }: { skillId: string; level: number }) {
   useEffect(load, [skillId, level]);
   return (
     <section className="example">
-      <h3>Worked example</h3>
+      <h3>{title}</h3>
       {error ? <ErrorState error={error} onRetry={load} /> : null}
       {ex ? (
         <>

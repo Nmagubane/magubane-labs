@@ -107,7 +107,7 @@
 @media (min-width: 960px) {
   .shell {
     display: grid;
-    grid-template-columns: var(--rail) 1fr;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
   }
   .topbar,
   .tabbar {

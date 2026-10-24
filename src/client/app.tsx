@@ -19,6 +19,11 @@ import { Exams } from './features/exam/Exams.tsx';
 import { ExamDetail } from './features/exam/ExamDetail.tsx';
 import { Privacy } from './features/account/Privacy.tsx';
 import { Account } from './features/account/Account.tsx';
+import { VerifyEmail } from './features/auth/VerifyEmail.tsx';
+import { TeachHome } from './features/teach/TeachHome.tsx';
+import { ClassPage } from './features/teach/ClassPage.tsx';
+import { TeacherLearner } from './features/teach/TeacherLearner.tsx';
+import { Present } from './features/teach/Present.tsx';
 
 const NAV: { to: string; label: string; icon: IconName; match: string[] }[] = [
   { to: '/home', label: 'Home', icon: 'home', match: ['/home'] },
@@ -29,7 +34,23 @@ const NAV: { to: string; label: string; icon: IconName; match: string[] }[] = [
   { to: '/progress', label: 'Progress', icon: 'progress', match: ['/progress', '/exams'] },
 ];
 
+const TEACH_NAV: typeof NAV = [
+  { to: '/teach', label: 'Classes', icon: 'people', match: ['/teach'] },
+  { to: '/learn', label: 'Lessons', icon: 'learn', match: ['/learn'] },
+  { to: '/account', label: 'Account', icon: 'user', match: ['/account'] },
+];
+
 type RouteDef = { pattern: string; render: (p: Record<string, string>) => ReactNode; focus?: boolean };
+
+const TEACH_ROUTES: RouteDef[] = [
+  { pattern: '/teach', render: () => <TeachHome /> },
+  { pattern: '/teach/classes/:id', render: (p) => <ClassPage key={p.id} id={p.id as string} /> },
+  { pattern: '/teach/learners/:id', render: (p) => <TeacherLearner key={p.id} id={p.id as string} /> },
+  { pattern: '/teach/present/:skillId', render: (p) => <Present key={p.skillId} skillId={p.skillId as string} />, focus: true },
+  { pattern: '/learn', render: () => <Catalogue /> },
+  { pattern: '/learn/:skillId', render: (p) => <SkillPage key={p.skillId} skillId={p.skillId as string} /> },
+  { pattern: '/account', render: () => <Account /> },
+];
 
 const ROUTES: RouteDef[] = [
   { pattern: '/home', render: () => <Home /> },
@@ -51,18 +72,21 @@ const ROUTES: RouteDef[] = [
 function Shell({ children }: { children: ReactNode }) {
   const { path } = useRouter();
   const { me, logout } = useSession();
+  const teacher = me?.user?.role === 'teacher';
+  const nav = teacher ? TEACH_NAV : NAV;
+  const homePath = teacher ? '/teach' : '/home';
   return (
     <div className="shell">
       <a className="skip-link" href="#main">
         Skip to content
       </a>
       <aside className="rail" aria-label="Main">
-        <Link to="/home" className="rail-brand" aria-label="Magubane Labs home">
+        <Link to={homePath} className="rail-brand" aria-label="Magubane Labs home">
           <Logo />
         </Link>
         <nav>
           <ul>
-            {NAV.map((n) => {
+            {nav.map((n) => {
               const active = n.match.some((m) => path === m || path.startsWith(`${m}/`));
               return (
                 <li key={n.to}>
@@ -78,7 +102,7 @@ function Shell({ children }: { children: ReactNode }) {
         <div className="rail-foot">
           <p className="rail-user">
             <span className="rail-name">{me?.user?.displayName}</span>
-            <span className="muted">Grade {me?.profile?.grade}</span>
+            <span className="muted">{teacher ? (me?.user?.school ?? 'Teacher') : `Grade ${me?.profile?.grade}`}</span>
           </p>
           <div className="rail-links">
             <Link to="/account" className="btn btn-quiet btn-sm">
@@ -91,14 +115,16 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <header className="topbar">
-        <Link to="/home" aria-label="Magubane Labs home">
+        <Link to={homePath} aria-label="Magubane Labs home">
           <Logo />
         </Link>
         <div className="topbar-actions">
-          <Link to="/progress" className={`topbar-link${path.startsWith('/progress') || path.startsWith('/exams') ? ' active' : ''}`}>
-            <Icon name="progress" />
-            <span>Progress</span>
-          </Link>
+          {teacher ? null : (
+            <Link to="/progress" className={`topbar-link${path.startsWith('/progress') || path.startsWith('/exams') ? ' active' : ''}`}>
+              <Icon name="progress" />
+              <span>Progress</span>
+            </Link>
+          )}
           <Link to="/account" className={`topbar-link${path === '/account' ? ' active' : ''}`}>
             <Icon name="user" />
             <span>Account</span>
@@ -109,7 +135,7 @@ function Shell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <nav className="tabbar" aria-label="Main">
-        {NAV.filter((n) => n.to !== '/progress').map((n) => {
+        {nav.filter((n) => n.to !== '/progress').map((n) => {
           const active = n.match.some((m) => path === m || path.startsWith(`${m}/`));
           return (
             <Link key={n.to} to={n.to} className={`tab${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
@@ -130,12 +156,16 @@ function Routes() {
 
   const user = me?.user ?? null;
   const profile = me?.profile ?? null;
-  const publicPaths = ['/', '/welcome', '/login', '/signup'];
+  const teacher = user?.role === 'teacher';
+  const publicPaths = ['/', '/welcome', '/login', '/signup', '/signup/teacher', '/forgot'];
 
   useEffect(() => {
     if (!me || path === '/privacy') return;
     if (!user && !publicPaths.includes(path)) navigate('/login', { replace: true });
-    else if (user && (!profile || !profile.baselineCompleted) && path !== '/onboarding' && !path.startsWith('/tests/') && !path.startsWith('/results/')) navigate('/onboarding', { replace: true });
+    else if (user && !user.emailVerified) return;
+    else if (teacher) {
+      if (publicPaths.includes(path) || path === '/onboarding' || path === '/home' || !TEACH_ROUTES.some((r) => matchPath(r.pattern, path))) navigate('/teach', { replace: true });
+    } else if (user && (!profile || !profile.baselineCompleted) && path !== '/onboarding' && !path.startsWith('/tests/') && !path.startsWith('/results/')) navigate('/onboarding', { replace: true });
     else if (user && profile?.baselineCompleted && (publicPaths.includes(path) || path === '/onboarding')) navigate('/home', { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, path]);
@@ -157,13 +187,14 @@ function Routes() {
   }
 
   if (!user) {
-    const mode = path === '/login' ? 'login' : 'signup';
-    // Keyed so switching between log-in and sign-up starts clean (no stale error from the other form).
+    const mode = path === '/login' ? 'login' : path === '/signup/teacher' ? 'teacher' : path === '/forgot' ? 'forgot' : 'signup';
+    // Keyed so switching between forms starts clean (no stale error from another form).
     return <AuthPage key={mode} mode={mode} />;
   }
-  if (path === '/onboarding') return <Onboarding />;
+  if (!user.emailVerified) return <VerifyEmail />;
+  if (path === '/onboarding' && !teacher) return <Onboarding />;
 
-  for (const r of ROUTES) {
+  for (const r of teacher ? TEACH_ROUTES : ROUTES) {
     const params = matchPath(r.pattern, path);
     if (params) {
       if (r.focus || (!profile?.baselineCompleted && (path.startsWith('/tests/') || path.startsWith('/results/'))))
@@ -175,7 +206,7 @@ function Routes() {
       return <Shell>{r.render(params)}</Shell>;
     }
   }
-  if (!profile?.baselineCompleted) return null;
+  if (!teacher && !profile?.baselineCompleted) return null;
   return (
     <Shell>
       <div className="state state-empty">

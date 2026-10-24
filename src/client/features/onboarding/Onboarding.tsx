@@ -31,12 +31,19 @@ export function Onboarding() {
   const [error, setError] = useState<string | null>(null);
 
   const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  /** Which subjects make sense at a grade, and which to tick by default. */
+  const offered = (g: number | null): SubjectId[] => (g === null ? SUBJECTS.map((x) => x.id) : g <= 6 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : g === 7 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences', 'life-sciences']);
+  const defaults = (g: number): SubjectId[] => (g <= 6 ? ['mathematics', 'natural-sciences'] : g <= 9 ? ['mathematics', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences']);
+  const chooseGrade = (g: number) => {
+    setGrade(g);
+    if (!existing) setSubjects(defaults(g));
+  };
 
   const saveProfile = async () => {
     setBusy(true);
     setError(null);
     try {
-      await api.put<ProfileDto>('/api/profile', { grade, curriculumId: curriculum, subjects, goals, dailyMinutes: daily });
+      await api.put<ProfileDto>('/api/profile', { grade, curriculumId: curriculum, subjects: subjects.filter((x) => offered(grade).includes(x)), goals, dailyMinutes: daily });
       await refresh();
       setStep(4);
     } catch (e) {
@@ -63,7 +70,7 @@ export function Onboarding() {
   };
 
   const first = me?.user?.displayName.split(' ')[0] ?? '';
-  const canNext = [grade !== null, subjects.length > 0, true, true][step] ?? true;
+  const canNext = [grade !== null, subjects.filter((x) => offered(grade).includes(x)).length > 0, true, true][step] ?? true;
 
   return (
     <main id="main" className="onboard">
@@ -85,13 +92,13 @@ export function Onboarding() {
             <p className="lead">We use this to pitch questions at the right level. You can change it later.</p>
             <div className="grade-grid" role="radiogroup" aria-label="Grade">
               {[4, 5, 6, 7, 8, 9, 10, 11, 12].map((g) => (
-                <button key={g} type="button" role="radio" aria-checked={grade === g} className={`grade-btn${grade === g ? ' on' : ''}`} onClick={() => setGrade(g)}>
+                <button key={g} type="button" role="radio" aria-checked={grade === g} className={`grade-btn${grade === g ? ' on' : ''}`} onClick={() => chooseGrade(g)}>
                   <span className="grade-num num">{g}</span>
                   <span className="grade-word">Grade</span>
                 </button>
               ))}
             </div>
-            {grade !== null && grade < 7 ? <p className="note">Most of our content is for Grades 7 to 12 right now. You can still explore, and earlier grades are coming.</p> : null}
+            {grade !== null && grade <= 6 ? <p className="note">Grades 4 to 6 get Mathematics and Natural Sciences &amp; Technology, with hands-on labs for each topic.</p> : null}
             <fieldset className="curric">
               <legend>Curriculum</legend>
               <label className={`radio-row${curriculum === 'za-caps' ? ' on' : ''}`}>
@@ -117,7 +124,7 @@ export function Onboarding() {
             <h1>What do you want to work on?</h1>
             <p className="lead">Pick at least one. We recommend Mathematics for everyone, because it opens every other door.</p>
             <div className="subject-list">
-              {SUBJECTS.map((s) => (
+              {SUBJECTS.filter((x) => offered(grade).includes(x.id)).map((s) => (
                 <label key={s.id} className={`subject-row${subjects.includes(s.id) ? ' on' : ''}`}>
                   <input type="checkbox" checked={subjects.includes(s.id)} onChange={() => setSubjects(toggle(subjects, s.id))} />
                   <span>

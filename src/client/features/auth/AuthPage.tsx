@@ -4,56 +4,39 @@ import { useSession } from '../../lib/session.tsx';
 import { Link } from '../../lib/router.tsx';
 import { Button, TextInput, Logo } from '../../ui/primitives.tsx';
 import { EquationBalancer } from '../widgets/EquationBalancer.tsx';
+import { PasswordField, passwordOk } from './PasswordField.tsx';
 import type { MeResponse, PublicConfig } from '../../../shared/api.ts';
 
-export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
-  const { setMe } = useSession();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState(false);
+export type AuthMode = 'login' | 'signup' | 'teacher' | 'forgot';
+
+const HEADINGS: Record<AuthMode, [string, string]> = {
+  login: ['Welcome back', 'Log in to carry on where you left off.'],
+  signup: ['Create your account', 'Free while we build. It takes a minute, then we find your starting point.'],
+  teacher: ['Create a teacher account', 'Set up classes, set work, follow every learner\'s progress and send reports to parents.'],
+  forgot: ['Reset your password', "We'll email you a 6-digit code."],
+};
+
+function useFieldErrors() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErr, setFieldErr] = useState<Record<string, string>>({});
-  const [cfg, setCfg] = useState<PublicConfig | null>(null);
-  const [accessCode, setAccessCode] = useState(() => new URLSearchParams(window.location.search).get('code') ?? '');
-  const [ageGroup, setAgeGroup] = useState<'adult' | 'minor' | null>(null);
-  const [guardianName, setGuardianName] = useState('');
-  const [guardianEmail, setGuardianEmail] = useState('');
-  const [consent, setConsent] = useState(false);
+  const handle = (err: unknown) => {
+    const ae = err as ApiError;
+    const fe = (ae.details as { fieldErrors?: Record<string, string[]> } | undefined)?.fieldErrors;
+    if (fe && Object.keys(fe).length) {
+      setFieldErr(Object.fromEntries(Object.entries(fe).map(([k, v]) => [k, v[0] ?? ''])));
+      setError(null);
+    } else setError(ae.message);
+  };
+  const clear = () => (setError(null), setFieldErr({}));
+  return { error, fieldErr, handle, clear };
+}
 
+export function AuthPage({ mode }: { mode: AuthMode }) {
+  const [cfg, setCfg] = useState<PublicConfig | null>(null);
   useEffect(() => {
     api.get<PublicConfig>('/api/config').then(setCfg).catch(() => undefined);
   }, []);
-
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    setFieldErr({});
-    try {
-      const me =
-        mode === 'signup'
-          ? await api.post<MeResponse>('/api/auth/signup', {
-              displayName: name,
-              email,
-              password,
-              ...(cfg?.signupMode === 'invite' ? { accessCode } : {}),
-              ageGroup,
-              ...(ageGroup === 'minor' ? { guardianName, guardianEmail } : {}),
-              consent: consent || undefined,
-            })
-          : await api.post<MeResponse>('/api/auth/login', { email, password });
-      setMe(me);
-    } catch (err) {
-      const ae = err as ApiError;
-      const fe = (ae.details as { fieldErrors?: Record<string, string[]> } | undefined)?.fieldErrors;
-      if (fe && Object.keys(fe).length) setFieldErr(Object.fromEntries(Object.entries(fe).map(([k, v]) => [k, v[0] ?? ''])));
-      else setError(ae.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
+  const [h, lead] = HEADINGS[mode];
   return (
     <main id="main" className="auth">
       <section className="auth-intro">
@@ -66,106 +49,282 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         </div>
       </section>
       <section className="auth-panel" aria-labelledby="auth-heading">
-        <h2 id="auth-heading">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h2>
-        <p className="muted">
-          {mode === 'signup' ? (cfg?.signupMode === 'closed' ? 'Sign-ups are closed at the moment.' : 'Free while we build. It takes a minute, then we find your starting point.') : 'Log in to carry on where you left off.'}
-        </p>
-        <form onSubmit={submit} noValidate className="form">
-          {mode === 'signup' && cfg?.signupMode === 'invite' ? (
-            <TextInput label="Access code" hint="Magubane Labs is in a small pilot. Your access code comes from the person who invited you." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} />
-          ) : null}
-          {mode === 'signup' ? <TextInput label="First name" autoComplete="given-name" value={name} onChange={(e) => setName(e.target.value)} error={fieldErr.displayName} required maxLength={40} /> : null}
-          <TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErr.email} required />
-          <TextInput
-            label="Password"
-            type="password"
-            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={fieldErr.password}
-            hint={mode === 'signup' ? 'At least 8 characters.' : undefined}
-            required
-          />
-          {mode === 'signup' ? (
-            <>
-              <fieldset className="age-choice">
-                <legend>How old are you?</legend>
-                <label className={`radio-row${ageGroup === 'adult' ? ' on' : ''}`}>
-                  <input type="radio" name="age" checked={ageGroup === 'adult'} onChange={() => setAgeGroup('adult')} />
-                  <span>18 or older</span>
-                </label>
-                <label className={`radio-row${ageGroup === 'minor' ? ' on' : ''}`}>
-                  <input type="radio" name="age" checked={ageGroup === 'minor'} onChange={() => setAgeGroup('minor')} />
-                  <span>Under 18</span>
-                </label>
-                {fieldErr.ageGroup ? (
-                  <p className="field-msg" role="alert">
-                    {fieldErr.ageGroup}
-                  </p>
-                ) : null}
-              </fieldset>
-              {ageGroup === 'minor' ? (
-                <div className="guardian">
-                  <p className="guardian-note">Because you&apos;re under 18, a parent or guardian needs to agree. Please create your account together.</p>
-                  <TextInput label="Parent or guardian's name" autoComplete="off" value={guardianName} onChange={(e) => setGuardianName(e.target.value)} error={fieldErr.guardianName} maxLength={80} />
-                  <TextInput label="Parent or guardian's email" type="email" autoComplete="off" value={guardianEmail} onChange={(e) => setGuardianEmail(e.target.value)} error={fieldErr.guardianEmail} maxLength={120} />
-                </div>
-              ) : null}
-              {ageGroup ? (
-                <label className="check-row consent">
-                  <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-                  <span>
-                    {ageGroup === 'minor' ? (
-                      <>
-                        <strong>Parent or guardian:</strong> I have read the{' '}
-                        <a href="/privacy" target="_blank" rel="noopener">
-                          privacy notice
-                        </a>{' '}
-                        and I agree to my child using Magubane Labs.
-                      </>
-                    ) : (
-                      <>
-                        I have read the{' '}
-                        <a href="/privacy" target="_blank" rel="noopener">
-                          privacy notice
-                        </a>{' '}
-                        and agree to it.
-                      </>
-                    )}
-                  </span>
-                </label>
-              ) : null}
-              {fieldErr.consent ? (
-                <p className="field-msg" role="alert">
-                  {fieldErr.consent}
-                </p>
-              ) : null}
-            </>
-          ) : null}
-          {error ? (
-            <p className="form-error" role="alert">
-              {error}
-            </p>
-          ) : null}
-          <Button type="submit" size="lg" busy={busy} disabled={mode === 'signup' && (cfg?.signupMode === 'closed' || !ageGroup || !consent)}>
-            {mode === 'signup' ? 'Create account' : 'Log in'}
-          </Button>
-        </form>
+        <h2 id="auth-heading">{h}</h2>
+        <p className="muted">{mode === 'signup' && cfg?.signupMode === 'closed' ? 'Sign-ups are closed at the moment.' : lead}</p>
+        {mode === 'login' ? <LoginForm /> : mode === 'forgot' ? <ForgotForm /> : <SignupForm teacher={mode === 'teacher'} cfg={cfg} />}
         <p className="auth-switch">
-          {mode === 'signup' ? (
-            <>
-              Already have an account? <Link to="/login">Log in</Link>
-            </>
-          ) : (
+          {mode === 'login' ? (
             <>
               New here? <Link to="/signup">Create an account</Link>
             </>
+          ) : (
+            <>
+              Already have an account? <Link to="/login">Log in</Link>
+            </>
           )}
         </p>
+        {mode === 'signup' && cfg?.educatorSignup ? (
+          <p className="auth-switch">
+            Are you a teacher? <Link to="/signup/teacher">Create a teacher account</Link>
+          </p>
+        ) : null}
+        {mode === 'teacher' ? (
+          <p className="auth-switch">
+            A learner? <Link to="/signup">Create a learner account</Link>
+          </p>
+        ) : null}
         <p className="auth-fine">
           We only ask for what we need to teach you. Your data is never sold or used for advertising. <a href="/privacy">Privacy notice</a>
         </p>
       </section>
     </main>
+  );
+}
+
+function LoginForm() {
+  const { setMe } = useSession();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const { error, fieldErr, handle, clear } = useFieldErrors();
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    clear();
+    try {
+      setMe(await api.post<MeResponse>('/api/auth/login', { email, password }));
+    } catch (err) {
+      handle(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <form onSubmit={submit} noValidate className="form">
+      <TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErr.email} required />
+      <PasswordField value={password} onChange={setPassword} error={fieldErr.password} />
+      <p className="form-aside">
+        <Link to="/forgot">Forgot your password?</Link>
+      </p>
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" size="lg" busy={busy}>
+        Log in
+      </Button>
+    </form>
+  );
+}
+
+function SignupForm({ teacher, cfg }: { teacher: boolean; cfg: PublicConfig | null }) {
+  const { setMe } = useSession();
+  const params = new URLSearchParams(window.location.search);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [school, setSchool] = useState('');
+  const [accessCode, setAccessCode] = useState(() => params.get('code') ?? '');
+  const [classCode, setClassCode] = useState(() => params.get('class') ?? '');
+  const [showClass, setShowClass] = useState(() => !!params.get('class'));
+  const [ageGroup, setAgeGroup] = useState<'adult' | 'minor' | null>(teacher ? 'adult' : null);
+  const [guardianName, setGuardianName] = useState('');
+  const [guardianEmail, setGuardianEmail] = useState('');
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const { error, fieldErr, handle, clear } = useFieldErrors();
+
+  const needsAccess = teacher || (cfg?.signupMode === 'invite' && !classCode.trim());
+  const pwOk = passwordOk(password, { email, name });
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    clear();
+    try {
+      const me = await api.post<MeResponse>('/api/auth/signup', {
+        accountType: teacher ? 'teacher' : 'learner',
+        displayName: name,
+        email,
+        password,
+        ...(needsAccess ? { accessCode } : {}),
+        ...(!teacher && classCode.trim() ? { classCode } : {}),
+        ...(teacher ? { school } : {}),
+        ageGroup,
+        ...(ageGroup === 'minor' ? { guardianName, guardianEmail } : {}),
+        consent: consent || undefined,
+      });
+      setMe(me);
+    } catch (err) {
+      handle(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (teacher && cfg && !cfg.educatorSignup)
+    return (
+      <div className="note">
+        <p>Teacher accounts are open to schools in our pilot.{cfg.contactEmail ? ` Write to ${cfg.contactEmail} to join.` : ''}</p>
+      </div>
+    );
+
+  return (
+    <form onSubmit={submit} noValidate className="form">
+      {teacher ? (
+        <TextInput label="Educator code" hint="Teacher accounts need a code from Magubane Labs. This keeps learner data safe." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} />
+      ) : (
+        <>
+          {showClass ? (
+            <TextInput label="Class code" hint="The 6-letter code from your teacher. You'll join their class." autoComplete="off" value={classCode} onChange={(e) => setClassCode(e.target.value.toUpperCase())} error={fieldErr.classCode} maxLength={12} className="code-input" />
+          ) : (
+            <p className="form-aside">
+              <button type="button" className="linklike" onClick={() => setShowClass(true)}>
+                I have a class code from my teacher
+              </button>
+            </p>
+          )}
+          {needsAccess ? <TextInput label="Access code" hint="Magubane Labs is in a small pilot. Your access code comes from the person who invited you." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} /> : null}
+        </>
+      )}
+      <TextInput label={teacher ? 'Your name, as learners know you' : 'First name'} placeholder={teacher ? 'e.g. Ms Dlamini' : undefined} autoComplete={teacher ? 'name' : 'given-name'} value={name} onChange={(e) => setName(e.target.value)} error={fieldErr.displayName} required maxLength={40} />
+      {teacher ? <TextInput label="School" autoComplete="organization" value={school} onChange={(e) => setSchool(e.target.value)} error={fieldErr.school} required maxLength={100} /> : null}
+      <TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErr.email} hint="We'll send a code to confirm it." required />
+      <PasswordField value={password} onChange={setPassword} error={fieldErr.password} isNew context={{ email, name }} />
+      {!teacher ? (
+        <fieldset className="age-choice">
+          <legend>How old are you?</legend>
+          <label className={`radio-row${ageGroup === 'adult' ? ' on' : ''}`}>
+            <input type="radio" name="age" checked={ageGroup === 'adult'} onChange={() => setAgeGroup('adult')} />
+            <span>18 or older</span>
+          </label>
+          <label className={`radio-row${ageGroup === 'minor' ? ' on' : ''}`}>
+            <input type="radio" name="age" checked={ageGroup === 'minor'} onChange={() => setAgeGroup('minor')} />
+            <span>Under 18</span>
+          </label>
+          {fieldErr.ageGroup ? (
+            <p className="field-msg" role="alert">
+              {fieldErr.ageGroup}
+            </p>
+          ) : null}
+        </fieldset>
+      ) : null}
+      {ageGroup === 'minor' ? (
+        <div className="guardian">
+          <p className="guardian-note">Because you&apos;re under 18, a parent or guardian needs to agree. Please create your account together. They&apos;ll get a weekly progress report by email.</p>
+          <TextInput label="Parent or guardian's name" autoComplete="off" value={guardianName} onChange={(e) => setGuardianName(e.target.value)} error={fieldErr.guardianName} maxLength={80} />
+          <TextInput label="Parent or guardian's email" type="email" autoComplete="off" value={guardianEmail} onChange={(e) => setGuardianEmail(e.target.value)} error={fieldErr.guardianEmail} maxLength={120} />
+        </div>
+      ) : null}
+      {ageGroup ? (
+        <label className="check-row consent">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+          <span>
+            {ageGroup === 'minor' ? (
+              <>
+                <strong>Parent or guardian:</strong> I have read the{' '}
+                <a href="/privacy" target="_blank" rel="noopener">
+                  privacy notice
+                </a>{' '}
+                and I agree to my child using Magubane Labs.
+              </>
+            ) : (
+              <>
+                I have read the{' '}
+                <a href="/privacy" target="_blank" rel="noopener">
+                  privacy notice
+                </a>{' '}
+                and agree to it{teacher ? ', including how I may use learner data: only to support their learning' : ''}.
+              </>
+            )}
+          </span>
+        </label>
+      ) : null}
+      {fieldErr.consent ? (
+        <p className="field-msg" role="alert">
+          {fieldErr.consent}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" size="lg" busy={busy} disabled={cfg?.signupMode === 'closed' || !ageGroup || !consent || !pwOk}>
+        {teacher ? 'Create teacher account' : 'Create account'}
+      </Button>
+    </form>
+  );
+}
+
+function ForgotForm() {
+  const { setMe } = useSession();
+  const [step, setStep] = useState<'email' | 'code'>('email');
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const { error, fieldErr, handle, clear } = useFieldErrors();
+  const send = async (e?: FormEvent) => {
+    e?.preventDefault();
+    setBusy(true);
+    clear();
+    try {
+      await api.post('/api/auth/forgot', { email });
+      setStep('code');
+    } catch (err) {
+      handle(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const reset = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    clear();
+    try {
+      setMe(await api.post<MeResponse>('/api/auth/reset', { email, code, password }));
+    } catch (err) {
+      handle(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (step === 'email')
+    return (
+      <form onSubmit={send} noValidate className="form">
+        <TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErr.email} required />
+        {error ? (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <Button type="submit" size="lg" busy={busy} disabled={!email.includes('@')}>
+          Email me a code
+        </Button>
+      </form>
+    );
+  return (
+    <form onSubmit={reset} noValidate className="form">
+      <p className="note" role="status">
+        If an account exists for <strong>{email}</strong>, a code is on its way. Check your inbox (and spam folder).
+      </p>
+      <TextInput label="6-digit code" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.replace(/[^0-9 ]/g, '').slice(0, 7))} error={fieldErr.code} className="code-input" required />
+      <PasswordField label="New password" value={password} onChange={setPassword} error={fieldErr.password} isNew context={{ email }} />
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" size="lg" busy={busy} disabled={code.replace(/\D/g, '').length !== 6 || !passwordOk(password, { email })}>
+        Set new password
+      </Button>
+      <p className="form-aside">
+        <button type="button" className="linklike" onClick={() => void send()}>
+          Send another code
+        </button>
+      </p>
+    </form>
   );
 }

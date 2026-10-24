@@ -23,6 +23,12 @@ const PATHS: Record<string, string> = {
   flag: 'M5 21V4M5 4.5h11l-2 3.5 2 3.5H5',
   lock: 'M6.5 10.5h11a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-8.5a1 1 0 0 1 1-1zM8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3',
   trash: 'M5 7h14M9.5 7V4.5h5V7M7 7l1 13h8l1-13',
+  people: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.9-3.3 3.4-5 6.5-5s5.6 1.7 6.5 5M16 11a3 3 0 1 0 0-6M17.5 15c2 .4 3.5 1.9 4 5',
+  download: 'M12 4v11M7 10.5l5 5 5-5M5 20h14',
+  mail: 'M4 6h16v12H4zM4.5 6.5 12 13l7.5-6.5',
+  present: 'M3.5 4.5h17v11h-17zM12 15.5V20M8 20h8',
+  report: 'M6 3h9l4 4v14H6zM14.5 3v4.5H19M9 12h7M9 15.5h7M9 9h3',
+  next: 'M9.5 6l6 6-6 6',
 };
 
 export type IconName = keyof typeof PATHS;

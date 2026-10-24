@@ -45,6 +45,7 @@ export const api = {
   post: <T>(path: string, body: unknown = {}) => request<T>('POST', path, body),
   put: <T>(path: string, body: unknown) => request<T>('PUT', path, body),
   del: <T>(path: string) => request<T>('DELETE', path),
+  patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
 };
 
 /** POST that returns a server-sent event stream (the tutor). */

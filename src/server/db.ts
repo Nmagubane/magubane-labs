@@ -159,7 +159,90 @@ const MIGRATIONS: string[] = [
   ALTER TABLE users ADD COLUMN consent_version TEXT;
   CREATE INDEX tutor_messages_time ON tutor_messages(role, created_at);
   `,
+  /* v3: email verification, password reset, email log, app secrets */ `
+  ALTER TABLE users ADD COLUMN email_verified_at TEXT;
+  -- Accounts created before verification existed are treated as verified.
+  UPDATE users SET email_verified_at = created_at;
+  ALTER TABLE users ADD COLUMN guardian_reports_off INTEGER NOT NULL DEFAULT 0;
+
+  CREATE TABLE email_codes (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    purpose TEXT NOT NULL CHECK (purpose IN ('verify', 'reset')),
+    code_hash TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    consumed_at TEXT
+  );
+  CREATE INDEX email_codes_user ON email_codes(user_id, purpose, created_at);
+
+  CREATE TABLE email_log (
+    id TEXT PRIMARY KEY,
+    learner_id TEXT,
+    class_id TEXT,
+    recipient TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    period TEXT,
+    status TEXT NOT NULL CHECK (status IN ('sent', 'logged', 'failed')),
+    error TEXT,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX email_log_learner ON email_log(learner_id, kind, period);
+  CREATE INDEX email_log_class ON email_log(class_id, kind, period);
+
+  CREATE TABLE app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+  `,
+  /* v4: educator mode: classes, members, assignments */ `
+  ALTER TABLE users ADD COLUMN school TEXT;
+
+  CREATE TABLE classes (
+    id TEXT PRIMARY KEY,
+    teacher_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    grade INTEGER NOT NULL,
+    subject_id TEXT NOT NULL,
+    join_code TEXT NOT NULL UNIQUE,
+    weekly_reports INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL,
+    archived_at TEXT
+  );
+  CREATE INDEX classes_teacher ON classes(teacher_id);
+
+  CREATE TABLE class_members (
+    class_id TEXT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+    learner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    joined_at TEXT NOT NULL,
+    PRIMARY KEY (class_id, learner_id)
+  );
+  CREATE INDEX class_members_learner ON class_members(learner_id);
+
+  CREATE TABLE assignments (
+    id TEXT PRIMARY KEY,
+    class_id TEXT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('lesson', 'practice', 'test')),
+    skill_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    note TEXT,
+    question_count INTEGER,
+    due_at TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX assignments_class ON assignments(class_id, due_at);
+
+  ALTER TABLE activities ADD COLUMN assignment_id TEXT;
+  CREATE INDEX activities_assignment ON activities(assignment_id);
+  `,
 ];
+
+/** A per-installation secret (for signed links in emails), created on first use and kept in the database. */
+export function appSecret(db: Db): string {
+  const row = one<{ value: string }>(db, "SELECT value FROM app_settings WHERE key = 'secret'");
+  if (row) return row.value;
+  const value = randomBytes(32).toString('base64url');
+  run(db, "INSERT INTO app_settings (key, value) VALUES ('secret', ?)", value);
+  return value;
+}
 
 export type Db = DatabaseSync;
 export type Row = Record<string, string | number | null>;

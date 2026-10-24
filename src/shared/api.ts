@@ -8,7 +8,9 @@ import type { MasteryBand } from './mastery/model.ts';
 import type { RecAction } from './mastery/recommend.ts';
 import type { PlanDay, PlanAction } from './mastery/readiness.ts';
 import type { MistakeKind } from './questions/mistakes.ts';
-import type { CurriculumId, SubjectId } from './curriculum/catalogue.ts';
+import { SUBJECT_IDS, type CurriculumId, type SubjectId } from './curriculum/catalogue.ts';
+import { passwordProblem } from './password.ts';
+import type { MyAssignmentDto } from './api-teach.ts';
 import type { ResponseValue } from './questions/answer.ts';
 
 export type { QuestionPayload, ResponseValue };
@@ -17,18 +19,31 @@ export type { QuestionPayload, ResponseValue };
 
 export const PRIVACY_VERSION = '2026-10-pilot';
 
+const email = z.string().trim().toLowerCase().email('Enter a valid email address').max(120);
+const otp = z.string().trim().regex(/^\d{3}\s?\d{3}$/, 'Enter the 6-digit code');
+
 export const SignupBody = z
   .object({
+    accountType: z.enum(['learner', 'teacher']).default('learner'),
     displayName: z.string().trim().min(1, 'Tell us your name').max(40),
-    email: z.string().trim().toLowerCase().email('Enter a valid email address').max(120),
-    password: z.string().min(8, 'Use at least 8 characters').max(200),
+    email,
+    password: z.string().max(200),
     accessCode: z.string().trim().max(40).optional(),
+    classCode: z.string().trim().max(12).optional(),
+    school: z.string().trim().max(100).optional(),
     ageGroup: z.enum(['adult', 'minor'], { errorMap: () => ({ message: 'Tell us whether you are under 18' }) }),
     guardianName: z.string().trim().max(80).optional(),
     guardianEmail: z.string().trim().toLowerCase().max(120).optional(),
     consent: z.literal(true, { errorMap: () => ({ message: 'Consent is needed to create an account' }) }),
   })
   .superRefine((v, ctx) => {
+    const problem = passwordProblem(v.password, { email: v.email, name: v.displayName });
+    if (problem) ctx.addIssue({ code: 'custom', path: ['password'], message: problem });
+    if (v.accountType === 'teacher') {
+      if (v.ageGroup !== 'adult') ctx.addIssue({ code: 'custom', path: ['ageGroup'], message: 'Teacher accounts are for adults' });
+      if (!v.school) ctx.addIssue({ code: 'custom', path: ['school'], message: 'Enter your school' });
+      return;
+    }
     if (v.ageGroup !== 'minor') return;
     if (!v.guardianName) ctx.addIssue({ code: 'custom', path: ['guardianName'], message: "Enter your parent or guardian's name" });
     if (!v.guardianEmail || !z.string().email().safeParse(v.guardianEmail).success) ctx.addIssue({ code: 'custom', path: ['guardianEmail'], message: "Enter your parent or guardian's email" });
@@ -36,12 +51,25 @@ export const SignupBody = z
   });
 
 export const DeleteAccountBody = z.object({ password: z.string().min(1).max(200) });
+export const VerifyBody = z.object({ code: otp });
+export const ForgotBody = z.object({ email });
+export const ResetBody = z
+  .object({ email, code: otp, password: z.string().max(200) })
+  .superRefine((v, ctx) => {
+    const problem = passwordProblem(v.password, { email: v.email });
+    if (problem) ctx.addIssue({ code: 'custom', path: ['password'], message: problem });
+  });
+export const ChangePasswordBody = z.object({ current: z.string().min(1).max(200), next: z.string().max(200) });
+export const JoinClassBody = z.object({ code: z.string().trim().min(4).max(12) });
 
 export interface PublicConfig {
   signupMode: 'invite' | 'open' | 'closed';
   contactEmail: string | null;
   tutorEnabled: boolean;
   privacyVersion: string;
+  /** 'live' when a provider sends real email; 'log' when emails only go to the server log. */
+  emailDelivery: 'live' | 'log';
+  educatorSignup: boolean;
 }
 export const LoginBody = z.object({
   email: z.string().trim().toLowerCase().email().max(120),
@@ -54,7 +82,7 @@ export type Goal = (typeof GOALS)[number];
 export const ProfileBody = z.object({
   grade: z.number().int().min(4).max(12),
   curriculumId: z.enum(['za-caps', 'intl']),
-  subjects: z.array(z.enum(['mathematics', 'physical-sciences', 'life-sciences'])).min(1).max(3),
+  subjects: z.array(z.enum(SUBJECT_IDS)).min(1).max(4),
   goals: z.array(z.enum(GOALS)).max(5),
   dailyMinutes: z.number().int().min(10).max(180),
 });
@@ -91,7 +119,7 @@ export type AnswerRequest = z.infer<typeof AnswerBody>;
 
 export const ExamBody = z.object({
   title: z.string().trim().min(1).max(80),
-  subjectId: z.enum(['mathematics', 'physical-sciences', 'life-sciences']),
+  subjectId: z.enum(SUBJECT_IDS),
   examDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   skillIds: z.array(z.string().max(60)).min(1).max(40).optional(),
 });
@@ -113,6 +141,8 @@ export interface UserDto {
   displayName: string;
   email: string;
   role: 'student' | 'parent' | 'teacher';
+  emailVerified: boolean;
+  school?: string | null;
 }
 
 export interface ProfileDto {
@@ -279,6 +309,8 @@ export interface HomeResponse {
   recentResults: { activityId: string; title: string; kind: ActivityKind; scorePct: number; completedAt: string }[];
   exam: { id: string; title: string; examDate: string; daysLeft: number; readiness: number; confidence: 'low' | 'medium' | 'high'; highRisk: number } | null;
   week: { questions: number; accuracy: number | null; activeDays: number };
+  /** Work set by teachers in the learner's classes (added by the route). */
+  assignments?: MyAssignmentDto[];
 }
 
 export interface ProgressResponse {

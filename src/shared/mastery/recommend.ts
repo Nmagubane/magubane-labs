@@ -2,7 +2,7 @@
  * "What should I do right now?" — ranks every relevant skill and explains why, in plain words.
  * Inputs are plain data so this stays pure and testable.
  */
-import { getSkill, getTopic, skillsForLearner, type Skill, type SubjectId } from '../curriculum/catalogue.ts';
+import { SKILLS, getSkill, getTopic, skillsForLearner, type Skill, type SubjectId } from '../curriculum/catalogue.ts';
 import { band, effectiveMastery, retention, reviewDue, type MasteryBand, type SkillState } from './model.ts';
 
 export type RecAction = 'learn' | 'practice' | 'review';
@@ -52,12 +52,23 @@ function prerequisitesReady(skill: Skill, input: RecommendInput): { ready: boole
   return { ready: true, secure };
 }
 
+/**
+ * Skills worth considering: the learner's grade band, plus anything they have already started
+ * or put on an exam, even outside the band (a Grade 7 who chose to learn Grade 10 atoms keeps getting it).
+ */
+function candidates(input: Pick<RecommendInput, 'subjects' | 'grade' | 'states'> & { exam?: RecommendInput['exam'] }): Skill[] {
+  const base = skillsForLearner(input.subjects, input.grade);
+  const ids = new Set(base.map((s) => s.id));
+  const extra = SKILLS.filter((s) => !ids.has(s.id) && ((input.states.get(s.id)?.evidence ?? 0) > 0 || (input.exam?.skillIds.includes(s.id) ?? false)));
+  return [...base, ...extra];
+}
+
 /** The most specific reason leads; the exam (shown elsewhere too) comes last. */
 const withExam = (reasons: string[], exam: string | null): string[] => (exam ? [...reasons, exam] : reasons);
 
 export function recommend(input: RecommendInput): Recommendation[] {
   const { now } = input;
-  const skills = skillsForLearner(input.subjects, input.grade);
+  const skills = candidates(input);
   const examDays = input.exam ? daysUntil(input.exam.examDate, now) : null;
   const started = skills.filter((s) => (input.states.get(s.id)?.evidence ?? 0) > 0);
   const weakest = new Set(
@@ -111,7 +122,7 @@ export function recommend(input: RecommendInput): Recommendation[] {
 
 /** Started skills below Proficient, weakest first. */
 export function weakAreas(input: Pick<RecommendInput, 'states' | 'now' | 'subjects' | 'grade'>, limit = 4): { skillId: string; mastery: number }[] {
-  return skillsForLearner(input.subjects, input.grade)
+  return candidates(input)
     .filter((s) => (input.states.get(s.id)?.evidence ?? 0) > 0)
     .map((s) => ({ skillId: s.id, mastery: effectiveMastery(input.states.get(s.id), input.now) }))
     .filter((x) => x.mastery < 70)

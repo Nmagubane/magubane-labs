@@ -2,6 +2,12 @@ import type { WidgetSpec } from '../../../shared/content/types.ts';
 import { EquationBalancer } from './EquationBalancer.tsx';
 import { NumberLine, FractionBars, AreaModel, TwoPointGradient, LineExplorer, ParabolaRoots } from './MathWidgets.tsx';
 import { ForceCart, ProjectileLab, CircuitLab, AtomBuilder, ChemBalancer, CellExplorer, PunnettSquare } from './ScienceWidgets.tsx';
+import { ParticleLab, FloatTank, PhLab, ConductionRace, EnergyDrop, ParallelLab } from './PhysicalLabs.tsx';
+import { KeyExplorer, EnergyPyramid, PondweedLab, HeartPath, MitosisLab } from './LifeLabs.tsx';
+import { LivingSort, BeanLab, LifeCycleLab, StatesLab, MaterialBench, SeparationLab } from './NstLabs.tsx';
+import { SoundLab, CircuitBuilder, MoonLab, PlanetStrip, BridgeLab } from './NstLabs2.tsx';
+import { PlaceValueChart, ArrayModel, FractionOfSet, DecimalGrid, RectangleLab } from './MathLabs2.tsx';
+import { ExponentLadder, DiscriminantLab, SequencePlotter, TriangleTrig, SavingsGrowth, TangentLab } from './MathLabs3.tsx';
 
 export function Widget({ spec }: { spec: WidgetSpec }) {
   switch (spec.type) {
@@ -33,5 +39,71 @@ export function Widget({ spec }: { spec: WidgetSpec }) {
       return <CellExplorer />;
     case 'punnett':
       return <PunnettSquare parentA={spec.parentA} parentB={spec.parentB} />;
+    case 'particle-lab':
+      return <ParticleLab substance={spec.substance} />;
+    case 'float-tank':
+      return <FloatTank />;
+    case 'ph-lab':
+      return <PhLab />;
+    case 'conduction-race':
+      return <ConductionRace />;
+    case 'energy-drop':
+      return <EnergyDrop />;
+    case 'parallel-lab':
+      return <ParallelLab />;
+    case 'key-explorer':
+      return <KeyExplorer />;
+    case 'energy-pyramid':
+      return <EnergyPyramid />;
+    case 'pondweed-lab':
+      return <PondweedLab />;
+    case 'heart-path':
+      return <HeartPath />;
+    case 'mitosis-lab':
+      return <MitosisLab />;
+    case 'living-sort':
+      return <LivingSort />;
+    case 'bean-lab':
+      return <BeanLab />;
+    case 'life-cycle-lab':
+      return <LifeCycleLab />;
+    case 'states-lab':
+      return <StatesLab />;
+    case 'material-bench':
+      return <MaterialBench />;
+    case 'separation-lab':
+      return <SeparationLab />;
+    case 'sound-lab':
+      return <SoundLab />;
+    case 'circuit-builder':
+      return <CircuitBuilder />;
+    case 'moon-lab':
+      return <MoonLab />;
+    case 'planet-strip':
+      return <PlanetStrip />;
+    case 'bridge-lab':
+      return <BridgeLab />;
+    case 'place-value-chart':
+      return <PlaceValueChart start={spec.start} />;
+    case 'array-model':
+      return <ArrayModel rows={spec.rows} cols={spec.cols} />;
+    case 'fraction-of-set':
+      return <FractionOfSet />;
+    case 'decimal-grid':
+      return <DecimalGrid />;
+    case 'rectangle-lab':
+      return <RectangleLab target={spec.target} />;
+    case 'exponent-ladder':
+      return <ExponentLadder />;
+    case 'discriminant-lab':
+      return <DiscriminantLab />;
+    case 'sequence-plotter':
+      return <SequencePlotter />;
+    case 'triangle-trig':
+      return <TriangleTrig />;
+    case 'savings-growth':
+      return <SavingsGrowth />;
+    case 'tangent-lab':
+      return <TangentLab />;
   }
 }

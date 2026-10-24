@@ -36,3 +36,19 @@ services:
         value: "40"
       - key: TUTOR_GLOBAL_DAILY_LIMIT # messages across the whole site per 24 hours
         value: "600"
+      - key: TZ # streaks, "today" and weekly reports run on South African time
+        value: Africa/Johannesburg
+      - key: EDUCATOR_CODES # comma-separated codes that unlock teacher sign-up, e.g. TEACH-IKUSASA. Keep them private.
+        sync: false
+      - key: EMAIL_PROVIDER # brevo or resend. Without it, sign-up codes only appear in the server log.
+        value: brevo
+      - key: EMAIL_API_KEY # from your Brevo or Resend dashboard
+        sync: false
+      - key: EMAIL_FROM # a sender address you have verified with the provider
+        sync: false
+      - key: EMAIL_FROM_NAME
+        value: Magubane Labs
+      - key: REPORT_DAY # weekly guardian/teacher reports: 0 = Sunday
+        value: "0"
+      - key: REPORT_HOUR # hour of the day, South African time
+        value: "17"

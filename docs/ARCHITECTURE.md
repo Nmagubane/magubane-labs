@@ -4,7 +4,9 @@ Short, opinionated, and kept current. If the code and this file disagree, fix on
 
 ## 1. Who the MVP is for
 
-**Grades 7–10, South Africa (CAPS) first.** The decision between Mathematics and Mathematical Literacy happens at the end of Grade 9. The MVP's content sits on either side of that decision: number sense, fractions, algebra, equations, functions (Maths) and the first Physical Sciences / Life Sciences ideas a Grade 10 learner meets. Learners outside that range can sign up; the catalogue tells them honestly how much content exists for their grade.
+**Grades 4–12, South Africa (CAPS) first.** The decision between Mathematics and Mathematical Literacy happens at the end of Grade 9, but the confidence that drives it is built (or lost) from Grade 4. Content runs from place value and Natural Sciences & Technology (Grades 4–6) through Grades 7–10 algebra and science to Grade 12 calculus and finance. Each learner works in a grade band (`skillsForLearner`: grade − 4 to grade + 1); Learn shows that band first and lets curious learners look ahead.
+
+Grade 4–6 science is mostly concept checks: its question generators draw on curated fact pools (the test suite accepts at least 3 distinct prompts per level for Natural Sciences & Technology, 10 for everything else). The labs carry the engagement: sorting, growing, building and testing, with feedback in words.
 
 ## 2. The learning loop (the product)
 
@@ -67,9 +69,11 @@ Each learner has a rating θ per skill. Each question has a difficulty level fro
 `readiness = mean over exam skills of (mastery × confidence + 0.3 × (1 − confidence))`. Confidence is `min(1, evidence / 8)`: an unassessed skill counts as "probably not ready", never as 0 or 100. The study plan is rebuilt from current mastery every time it's viewed, so it adapts automatically.
 
 ### Data model (SQLite, see `src/server/db.ts`)
-`users`, `sessions` (hashed tokens), `learner_profiles`, `skill_states` (θ, evidence, last practised), `activities` (lesson/practice/test/baseline; mode learning|assessment), `question_instances` (render payload + secret answer + misconceptions), `responses` (score, hints, time, confidence, mistake code, θ before/after), `mastery_snapshots` (daily, for trends), `lesson_progress`, `exams`, `tutor_conversations`, `tutor_messages`.
+`users`, `sessions` (hashed tokens), `learner_profiles`, `skill_states` (θ, evidence, last practised), `activities` (lesson/practice/test/baseline; mode learning|assessment), `question_instances` (render payload + secret answer + misconceptions), `responses` (score, hints, time, confidence, mistake code, θ before/after), `mastery_snapshots` (daily, for trends), `lesson_progress`, `exams`, `tutor_conversations`, `tutor_messages`, `email_codes` (HMAC-hashed 6-digit codes: 10-minute expiry, 5 attempts), `email_log` (one weekly report per recipient per period), `classes`, `class_members`, `assignments` (`activities.assignment_id` links work to an assignment).
 
-Parents/teachers: `users.role` exists. Every learner-data query is scoped to the session user today. `canAccessLearner(viewer, learnerId)` in `src/server/auth.ts` is the single place to extend when guardianships and classes arrive; route those reads through it then. We don't need those tables yet.
+**Educator mode.** Teachers (`users.role = 'teacher'`, sign-up gated by `EDUCATOR_CODES`) own classes; learners join with a class code. `canAccessLearner(viewer, learnerId)` in `src/server/auth.ts` is the single access rule: the learner themself, or a verified teacher of an active class the learner belongs to. Every teacher read of learner data goes through it. An assignment counts as done when the learner completes it through the assignment, or completes the same kind of work on that skill after it was set.
+
+**Email and reports.** `src/server/mailer.ts` sends through Brevo or Resend over HTTPS, or logs to the console when no provider is set. Reports are PDFs drawn by a small hand-written writer (`src/server/pdf.ts`, standard Helvetica, no dependency). `startReportScheduler` checks every 15 minutes and sends weekly reports at `REPORT_DAY`/`REPORT_HOUR` South African time; guardians unsubscribe through an HMAC-signed link.
 
 ## 5. Design language — "study desk"
 
@@ -99,7 +103,8 @@ Mastery ramp: grey (not started) → pen tints (learning, developing, proficient
 - Cards everywhere was replaced by sheets plus typography. Lists are lists, not card grids.
 
 ## 6. Not built yet (on purpose)
-- Parent and teacher dashboards. The access function and role are ready.
+- A separate guardian login. Guardians get weekly PDF reports by email today; a guardian dashboard would reuse `canAccessLearner`.
+- School-level admin (many teachers, one school) and sponsor/impact dashboards.
 - Matching, ordering and diagram-labelling question types. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), root sets, coefficients, multiple choice.
 - Image questions to the tutor, and oral explanation assessments.
 - Career pathways ("I want to be an engineer").
@@ -107,6 +112,7 @@ Mastery ramp: grey (not started) → pen tints (learning, developing, proficient
 
 ## 7. Before real children use it
 - **POPIA:** under-18s need consent from a competent person (a parent). That means a parental consent flow, a privacy notice, a retention policy and a choice of hosting region.
+- Guardian and teacher email addresses go to the email provider (Brevo or Resend). Sign a data processing agreement with them too.
 - The tutor sends learner messages to the Anthropic API. It sends grade and skill context only, never names or emails. You need a data processing agreement and a policy for what gets logged.
 - Curriculum mappings in `src/shared/curriculum/catalogue.ts` are **provisional** (grade + strand only). Verify them against the CAPS documents before claiming alignment.
 - Move from SQLite to Postgres when you deploy more than one server instance.

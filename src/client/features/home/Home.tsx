@@ -6,6 +6,7 @@ import { greeting, relativeDay, inDays, plural, BAND_LABEL, clock } from '../../
 import { Button, ButtonLink, MasteryBar, Mark, Loading, ErrorState, BandDot } from '../../ui/primitives.tsx';
 import { Tex } from '../../ui/RichText.tsx';
 import type { HomeResponse, ActivityDto, RecommendationDto } from '../../../shared/api.ts';
+import { Assignments } from './Assignments.tsx';
 
 const ACTION_LABEL: Record<RecommendationDto['action'], string> = { learn: 'Learn', practice: 'Practise', review: 'Review' };
 
@@ -74,6 +75,8 @@ export function Home() {
           </ButtonLink>
         </div>
       ) : null}
+
+      {data.assignments?.length ? <Assignments items={data.assignments} /> : null}
 
       {p ? (
         <section className="priority graph-paper" aria-labelledby="priority-title">

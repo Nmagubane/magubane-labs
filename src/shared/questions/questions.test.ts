@@ -6,7 +6,7 @@ import { gradeResponse, parseNumber, canonicalResponse } from './answer.ts';
 import { parseExpression, isFactorisedForm, isExpandedForm, expressionsEquivalent } from './expr.ts';
 import { DIFFICULTIES, type AnswerSpec } from './types.ts';
 import { MISTAKES } from './mistakes.ts';
-import { SKILLS } from '../curriculum/catalogue.ts';
+import { SKILLS, subjectOfSkill } from '../curriculum/catalogue.ts';
 
 const canonical = canonicalResponse;
 
@@ -56,6 +56,9 @@ test('numbers: decimal comma, fractions, mixed numbers', () => {
   assert.equal(parseNumber('x = 7')?.value, 7);
   assert.equal(parseNumber('−4')?.value, -4);
   assert.equal(parseNumber('abc'), null);
+  assert.equal(parseNumber('4 725')?.value, 4725);
+  assert.equal(parseNumber('1 250 000,5')?.value, 1250000.5);
+  assert.equal(parseNumber('1 1/2')?.value, 1.5);
 });
 
 test('grading: equivalent fractions, simplest form, misconceptions', () => {
@@ -114,7 +117,12 @@ for (const template of TEMPLATES) {
         }
         prompts.add(q.prompt + JSON.stringify(q.figure ?? null));
       }
-      const minUnique = template.id === 'balancing-equations' ? 3 : template.id === 'cell-structure' ? 4 : ['atomic-structure', 'monohybrid-crosses'].includes(template.id) ? 8 : 10;
+      // Fact-based skills draw from finite pools (there are only 9 steps in the path of blood); parametric ones must vary more.
+      const FACT_POOLS: Record<string, number> = { 'balancing-equations': 3, 'cell-structure': 4, 'heat-transfer': 6, 'body-systems': 8, 'atomic-structure': 8, 'monohybrid-crosses': 8 };
+      // Natural Sciences & Technology (Gr 4–6) is mostly fact-based concept checks: each level draws on a curated pool.
+      const skill = SKILLS.find((s) => s.id === template.skillId);
+      const nst = !!skill && subjectOfSkill(skill) === 'natural-sciences';
+      const minUnique = FACT_POOLS[template.id] ?? (nst ? 3 : 10);
       assert.ok(prompts.size >= minUnique, `${template.id} L${level}: only ${prompts.size} distinct questions`);
     }
   });

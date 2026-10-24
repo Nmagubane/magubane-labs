@@ -54,6 +54,9 @@ export class Router {
   delete(path: string, h: Handler) {
     this.on('DELETE', path, h);
   }
+  patch(path: string, h: Handler) {
+    this.on('PATCH', path, h);
+  }
 
   match(method: string, pathname: string): { handler: Handler; params: Record<string, string> } | 'method' | null {
     const segs = pathname.split('/').filter(Boolean);

@@ -32,6 +32,26 @@ export const config = {
   trustProxy: env.TRUST_PROXY === '1' || env.TRUST_PROXY === 'true',
   /** Shown on the privacy page for access and deletion requests. */
   contactEmail: env.CONTACT_EMAIL?.trim() || null,
+  /** Codes that let someone create a teacher (educator) account. Never the same as learner invite codes. */
+  educatorCodes: (env.EDUCATOR_CODES ?? '')
+    .split(',')
+    .map((c) => c.trim().toUpperCase())
+    .filter(Boolean),
+  /** Public address of the site, for links in emails. Render sets RENDER_EXTERNAL_URL automatically. */
+  publicUrl: (env.PUBLIC_URL ?? env.RENDER_EXTERNAL_URL ?? `http://localhost:${env.PORT ?? 5174}`).replace(/\/$/, ''),
+  /** Email delivery: 'brevo' or 'resend' with EMAIL_API_KEY; anything else logs emails to the console instead. */
+  email: {
+    provider: (['brevo', 'resend'].includes(env.EMAIL_PROVIDER?.trim().toLowerCase() ?? '') && env.EMAIL_API_KEY?.trim() ? env.EMAIL_PROVIDER!.trim().toLowerCase() : 'log') as 'brevo' | 'resend' | 'log',
+    apiKey: env.EMAIL_API_KEY?.trim() || null,
+    from: env.EMAIL_FROM?.trim() || 'no-reply@magubanelabs.local',
+    fromName: env.EMAIL_FROM_NAME?.trim() || 'Magubane Labs',
+    /** Tests point this at a local fake. */
+    apiBase: env.EMAIL_API_BASE?.replace(/\/$/, '') || null,
+  },
+  /** Weekly progress reports: day 0 = Sunday, hour in South African time. */
+  reportDay: Number(env.REPORT_DAY ?? 0),
+  reportHour: Number(env.REPORT_HOUR ?? 17),
+  reportsEnabled: env.REPORTS_ENABLED !== '0',
 };
 
 /** The server's clock. Only the demo seeder moves it (to build realistic history); nothing else should. */

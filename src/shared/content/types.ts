@@ -15,7 +15,43 @@ export type WidgetSpec =
   | { type: 'atom-builder'; protons: number; neutrons: number; electrons: number }
   | { type: 'chem-balancer'; level: Difficulty; index: number }
   | { type: 'cell-explorer' }
-  | { type: 'punnett'; parentA: string; parentB: string };
+  | { type: 'punnett'; parentA: string; parentB: string }
+  | { type: 'particle-lab'; substance: string }
+  | { type: 'float-tank' }
+  | { type: 'ph-lab' }
+  | { type: 'conduction-race' }
+  | { type: 'energy-drop' }
+  | { type: 'parallel-lab' }
+  | { type: 'key-explorer' }
+  | { type: 'energy-pyramid' }
+  | { type: 'pondweed-lab' }
+  | { type: 'heart-path' }
+  | { type: 'mitosis-lab' }
+  // Natural Sciences & Technology, Grades 4–6
+  | { type: 'living-sort' }
+  | { type: 'bean-lab' }
+  | { type: 'life-cycle-lab' }
+  | { type: 'states-lab' }
+  | { type: 'material-bench' }
+  | { type: 'separation-lab' }
+  | { type: 'sound-lab' }
+  | { type: 'circuit-builder' }
+  | { type: 'moon-lab' }
+  | { type: 'planet-strip' }
+  | { type: 'bridge-lab' }
+  // Mathematics, Grades 4–6
+  | { type: 'place-value-chart'; start: number }
+  | { type: 'array-model'; rows: number; cols: number }
+  | { type: 'fraction-of-set' }
+  | { type: 'decimal-grid' }
+  | { type: 'rectangle-lab'; target: number }
+  // Mathematics, Grades 10–12
+  | { type: 'exponent-ladder' }
+  | { type: 'discriminant-lab' }
+  | { type: 'sequence-plotter' }
+  | { type: 'triangle-trig' }
+  | { type: 'savings-growth' }
+  | { type: 'tangent-lab' };
 
 export type LessonBlock =
   | { kind: 'text'; body: RichText }

@@ -198,7 +198,7 @@ export function activeAssessment(db: Db, userId: string): ActivityRow | null {
   return null;
 }
 
-export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest): ActivityDto {
+export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest, opts: { assignmentId?: string; title?: string } = {}): ActivityDto {
   const profile = getProfile(db, user.id);
   if (!profile) throw new HttpError(409, 'not_onboarded', 'Finish setting up your profile first.');
   const at = now();
@@ -276,6 +276,7 @@ export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest
     }
   }
   if (!skills.length) throw new HttpError(422, 'nothing_to_do', 'There are no skills to work on yet. Start with a lesson.');
+  if (opts.title) title = opts.title;
 
   const activity: ActivityRow = {
     id: newId('act'),
@@ -296,8 +297,8 @@ export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest
   tx(db, () => {
     run(
       db,
-      `INSERT INTO activities (id, user_id, kind, mode, status, title, skill_ids, target_count, time_limit_sec, difficulty_offset, started_at)
-       VALUES (?, ?, ?, ?, 'in_progress', ?, ?, ?, ?, 0, ?)`,
+      `INSERT INTO activities (id, user_id, kind, mode, status, title, skill_ids, target_count, time_limit_sec, difficulty_offset, started_at, assignment_id)
+       VALUES (?, ?, ?, ?, 'in_progress', ?, ?, ?, ?, 0, ?, ?)`,
       activity.id,
       user.id,
       activity.kind,
@@ -307,6 +308,7 @@ export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest
       activity.target_count,
       activity.time_limit_sec,
       activity.started_at,
+      opts.assignmentId ?? null,
     );
     if (mode === 'assessment') {
       const plan = assessmentPlan(skills, target, kind === 'baseline', profile.grade, states);
