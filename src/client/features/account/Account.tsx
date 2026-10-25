@@ -253,10 +253,12 @@ function MyClasses() {
       )}
       <p className="muted small">Your teacher sees your mastery, results and common mistakes. Your tutor conversations stay private.</p>
       <form onSubmit={join} className="form join-form" noValidate>
-        <TextInput label="Class code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} autoComplete="off" className="code-input" />
-        <Button type="submit" variant="secondary" busy={busy} disabled={code.trim().length < 4}>
-          Join class
-        </Button>
+        <div className="flex flex-1 gap-2">
+          <TextInput label="Class code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} autoComplete="off" className="code-input" />
+          <Button type="submit" variant="secondary" busy={busy} disabled={code.trim().length < 4}>
+            Join class
+          </Button>
+        </div>
       </form>
       {msg ? (
         <p className={msg.ok ? 'note note-ok' : 'form-error'} role={msg.ok ? 'status' : 'alert'}>
