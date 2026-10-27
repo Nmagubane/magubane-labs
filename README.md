@@ -2,7 +2,7 @@
 
 **Build the minds that build the future.**
 
-An interactive mathematics and science learning platform for South African learners in Grades 4 to 12, with an educator mode for teachers.
+An interactive mathematics and science learning platform for South African learners in Grades 4 to 12, a Junior experience for Grades 1 to 3 (maths, reading, English and life skills, read aloud), and an educator mode for teachers.
 
 > sign up → email code → onboarding → baseline check → Home ("do this next") → lesson with labs → adaptive practice with hints, feedback and mistake diagnosis → timed test (tutor locked) → results with biggest opportunity → progress and exam readiness → AI tutor
 
@@ -22,9 +22,17 @@ Demo logins after `npm run seed:demo`:
 | Who | Email | Password |
 |---|---|---|
 | Learner (Lerato, Grade 10, 30 days of history) | `demo@magubane.local` | `Learn-maths-daily-1` |
-| Teacher (Mr Khumalo, classes 10A and 9B) | `teacher@magubane.local` | `Teach-maths-2026!` |
+| Teacher (Mr Khumalo, classes 10A, 9B and Grade 2 class 2B Bontle) | `teacher@magubane.local` | `Teach-maths-2026!` |
+| Parent (Nomvula, children Thandi in Grade 1 and Sizwe in Grade 3) | `family@magubane.local` | `Family-learning-1` |
 
 Class codes `DEMO10` and `DEMO9B` let a new learner join a demo class.
+
+**To try Junior:**
+1. Sign in as the parent and go to *Your children*.
+2. Press **Set up this device for my children**, then **Hand this device to a child**.
+3. Tap Thandi, then lion, sun, car. Sizwe's pictures are tree, ball, moon.
+
+Use Chrome or Edge to hear the voice.
 
 In development, sign-up codes, password-reset codes and weekly reports are printed in the server terminal instead of being emailed.
 
@@ -33,7 +41,7 @@ In development, sign-up codes, password-reset codes and weekly reports are print
 | Command | What it does |
 |---|---|
 | `npm run dev` | Client rebuilds on save (refresh the browser); server restarts on save |
-| `npm test` | 74 tests: every question generator (5 levels × 250 seeds, all self-checked and KaTeX-rendered), the mastery model, lesson content, and the full loop over HTTP, including email codes, password rules, educator access rules and PDF reports |
+| `npm test` | 194 tests: every question generator (Grades 4–12: 5 levels × 250 seeds, self-checked and KaTeX-rendered; Grades 1–3: 112 templates × 5 levels × 200 seeds), the mastery model, lesson content, and the full loop over HTTP, including email codes, password rules, educator access rules, picture sign-in and PDF reports |
 | `npm run typecheck` | Strict TypeScript across client, server and shared code |
 | `npm run build` then `npm start` | Production build and server |
 
@@ -71,6 +79,12 @@ Sign-up is **invite-only** in production. Under-18s must give a parent or guardi
 - **Mastery per skill**: an explainable rating model with forgetting and review due dates. Mastered needs evidence, not one lucky answer.
 - **Assessment integrity by construction**: answers never reach the browser before you respond. In test mode there are no hints and no feedback, and the tutor is locked server-side until you submit.
 - **Exam readiness**: an honest score (untested topics count as "probably not ready") and a day-by-day plan that rebuilds from current mastery every time you open it.
+
+### Junior (Grades 1–3)
+
+Parents sign up at `/signup/parent` (same invite codes as learners) and add their children. Teachers create a Grade 1, 2 or 3 class and add children there. Children sign in at `/junior` by tapping their name and 3 pictures, **only on a device an adult has set up**. Everything is read aloud with the device's own voice.
+
+All 11 official languages can be chosen as a child's home language. Only English content is live today. For any other language the child gets English instructions, English First Additional Language, Maths and Life Skills until a reviewed pack for their language exists. The details are in docs/ARCHITECTURE.md §8.
 
 ## Project layout
 

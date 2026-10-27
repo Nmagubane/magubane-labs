@@ -6,6 +6,7 @@ import { Button, Loading, ErrorState, MasteryBar } from '../../ui/primitives.tsx
 import { Icon } from '../../ui/Icon.tsx';
 import { relativeDay, shortDate } from '../../lib/format.ts';
 import type { TeacherLearnerDto, ReportSentDto } from '../../../shared/api-teach.ts';
+import { ChildOverview } from '../family/ChildOverview.tsx';
 
 export function TeacherLearner({ id }: { id: string }) {
   const { data, error, loading, reload } = useResource<TeacherLearnerDto>(`/api/teach/learners/${id}`);
@@ -16,6 +17,8 @@ export function TeacherLearner({ id }: { id: string }) {
   if (error && !data) return <ErrorState error={error} onRetry={() => void reload()} />;
   if (!data) return null;
   const { learner, progress: p } = data;
+  // Grades 1–3: the child view (what next, how to help, picture code, things to do together).
+  if (learner.grade !== null && learner.grade <= 3) return <ChildOverview id={id} backTo="/teach" backLabel="Classes" />;
 
   const send = async () => {
     setBusy(true);

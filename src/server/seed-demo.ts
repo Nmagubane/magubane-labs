@@ -6,6 +6,7 @@
  *   npm run seed:demo
  *     learner:  demo@magubane.local     / Learn-maths-daily-1
  *     teacher:  teacher@magubane.local  / Teach-maths-2026!
+ *     parent:   family@magubane.local   / Family-learning-1   (Grades 1 and 3, picture sign-in)
  */
 import { randomInt } from 'node:crypto';
 import { config, setClock } from './config.ts';
@@ -14,14 +15,18 @@ import { createUser, deleteUser } from './auth.ts';
 import { saveProfile } from './learner.ts';
 import { createActivity, nextQuestion, answerQuestion, submitActivity, getActivityState } from './activities.ts';
 import { createExam } from './insights.ts';
+import { createChild, juniorHome, logCard } from './junior.ts';
+import { getUser } from './auth.ts';
 import { canonicalResponse, type ResponseValue } from '../shared/questions/answer.ts';
 import type { AnswerSpec, Difficulty } from '../shared/questions/types.ts';
 import { pCorrect } from '../shared/mastery/model.ts';
 import type { UserDto } from '../shared/api.ts';
 import type { SubjectId } from '../shared/curriculum/catalogue.ts';
+import type { ClassSubjectId } from '../shared/api-teach.ts';
 
 const LEARNER = { email: 'demo@magubane.local', password: 'Learn-maths-daily-1' };
 const TEACHER = { email: 'teacher@magubane.local', password: 'Teach-maths-2026!' };
+const PARENT = { email: 'family@magubane.local', password: 'Family-learning-1' };
 
 const db = openDb(config.databasePath);
 
@@ -51,6 +56,14 @@ function wrongResponse(answer: AnswerSpec, misconceptions: { answer: AnswerSpec 
       return answer.values.map((v) => String(v + 1));
     case 'choice':
       return 'wrong';
+    case 'set':
+      return answer.ids.slice(1).length ? answer.ids.slice(1) : ['wrong'];
+    case 'sequence':
+      return answer.ids.slice().reverse();
+    case 'groups':
+      return Object.keys(answer.pairs).map((k) => `${k}=wrong`);
+    case 'text':
+      return `${answer.value}x`;
   }
 }
 
@@ -138,7 +151,7 @@ class Sim {
 // The teacher and classes (created 35 days ago).
 setClock(dayAt(35, 8));
 const teacher = createUser(db, { email: TEACHER.email, password: TEACHER.password, displayName: 'Mr Sipho Khumalo', role: 'teacher', school: 'Ikusasa Secondary School', verified: true, consentVersion: '2026-10-pilot' });
-function makeClass(name: string, grade: number, subjectId: SubjectId, code: string): string {
+function makeClass(name: string, grade: number, subjectId: ClassSubjectId, code: string): string {
   const id = newId('cls');
   run(db, 'INSERT INTO classes (id, teacher_id, name, grade, subject_id, join_code, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', id, teacher.id, name, grade, subjectId, code, dayAt(35, 8).toISOString());
   return id;
@@ -233,8 +246,41 @@ classmates(science9, 9, ['physical-sciences', 'life-sciences'], ['states-of-matt
   { name: 'Kgothatso Molefe', minor: true, level: 0.5, activeDays: [15, 11, 6] },
 ], 'density', sciTask);
 
+// ---------------------------------------------------------------------------
+// Grades 1–3: a family and a Grade 2 class. Children play 5-question sets of whatever their Home
+// screen suggests, exactly as the Junior player does.
+function juniorWeeks(child: UserDto, level: number, days: number[]) {
+  const sim = new Sim(child, {}, level);
+  for (const [k, d] of days.entries()) {
+    setClock(dayAt(d, 15));
+    const worlds = juniorHome(db, child).worlds;
+    const w = worlds[k % worlds.length];
+    if (w?.next) sim.practice(d, 15 + (k % 3), w.next.skillId, 5);
+  }
+}
+
+setClock(dayAt(24, 18));
+const parent = createUser(db, { email: PARENT.email, password: PARENT.password, displayName: 'Nomvula Dube', role: 'parent', verified: true, consentVersion: '2026-10-pilot' });
+const thandi = createChild(db, parent, { name: 'Thandi', grade: 1, homeLanguage: 'en', pictureCode: ['lion', 'sun', 'car'], consent: true });
+const sizwe = createChild(db, parent, { name: 'Sizwe', grade: 3, homeLanguage: 'zu', pictureCode: ['tree', 'ball', 'moon'], consent: true });
+juniorWeeks(getUser(db, thandi.child.id) as UserDto, 0.3, [23, 22, 20, 18, 16, 15, 13, 11, 9, 8, 6, 4, 3, 2, 1]);
+juniorWeeks(getUser(db, sizwe.child.id) as UserDto, -0.2, [22, 19, 15, 12, 8, 5, 2]);
+setClock(dayAt(5, 18));
+logCard(db, parent, thandi.child.id, 'animal-walks');
+setClock(dayAt(2, 18));
+logCard(db, parent, sizwe.child.id, 'clap-patterns');
+
+const grade2 = makeClass('2B Bontle', 2, 'all', 'DEMO2B');
+for (const [i, kid] of ([['Amahle', 'en', 0.6], ['Kamogelo', 'tn', -0.3], ['Lethabo', 'nso', 0.1], ['Mihlali', 'xh', -0.8], ['Neo', 'st', 1.0]] as const).entries()) {
+  setClock(dayAt(20, 9));
+  const c = createChild(db, teacher, { name: kid[0], grade: 2, homeLanguage: kid[1], consent: true }, { classId: grade2 });
+  juniorWeeks(getUser(db, c.child.id) as UserDto, kid[2], [19, 16, 12, 9, 5, 2].filter((_, k) => (k + i) % 4 !== 3));
+}
+
 setClock(null);
 console.log(`Demo data ready (database: ${config.databasePath})`);
 console.log(`  Learner: ${LEARNER.email} / ${LEARNER.password}`);
-console.log(`  Teacher: ${TEACHER.email} / ${TEACHER.password}  (classes 10A Mathematics, 9B Natural Sciences)`);
+console.log(`  Teacher: ${TEACHER.email} / ${TEACHER.password}  (classes 10A Mathematics, 9B Natural Sciences, 2B Bontle)`);
+console.log(`  Parent:  ${PARENT.email} / ${PARENT.password}  (Thandi: lion, sun, car; Sizwe: tree, ball, moon)`);
+console.log('  Children sign in at /junior on a device an adult has set up (Your children → Set up this device).');
 db.close();

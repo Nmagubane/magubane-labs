@@ -89,7 +89,8 @@ test('every skill has a template and every template a skill', () => {
   for (const t of TEMPLATES) assert.ok(SKILLS.some((s) => s.id === t.skillId), `template ${t.id} → unknown skill`);
 });
 
-for (const template of TEMPLATES) {
+// Foundation Phase (Junior) templates have their own, stricter suite: src/shared/junior/junior.test.ts.
+for (const template of TEMPLATES.filter((t) => SKILLS.find((s) => s.id === t.skillId)?.phase !== 'foundation')) {
   test(`generator ${template.id}: 5 levels × 250 seeds are self-consistent and render`, () => {
     for (const level of DIFFICULTIES) {
       const prompts = new Set<string>();

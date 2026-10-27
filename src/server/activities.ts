@@ -12,13 +12,14 @@ import { getProfile, getState, getStates, saveState, localDay } from './learner.
 import type { UserDto, ActivityDto, ActivityStateResponse, AnswerResponse, CreateActivityRequest, FeedbackDto, MistakeDto, PracticeItem, ResultsDto, ReviewItem, AnswerRequest } from '../shared/api.ts';
 import { getSkill, getTopic, skillsInTopic, skillsForLearner, subjectOfSkill, type Skill } from '../shared/curriculum/catalogue.ts';
 import { generateQuestion } from '../shared/questions/registry.ts';
-import { gradeResponse, type ResponseValue } from '../shared/questions/answer.ts';
+import { gradeResponse, canonicalResponse, type ResponseValue } from '../shared/questions/answer.ts';
 import type { AnswerSpec, Difficulty, Misconception, QuestionPayload, RichText } from '../shared/questions/types.ts';
 import { mistakeInfo } from '../shared/questions/mistakes.ts';
 import { answerScore, chooseLevel, effectiveMastery, masteryPercent, pCorrect, updateRating, band } from '../shared/mastery/model.ts';
 import { weakAreas, recommend } from '../shared/mastery/recommend.ts';
 import { lessonsCompleted, recentMistakes } from './learner.ts';
 import { getLesson } from '../shared/content/lessons.ts';
+import { instructionLanguage } from '../shared/junior/languages.ts';
 
 interface ActivityRow {
   id: string;
@@ -124,14 +125,22 @@ function mistakeDto(code: string | null): MistakeDto | null {
   return info ? { code, label: info.label, kind: info.kind, tip: info.tip } : null;
 }
 
+/** The language a learner's questions are written and spoken in. */
+export function questionLanguage(db: Db, userId: string): string {
+  const p = getProfile(db, userId);
+  return p?.homeLanguage ? instructionLanguage(p.homeLanguage) : 'en';
+}
+
 function createQuestion(db: Db, activity: ActivityRow, skill: Skill, level: Difficulty, position: number): QuestionRow {
   const seed = randomInt(1, 2 ** 31 - 1);
-  const g = generateQuestion(skill.templateId, seed, level);
+  const g = generateQuestion(skill.templateId, seed, level, { lang: questionLanguage(db, activity.user_id) });
   const payload: Omit<QuestionPayload, 'id'> = {
     skillId: skill.id,
     difficulty: level,
     prompt: g.prompt,
     ...(g.figure ? { figure: g.figure } : {}),
+    ...(g.scene ? { scene: g.scene } : {}),
+    ...(g.say ? { say: g.say } : {}),
     input: g.input,
     hintsAvailable: activity.mode === 'learning' ? g.hints.length : 0,
   };
@@ -367,6 +376,8 @@ function feedbackFrom(q: QuestionRow, r: ResponseRow, secret: Secret): FeedbackD
     mistake: mistakeDto(r.mistake_code),
     feedback: r.feedback,
     answerDisplay: secret.answerDisplay,
+    // Only ever built after the learner has responded: lets the screen show the right answer in place.
+    correctResponse: canonicalResponse(secret.answer),
     solution: secret.solution,
     masteryBefore: r.rating_before === null ? 0 : masteryPercent(r.rating_before),
     masteryAfter: r.rating_after === null ? 0 : masteryPercent(r.rating_after),
@@ -463,6 +474,8 @@ export function takeHint(db: Db, user: UserDto, questionId: string): { hint: Ric
 function grade(q: QuestionRow, secret: Secret, response: ResponseValue, ratingBefore: number) {
   const g = gradeResponse(secret.answer, response, secret.misconceptions);
   let mistake = g.mistake ?? null;
+  // Junior sorting and ordering: name the kind of slip so adults see "sorted into the wrong group", not nothing.
+  if (!g.correct && !mistake && g.wrongIds) mistake = secret.answer.kind === 'sequence' ? 'fp-order' : 'fp-sort';
   if (!g.correct && !mistake && !g.parseError && pCorrect(ratingBefore, q.difficulty as Difficulty) > 0.8) mistake = 'probable-slip';
   return { ...g, mistake };
 }
@@ -511,6 +524,7 @@ export function answerQuestion(db: Db, user: UserDto, questionId: string, body: 
     const st = getState(db, user.id, q.skill_id);
     fb.band = band(st, at);
     fb.masteryAfter = effectiveMastery(st, at);
+    if (g.wrongIds?.length) fb.wrongIds = g.wrongIds;
     return { feedback: fb, saved: true, answered, done: a.kind === 'practice' && answered >= a.target_count };
   }
 

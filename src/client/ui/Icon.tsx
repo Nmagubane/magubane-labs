@@ -29,6 +29,13 @@ const PATHS: Record<string, string> = {
   present: 'M3.5 4.5h17v11h-17zM12 15.5V20M8 20h8',
   report: 'M6 3h9l4 4v14H6zM14.5 3v4.5H19M9 12h7M9 15.5h7M9 9h3',
   next: 'M9.5 6l6 6-6 6',
+  speaker: 'M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11',
+  mute: 'M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9.5l5 5M21 9.5l-5 5',
+  play: 'M8 5.5v13l10.5-6.5z',
+  family: 'M7.5 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM16.5 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM2.5 20c.6-3.5 2.6-5.5 5-5.5s4.4 2 5 5.5M12.5 20c.5-2.8 2-4.5 4-4.5s3.5 1.7 4 4.5',
+  tablet: 'M6.5 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM10.5 18h3',
+  undo: 'M9 7 4.5 11.5 9 16M5 11.5h9a5 5 0 0 1 0 10h-2',
+  print: 'M7 8V3.5h10V8M7 17H4.5V9.5h15V17H17M7 14h10v6.5H7z',
 };
 
 export type IconName = keyof typeof PATHS;

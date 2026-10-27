@@ -6,6 +6,9 @@ import { Button, Loading, ErrorState, Segmented, BandDot, Empty } from '../../ui
 import { Icon } from '../../ui/Icon.tsx';
 import { relativeDay, shortDate, BAND_LABEL } from '../../lib/format.ts';
 import { AssignForm } from './AssignForm.tsx';
+import { AddChildForm, PictureCode } from '../family/ChildBits.tsx';
+import { DevicePanel } from '../family/FamilyHome.tsx';
+import type { CreatedChildDto } from '../../../shared/api-junior.ts';
 import type { ClassDetailDto, ClassLearnerDto, ReportSentDto } from '../../../shared/api-teach.ts';
 
 type Tab = 'overview' | 'learners' | 'work' | 'settings';
@@ -42,12 +45,13 @@ export function ClassPage({ id }: { id: string }) {
             {c.subjectName}, Grade {c.grade}. {c.learnerCount} {c.learnerCount === 1 ? 'learner' : 'learners'}, {c.activeThisWeek} active this week.
           </p>
         </div>
-        <JoinCode code={c.joinCode} />
+        {c.grade > 3 ? <JoinCode code={c.joinCode} /> : null}
       </header>
+      {c.grade <= 3 ? <FoundationChildren classId={c.id} grade={c.grade} onChange={() => void reload()} /> : null}
 
       <Segmented label="Class view" value={tab} onChange={setTab} options={[{ value: 'overview', label: 'Overview' }, { value: 'learners', label: 'Learners' }, { value: 'work', label: 'Assignments' }, { value: 'settings', label: 'Reports & settings' }]} />
 
-      {!data.learners.length && tab !== 'settings' ? (
+      {!data.learners.length && tab !== 'settings' && c.grade <= 3 ? null : !data.learners.length && tab !== 'settings' ? (
         <section className="sheet">
           <Empty title="No learners yet">
             Share the class code <strong className="num">{c.joinCode}</strong>. Learners enter it when they sign up, or under &ldquo;Your account&rdquo; if they already have an account.
@@ -62,6 +66,60 @@ export function ClassPage({ id }: { id: string }) {
       ) : null}
       {tab === 'settings' ? <Settings d={data} onChange={() => void reload()} /> : null}
     </div>
+  );
+}
+
+/** Grades 1–3: children are added by the teacher and sign in with pictures on a class device. */
+function FoundationChildren({ classId, grade, onChange }: { classId: string; grade: number; onChange: () => void }) {
+  const [adding, setAdding] = useState(false);
+  const [created, setCreated] = useState<CreatedChildDto | null>(null);
+  return (
+    <section className="sheet fp-children" aria-labelledby="fp-h">
+      <div className="sheet-head">
+        <h2 id="fp-h" className="sheet-title">
+          Children and picture sign-in
+        </h2>
+        <div className="row-actions">
+          <Link to={`/teach/classes/${classId}/cards`} className="btn btn-secondary btn-sm">
+            <Icon name="print" size={16} />
+            <span>Print sign-in cards</span>
+          </Link>
+          {!adding ? (
+            <Button size="sm" onClick={() => setAdding(true)}>
+              <Icon name="plus" size={16} />
+              Add a child
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <p className="muted">Grade {grade} children don’t need an email. Add each child here; they sign in on a class device by tapping their name and 3 pictures.</p>
+      {created ? (
+        <div className="note note-ok" role="status">
+          <p>
+            {created.child.name} is added. Their pictures, in order:
+          </p>
+          <PictureCode code={created.pictureCode} />
+        </div>
+      ) : null}
+      {adding ? (
+        <>
+          <AddChildForm
+            endpoint={`/api/teach/classes/${classId}/children`}
+            forTeacher
+            defaultGrade={grade}
+            onCreated={(c) => {
+              setCreated(c);
+              invalidate('/api/teach');
+              onChange();
+            }}
+          />
+          <Button variant="quiet" size="sm" onClick={() => setAdding(false)}>
+            Done adding
+          </Button>
+        </>
+      ) : null}
+      <DevicePanel classId={classId} onChange={onChange} />
+    </section>
   );
 }
 
@@ -290,7 +348,7 @@ function Work({ d, onChange }: { d: ClassDetailDto; onChange: () => void }) {
     <div className="class-grid class-grid-work">
       <section className="sheet">
         <h2 className="sheet-title">Set work</h2>
-        <AssignForm classId={d.class.id} subjectId={d.class.subjectId} onDone={onChange} />
+        <AssignForm classId={d.class.id} subjectId={d.class.subjectId} grade={d.class.grade} onDone={onChange} />
       </section>
       <section className="sheet">
         <h2 className="sheet-title">Assignments</h2>

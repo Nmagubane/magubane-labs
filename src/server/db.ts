@@ -233,6 +233,47 @@ const MIGRATIONS: string[] = [
   ALTER TABLE activities ADD COLUMN assignment_id TEXT;
   CREATE INDEX activities_assignment ON activities(assignment_id);
   `,
+  /* v5: Junior (Grades 1–3): picture sign-in for children created by a parent or teacher, home language,
+         devices set up by an adult for children's sign-in, and adult-led activity cards. */ `
+  ALTER TABLE users ADD COLUMN login_kind TEXT NOT NULL DEFAULT 'email' CHECK (login_kind IN ('email', 'picture'));
+  ALTER TABLE users ADD COLUMN created_by TEXT;
+  -- AES-GCM encrypted with a key derived from the app secret: adults can see it to help a child sign in.
+  ALTER TABLE users ADD COLUMN picture_code TEXT;
+  ALTER TABLE users ADD COLUMN picture_fails INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE users ADD COLUMN picture_locked_until TEXT;
+  ALTER TABLE learner_profiles ADD COLUMN home_language TEXT NOT NULL DEFAULT 'en';
+
+  CREATE TABLE guardianships (
+    adult_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    child_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (adult_id, child_id)
+  );
+  CREATE INDEX guardianships_child ON guardianships(child_id);
+
+  CREATE TABLE junior_devices (
+    id TEXT PRIMARY KEY,
+    token_hash TEXT NOT NULL UNIQUE,
+    owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    scope_kind TEXT NOT NULL CHECK (scope_kind IN ('family', 'class')),
+    scope_id TEXT NOT NULL,
+    label TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    last_used_at TEXT,
+    revoked_at TEXT
+  );
+  CREATE INDEX junior_devices_owner ON junior_devices(owner_id);
+
+  CREATE TABLE card_log (
+    id TEXT PRIMARY KEY,
+    child_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    card_id TEXT NOT NULL,
+    logged_by TEXT NOT NULL,
+    note TEXT,
+    done_at TEXT NOT NULL
+  );
+  CREATE INDEX card_log_child ON card_log(child_id, done_at);
+  `,
 ];
 
 /** A per-installation secret (for signed links in emails), created on first use and kept in the database. */

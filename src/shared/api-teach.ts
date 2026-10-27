@@ -5,11 +5,18 @@ import type { MasteryBand } from './mastery/model.ts';
 import type { MistakeKind } from './questions/mistakes.ts';
 import type { ProgressResponse } from './api.ts';
 
-export const CreateClassBody = z.object({
-  name: z.string().trim().min(1, 'Name the class').max(60),
-  grade: z.number().int().min(4).max(12),
-  subjectId: z.enum(SUBJECT_IDS),
-});
+/** Grades 1–3 classes usually cover every subject with one teacher: 'all'. */
+export const CLASS_SUBJECTS = [...SUBJECT_IDS, 'all'] as const;
+export type ClassSubjectId = (typeof CLASS_SUBJECTS)[number];
+export const CreateClassBody = z
+  .object({
+    name: z.string().trim().min(1, 'Name the class').max(60),
+    grade: z.number().int().min(1).max(12),
+    subjectId: z.enum(CLASS_SUBJECTS),
+  })
+  .superRefine((v, ctx) => {
+    if (v.subjectId === 'all' && v.grade > 3) ctx.addIssue({ code: 'custom', path: ['subjectId'], message: 'All subjects is for Grade 1 to 3 classes' });
+  });
 export const UpdateClassBody = z.object({
   name: z.string().trim().min(1).max(60).optional(),
   weeklyReports: z.boolean().optional(),
@@ -30,7 +37,7 @@ export interface ClassSummaryDto {
   id: string;
   name: string;
   grade: number;
-  subjectId: SubjectId;
+  subjectId: ClassSubjectId;
   subjectName: string;
   joinCode: string;
   learnerCount: number;

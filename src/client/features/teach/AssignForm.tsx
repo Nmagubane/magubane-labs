@@ -3,6 +3,7 @@ import { api, ApiError } from '../../lib/api.ts';
 import { useResource, invalidate } from '../../lib/useResource.ts';
 import { Button, Segmented, TextInput } from '../../ui/primitives.tsx';
 import type { CatalogueResponse } from '../../../shared/api.ts';
+import { FOUNDATION_SUBJECTS, topicsInSubject, skillsInTopic, getSubject } from '../../../shared/curriculum/catalogue.ts';
 import type { AssignmentDto, ClassSummaryDto } from '../../../shared/api-teach.ts';
 
 const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -11,9 +12,11 @@ const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padSt
  * Set work for a class. On a class page, `classId` is fixed and the skill is chosen;
  * on a lesson page, `skillId` is fixed and the class is chosen.
  */
-export function AssignForm({ classId, skillId, subjectId, compact = false, onDone }: { classId?: string; skillId?: string; subjectId?: string; compact?: boolean; onDone?: (a: AssignmentDto) => void }) {
+export function AssignForm({ classId, skillId, subjectId, grade, compact = false, onDone }: { classId?: string; skillId?: string; subjectId?: string; grade?: number; compact?: boolean; onDone?: (a: AssignmentDto) => void }) {
+  // Grades 1–3 practise Foundation Phase skills (no written lessons, no timed tests for young children).
+  const junior = grade !== undefined && grade <= 3;
   const classes = useResource<ClassSummaryDto[]>(classId ? null : '/api/teach/classes');
-  const cat = useResource<CatalogueResponse>(skillId ? null : '/api/catalogue');
+  const cat = useResource<CatalogueResponse>(skillId || junior ? null : '/api/catalogue');
   const [cls, setCls] = useState<string>(classId ?? '');
   const [skill, setSkill] = useState<string>(skillId ?? '');
   const [kind, setKind] = useState<'lesson' | 'practice' | 'test'>('practice');
@@ -26,10 +29,14 @@ export function AssignForm({ classId, skillId, subjectId, compact = false, onDon
   const active = (classes.data ?? []).filter((c) => !c.archived);
   const chosenClass = classId ?? cls;
   const groups = useMemo(() => {
+    if (junior)
+      return FOUNDATION_SUBJECTS.filter((sid) => !subjectId || subjectId === 'all' || subjectId === sid).flatMap((sid) =>
+        topicsInSubject(sid).map((t) => ({ label: `${getSubject(sid)?.name}: ${t.name}`, skills: skillsInTopic(t.id).filter((k) => k.grade === grade).map((k) => ({ id: k.id, name: k.name })) })).filter((g) => g.skills.length),
+      );
     const subj = cat.data?.subjects ?? [];
     const ordered = subjectId ? [...subj.filter((s) => s.id === subjectId), ...subj.filter((s) => s.id !== subjectId)] : subj;
     return ordered.flatMap((s) => s.topics.map((t) => ({ label: `${s.name}: ${t.name}`, skills: t.skills.map((k) => ({ id: k.skillId, name: `${k.name} (Gr ${k.grade})` })) })));
-  }, [cat.data, subjectId]);
+  }, [cat.data, subjectId, junior, grade]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -86,8 +93,8 @@ export function AssignForm({ classId, skillId, subjectId, compact = false, onDon
         <span className="field-label" id="assign-kind">
           What should they do?
         </span>
-        <Segmented label="Assignment type" value={kind} onChange={setKind} options={[{ value: 'lesson', label: 'Lesson' }, { value: 'practice', label: 'Practice' }, { value: 'test', label: 'Test' }]} />
-        <p className="field-hint">{kind === 'lesson' ? 'The lesson with its labs and checks.' : kind === 'practice' ? 'Adaptive practice with hints and feedback.' : 'A timed test: no hints, tutor locked until they submit.'}</p>
+        {junior ? null : <Segmented label="Assignment type" value={kind} onChange={setKind} options={[{ value: 'lesson', label: 'Lesson' }, { value: 'practice', label: 'Practice' }, { value: 'test', label: 'Test' }]} />}
+        <p className="field-hint">{junior ? 'Short spoken practice with materials to touch, 5 questions at a time. It appears on the child’s home screen.' : kind === 'lesson' ? 'The lesson with its labs and checks.' : kind === 'practice' ? 'Adaptive practice with hints and feedback.' : 'A timed test: no hints, tutor locked until they submit.'}</p>
       </div>
       <div className="assign-row">
         <TextInput label="Due" type="date" value={due} min={isoDay(new Date())} onChange={(e) => setDue(e.target.value)} required />

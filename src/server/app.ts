@@ -18,6 +18,9 @@ import { SignupBody, DeleteAccountBody, VerifyBody, ForgotBody, ResetBody, Chang
 import { CreateClassBody, UpdateClassBody, CreateAssignmentBody, SendReportBody } from '../shared/api-teach.ts';
 import { passwordProblem } from '../shared/password.ts';
 import { CURRICULA, subjectsForGrade } from '../shared/curriculum/catalogue.ts';
+import { CreateChildBody, UpdateChildBody, PictureCodeBody, DeviceBody, JuniorLoginBody, CardLogBody, DeleteChildBody } from '../shared/api-junior.ts';
+import { DEVICE_COOKIE, DEVICE_DAYS, createChild, updateChild, resetPictureCode, canDeleteChild, listFamily, createDevice, listDevices, revokeDevice, revokeDeviceToken, deviceInfo, juniorLogin, juniorHome, juniorWorld, childOverview, logCard, classLoginCards, isJuniorLearner, childSummary } from './junior.ts';
+import { questionLanguage } from './activities.ts';
 
 const COOKIE = 'ml_session';
 const loginLimiter = new RateLimiter(10, 15 * 60_000);
@@ -26,6 +29,9 @@ const signupLimiter = new RateLimiter(config.signupRatePerHour, 60 * 60_000);
 const codeLimiter = new RateLimiter(20, 15 * 60_000);
 const forgotLimiter = new RateLimiter(5, 15 * 60_000);
 const reportLimiter = new RateLimiter(30, 60 * 60_000);
+// Picture sign-in: per network and per device, on top of the per-child lockout in junior.ts.
+const pictureIpLimiter = new RateLimiter(120, 15 * 60_000);
+const pictureDeviceLimiter = new RateLimiter(40, 15 * 60_000);
 
 /** While an email is unconfirmed, only these endpoints work. */
 const UNVERIFIED_OK = new Set(['/api/me', '/api/config', '/api/auth/verify', '/api/auth/resend', '/api/auth/logout', '/api/account/delete', '/api/health']);
@@ -36,7 +42,24 @@ function requireUser(ctx: Ctx): UserDto {
 }
 function requireLearner(ctx: Ctx): UserDto {
   const u = requireUser(ctx);
-  if (u.role === 'teacher') throw new HttpError(403, 'not_learner', 'This is for learner accounts.');
+  if (u.role === 'teacher' || u.role === 'parent') throw new HttpError(403, 'not_learner', 'This is for learner accounts.');
+  return u;
+}
+function requireParent(ctx: Ctx): UserDto {
+  const u = requireUser(ctx);
+  if (u.role !== 'parent') throw new HttpError(403, 'not_parent', 'This is for parent accounts.');
+  return u;
+}
+/** Parents and teachers: the adults who look after Grade 1–3 children. */
+function requireAdult(ctx: Ctx): UserDto {
+  const u = requireUser(ctx);
+  if (u.role !== 'parent' && u.role !== 'teacher') throw new HttpError(403, 'not_adult', 'This is for parent and teacher accounts.');
+  return u;
+}
+/** The AI tutor is not for Grades 1–3: open-ended chat with young children is a safety risk, and they cannot type yet. */
+function requireTutorLearner(ctx: Ctx, db: Db): UserDto {
+  const u = requireLearner(ctx);
+  if (isJuniorLearner(db, u.id)) throw new HttpError(403, 'not_for_junior', 'The tutor is for Grade 4 and up.');
   return u;
 }
 
@@ -67,7 +90,7 @@ function sendPdf(res: ServerResponse, file: { pdf: Buffer; name: string }, downl
 
 export function buildRouter(db: Db): Router {
   const r = new Router();
-  const me = (u: UserDto | null): MeResponse => ({ user: u, profile: u && u.role !== 'teacher' ? getProfile(db, u.id) : null });
+  const me = (u: UserDto | null): MeResponse => ({ user: u, profile: u && u.role === 'student' ? getProfile(db, u.id) : null });
 
   // ---- auth ----
   r.post('/api/auth/signup', async (ctx) => {
@@ -76,7 +99,12 @@ export function buildRouter(db: Db): Router {
     const body = await readJson(ctx, SignupBody);
     let inviteCode: string | null = null;
     let joinCode: string | null = null;
-    if (body.accountType === 'teacher') {
+    if (body.accountType === 'parent') {
+      if (config.signupMode === 'invite') {
+        inviteCode = (body.accessCode ?? '').toUpperCase();
+        if (!inviteCode || !config.inviteCodes.includes(inviteCode)) throw new HttpError(403, 'bad_access_code', "That access code isn't valid. Check it with the person who invited you.", { fieldErrors: { accessCode: ["That access code isn't valid"] } });
+      }
+    } else if (body.accountType === 'teacher') {
       if (!config.educatorCodes.length) throw new HttpError(403, 'educator_closed', `Teacher accounts aren't open yet.${config.contactEmail ? ` Write to ${config.contactEmail} to join the pilot.` : ''}`);
       inviteCode = (body.accessCode ?? '').toUpperCase();
       if (!config.educatorCodes.includes(inviteCode)) throw new HttpError(403, 'bad_access_code', "That educator code isn't valid.", { fieldErrors: { accessCode: ["That educator code isn't valid"] } });
@@ -95,7 +123,7 @@ export function buildRouter(db: Db): Router {
       password: body.password,
       displayName: body.displayName,
       inviteCode,
-      role: body.accountType === 'teacher' ? 'teacher' : 'student',
+      role: body.accountType === 'teacher' ? 'teacher' : body.accountType === 'parent' ? 'parent' : 'student',
       school: body.accountType === 'teacher' ? (body.school ?? null) : null,
       isMinor: body.ageGroup === 'minor',
       guardianName: body.ageGroup === 'minor' ? (body.guardianName ?? null) : null,
@@ -218,8 +246,8 @@ export function buildRouter(db: Db): Router {
   r.get('/api/catalogue', (ctx) => catalogue(db, requireUser(ctx)));
   r.get('/api/skills/:id', (ctx) => skillDetail(db, requireUser(ctx), ctx.params.id as string));
   r.get('/api/skills/:id/example', (ctx) => {
-    requireUser(ctx);
-    return workedExample(ctx.params.id as string, Number(ctx.query.get('level') ?? 3));
+    const u = requireUser(ctx);
+    return workedExample(ctx.params.id as string, Number(ctx.query.get('level') ?? 3), u.role === 'student' ? questionLanguage(db, u.id) : 'en');
   });
 
   // ---- activities ----
@@ -310,24 +338,87 @@ export function buildRouter(db: Db): Router {
   });
 
   // ---- tutor ----
-  r.get('/api/tutor/status', (ctx) => tutorStatus(db, requireLearner(ctx)));
-  r.get('/api/tutor/conversations', (ctx) => listConversations(db, requireLearner(ctx)));
-  r.post('/api/tutor/conversations', async (ctx) => createConversation(db, requireLearner(ctx), await readJson(ctx, TutorConversationBody)));
-  r.get('/api/tutor/conversations/:id', (ctx) => getConversation(db, requireLearner(ctx), ctx.params.id as string));
+  r.get('/api/tutor/status', (ctx) => tutorStatus(db, requireTutorLearner(ctx, db)));
+  r.get('/api/tutor/conversations', (ctx) => listConversations(db, requireTutorLearner(ctx, db)));
+  r.post('/api/tutor/conversations', async (ctx) => createConversation(db, requireTutorLearner(ctx, db), await readJson(ctx, TutorConversationBody)));
+  r.get('/api/tutor/conversations/:id', (ctx) => getConversation(db, requireTutorLearner(ctx, db), ctx.params.id as string));
   r.delete('/api/tutor/conversations/:id', (ctx) => {
-    deleteConversation(db, requireLearner(ctx), ctx.params.id as string);
+    deleteConversation(db, requireTutorLearner(ctx, db), ctx.params.id as string);
     return { ok: true };
   });
   r.post('/api/tutor/conversations/:id/messages', async (ctx) => {
-    const user = requireLearner(ctx);
+    const user = requireTutorLearner(ctx, db);
     const body = await readJson(ctx, TutorMessageBody);
     await streamReply(db, user, ctx.params.id as string, body.content, ctx.res, (fn) => ctx.res.on('close', fn));
     return STREAMED;
   });
   r.post('/api/tutor/conversations/:id/regenerate', async (ctx) => {
-    const user = requireLearner(ctx);
+    const user = requireTutorLearner(ctx, db);
     await streamReply(db, user, ctx.params.id as string, null, ctx.res, (fn) => ctx.res.on('close', fn));
     return STREAMED;
+  });
+
+  // ---- Junior (Grades 1–3) ----
+  const deviceToken = (ctx: Ctx) => parseCookies(ctx.req.headers.cookie)[DEVICE_COOKIE];
+
+  r.get('/api/junior/device', (ctx) => deviceInfo(db, deviceToken(ctx)));
+  r.post('/api/junior/login', async (ctx) => {
+    const token = deviceToken(ctx);
+    if (!pictureIpLimiter.take(ctx.ip) || (token && !pictureDeviceLimiter.take(token))) throw new HttpError(429, 'rate_limited', 'Too many tries. Ask a grown-up to help you.');
+    const body = await readJson(ctx, JuniorLoginBody);
+    const childId = juniorLogin(db, token, body.childId, body.code);
+    startSession(ctx, db, childId);
+    return me(getUser(db, childId));
+  });
+  r.post('/api/junior/devices', async (ctx) => {
+    const adult = requireAdult(ctx);
+    const { token, label } = createDevice(db, adult, await readJson(ctx, DeviceBody));
+    setCookie(ctx.res, DEVICE_COOKIE, token, { maxAge: DEVICE_DAYS * 86400, secure: !config.dev });
+    return { label };
+  });
+  r.get('/api/junior/devices', (ctx) => listDevices(db, requireAdult(ctx), deviceToken(ctx)));
+  r.delete('/api/junior/devices/:id', (ctx) => {
+    revokeDevice(db, requireAdult(ctx), ctx.params.id as string);
+    return { ok: true };
+  });
+  /** An adult signed in on this device turns children's sign-in off here. */
+  r.post('/api/junior/device/forget', (ctx) => {
+    requireAdult(ctx);
+    const token = deviceToken(ctx);
+    if (token) revokeDeviceToken(db, token);
+    setCookie(ctx.res, DEVICE_COOKIE, '', { maxAge: 0, secure: !config.dev });
+    return { ok: true };
+  });
+  r.get('/api/junior/home', (ctx) => juniorHome(db, requireLearner(ctx)));
+  r.get('/api/junior/world/:subject', (ctx) => juniorWorld(db, requireLearner(ctx), ctx.params.subject as string));
+
+  r.get('/api/family', (ctx) => listFamily(db, requireParent(ctx), deviceToken(ctx)));
+  r.post('/api/family/children', async (ctx) => createChild(db, requireParent(ctx), await readJson(ctx, CreateChildBody)));
+  r.post('/api/teach/classes/:id/children', async (ctx) => createChild(db, requireTeacher(ctx.user), await readJson(ctx, CreateChildBody), { classId: ctx.params.id as string }));
+  r.get('/api/teach/classes/:id/login-cards', (ctx) => classLoginCards(db, requireTeacher(ctx.user), ctx.params.id as string));
+
+  r.get('/api/children/:id', (ctx) => {
+    const adult = requireAdult(ctx);
+    const id = ctx.params.id as string;
+    if (!canAccessLearner(db, adult, id)) throw new HttpError(404, 'not_found', 'That child does not exist.');
+    return childSummary(db, id);
+  });
+  r.get('/api/children/:id/overview', (ctx) => childOverview(db, requireAdult(ctx), ctx.params.id as string));
+  r.patch('/api/children/:id', async (ctx) => updateChild(db, requireAdult(ctx), ctx.params.id as string, await readJson(ctx, UpdateChildBody)));
+  r.post('/api/children/:id/code', async (ctx) => ({ pictureCode: resetPictureCode(db, requireAdult(ctx), ctx.params.id as string, (await readJson(ctx, PictureCodeBody)).code) }));
+  r.post('/api/children/:id/cards', async (ctx) => {
+    const body = await readJson(ctx, CardLogBody);
+    return logCard(db, requireAdult(ctx), ctx.params.id as string, body.cardId, body.note);
+  });
+  r.post('/api/children/:id/delete', async (ctx) => {
+    const adult = requireAdult(ctx);
+    const id = ctx.params.id as string;
+    if (!canDeleteChild(db, adult, id)) throw new HttpError(404, 'not_found', 'That child does not exist, or you cannot delete them.');
+    const body = await readJson(ctx, DeleteChildBody);
+    const name = one<{ display_name: string }>(db, 'SELECT display_name FROM users WHERE id = ?', id)?.display_name ?? '';
+    if (body.confirmName.toLowerCase() !== name.toLowerCase()) throw new HttpError(422, 'invalid', 'Type the child’s name to confirm.', { fieldErrors: { confirmName: ['Type the name exactly as shown'] } });
+    deleteUser(db, id);
+    return { ok: true };
   });
 
   r.get('/api/health', () => ({ ok: true }));

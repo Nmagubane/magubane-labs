@@ -22,7 +22,9 @@ let transport: (mail: Mail) => Promise<MailResult> = send;
 export function setTransport(fn: ((mail: Mail) => Promise<MailResult>) | null): void {
   transport = fn ?? send;
 }
-export const sendMail = (mail: Mail): Promise<MailResult> => transport(mail);
+/** Children created by an adult have no real address (…@child.invalid). Never send there. */
+export const sendMail = (mail: Mail): Promise<MailResult> =>
+  /@[^@]+\.invalid$/i.test(mail.to.email) ? Promise.resolve({ status: 'failed', error: 'no email address for this account' }) : transport(mail);
 
 async function send(mail: Mail): Promise<MailResult> {
   const { provider, apiKey, from, fromName, apiBase } = config.email;

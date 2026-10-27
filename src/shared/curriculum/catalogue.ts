@@ -6,7 +6,9 @@
  * the official CAPS documents before the product claims alignment.
  */
 
-export const SUBJECT_IDS = ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] as const;
+import { FOUNDATION_TOPICS, FOUNDATION_SKILLS } from './foundation.ts';
+
+export const SUBJECT_IDS = ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences', 'home-language', 'english-fal', 'life-skills'] as const;
 export type SubjectId = (typeof SUBJECT_IDS)[number];
 export type CurriculumId = 'za-caps' | 'intl';
 
@@ -22,7 +24,7 @@ export const CURRICULA: Curriculum[] = [
     id: 'za-caps',
     name: 'South Africa — CAPS',
     description: 'Mathematics, Physical Sciences and Life Sciences as taught in South African schools.',
-    grades: [4, 5, 6, 7, 8, 9, 10, 11, 12],
+    grades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   },
   {
     id: 'intl',
@@ -59,7 +61,10 @@ export interface Skill {
   grade: number;
   prerequisites: string[];
   templateId: string;
+  /** Senior skills have a lesson. Foundation Phase skills use "watch first" worked examples instead (lessonId ''). */
   lessonId: string;
+  /** Grades 1–3 are 'foundation': played in the Junior experience with touch inputs and a voice. */
+  phase?: 'foundation';
   mappings: Partial<Record<CurriculumId, { grade: number; strand: string }>>;
 }
 
@@ -83,6 +88,21 @@ export const SUBJECTS: Subject[] = [
     id: 'life-sciences',
     name: 'Life Sciences',
     pitch: 'How living things are built, inherit traits and stay alive. It is the road to medicine.',
+  },
+  {
+    id: 'home-language',
+    name: 'Home Language',
+    pitch: 'Sounds, reading, spelling and stories in the language a child speaks at home. Grades 1 to 3.',
+  },
+  {
+    id: 'english-fal',
+    name: 'English First Additional Language',
+    pitch: 'Listening, words and reading in English for children whose home language is not English. Grades 1 to 3.',
+  },
+  {
+    id: 'life-skills',
+    name: 'Life Skills',
+    pitch: 'Beginning Knowledge and Personal & Social Well-being: my body, safety, plants, animals, weather and feelings. Grades 1 to 3.',
   },
 ];
 
@@ -113,6 +133,7 @@ export const TOPICS: Topic[] = [
   { id: 'human-body', subjectId: 'life-sciences', name: 'The human body', strand: 'Biology' },
   { id: 'cells', subjectId: 'life-sciences', name: 'Cells', strand: 'Biology' },
   { id: 'genetics', subjectId: 'life-sciences', name: 'Genetics', strand: 'Biology' },
+  ...FOUNDATION_TOPICS,
 ];
 
 const caps = (grade: number, strand: string) => ({ 'za-caps': { grade, strand }, intl: { grade, strand } });
@@ -772,6 +793,7 @@ export const SKILLS: Skill[] = [
     lessonId: 'monohybrid-crosses',
     mappings: caps(12, 'Genetics and inheritance'),
   },
+  ...FOUNDATION_SKILLS,
 ];
 
 // ---------- Lookups ----------
@@ -792,20 +814,29 @@ export const skillsInTopic = (topicId: string): Skill[] => SKILLS.filter((s) => 
 export const topicsInSubject = (subjectId: SubjectId): Topic[] => TOPICS.filter((t) => t.subjectId === subjectId);
 export const skillsInSubject = (subjectId: SubjectId): Skill[] => SKILLS.filter((s) => subjectOfSkill(s) === subjectId);
 
+export const isFoundationSkill = (s: Skill): boolean => s.phase === 'foundation';
+
 /**
  * Skills that are relevant for a learner: in their subjects, taught up to one grade ahead,
  * and no more than four grades behind (foundations still matter).
+ * Grades 1–3 get the Foundation Phase skills of their own grade and the grade before (to catch up);
+ * Grade 4 and up never get Foundation Phase skills here: they are played in the Junior experience.
  */
 export function skillsForLearner(subjects: SubjectId[], grade: number): Skill[] {
-  return SKILLS.filter((s) => subjects.includes(subjectOfSkill(s)) && s.grade <= grade + 1 && s.grade >= grade - 4);
+  if (grade <= 3) return SKILLS.filter((s) => isFoundationSkill(s) && subjects.includes(subjectOfSkill(s)) && s.grade <= grade && s.grade >= grade - 1);
+  return SKILLS.filter((s) => !isFoundationSkill(s) && subjects.includes(subjectOfSkill(s)) && s.grade <= grade + 1 && s.grade >= grade - 4);
 }
+
+export const FOUNDATION_SUBJECTS: SubjectId[] = ['mathematics', 'home-language', 'english-fal', 'life-skills'];
 
 /** Which subjects make sense at a grade. Natural Sciences & Technology stops after Grade 7. */
 export function subjectsForGrade(grade: number): SubjectId[] {
+  if (grade <= 3) return FOUNDATION_SUBJECTS;
   return grade <= 7 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences', 'life-sciences'];
 }
 
 /** What to tick by default for a new learner at a grade. */
 export function defaultSubjects(grade: number): SubjectId[] {
+  if (grade <= 3) return FOUNDATION_SUBJECTS;
   return grade <= 6 ? ['mathematics', 'natural-sciences'] : grade <= 9 ? ['mathematics', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences'];
 }

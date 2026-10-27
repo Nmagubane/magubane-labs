@@ -15,8 +15,8 @@ import { sendMail, layout } from './mailer.ts';
 import { logged } from './verification.ts';
 import { unsubscribeUrl } from './links.ts';
 import type { UserDto, ResultsDto } from '../shared/api.ts';
-import type { AssignmentDto, ClassDetailDto, ClassLearnerDto, ClassSummaryDto, MyAssignmentDto, MyClassDto, TeacherLearnerDto, LearnerFlag, HeatCell } from '../shared/api-teach.ts';
-import { getSkill, getTopic, getSubject, skillsForLearner, type SubjectId } from '../shared/curriculum/catalogue.ts';
+import type { ClassSubjectId, AssignmentDto, ClassDetailDto, ClassLearnerDto, ClassSummaryDto, MyAssignmentDto, MyClassDto, TeacherLearnerDto, LearnerFlag, HeatCell } from '../shared/api-teach.ts';
+import { getSkill, getTopic, getSubject, skillsForLearner, FOUNDATION_SUBJECTS, type SubjectId } from '../shared/curriculum/catalogue.ts';
 import { mistakeInfo } from '../shared/questions/mistakes.ts';
 
 interface ClassRow {
@@ -24,7 +24,7 @@ interface ClassRow {
   teacher_id: string;
   name: string;
   grade: number;
-  subject_id: SubjectId;
+  subject_id: ClassSubjectId;
   join_code: string;
   weekly_reports: number;
   created_at: string;
@@ -66,7 +66,11 @@ function requireOwnClass(db: Db, teacher: UserDto, classId: string): ClassRow {
 
 /** Skills a class covers: the subject's skills around the class grade, plus anything assigned. */
 function classSkillIds(db: Db, c: ClassRow): string[] {
-  const band = skillsForLearner([c.subject_id], c.grade).map((s) => s.id);
+  const subjects: SubjectId[] = c.subject_id === 'all' ? FOUNDATION_SUBJECTS : [c.subject_id];
+  // Grades 1–3: the class's own grade (last grade's skills show up per child where started).
+  const band = skillsForLearner(subjects, c.grade)
+    .filter((s) => c.grade > 3 || s.grade === c.grade)
+    .map((s) => s.id);
   const assigned = all<{ skill_id: string }>(db, 'SELECT DISTINCT skill_id FROM assignments WHERE class_id = ?', c.id).map((r) => r.skill_id);
   return [...new Set([...band, ...assigned])].filter((id) => getSkill(id));
 }
@@ -121,7 +125,10 @@ function learnerRow(db: Db, m: ReturnType<typeof members>[number], skillIds: str
   const joinedDaysAgo = (at.getTime() - new Date(m.joined_at).getTime()) / 86_400_000;
   if (!last && joinedDaysAgo < 7) flags.push('new');
   else if (!last || at.getTime() - new Date(last).getTime() > 7 * 86_400_000) flags.push('inactive');
-  if ((avgMastery !== null && avgMastery < 35 && started.length >= 2) || (accuracy7d !== null && accuracy7d < 50 && wk.n >= 10)) flags.push('struggling');
+  // Grades 1–3 play short sets at easy levels, so mastery climbs slowly at first: judge them on
+  // first-try accuracy alone, or every child who has just started looks like they're struggling.
+  const foundation = skillIds.length > 0 && skillIds.every((id) => getSkill(id)?.phase === 'foundation');
+  if ((!foundation && avgMastery !== null && avgMastery < 35 && started.length >= 2) || (accuracy7d !== null && accuracy7d < 50 && wk.n >= 10)) flags.push('struggling');
   if (overdue > 0) flags.push('overdue');
   return {
     id: m.id,
@@ -157,7 +164,7 @@ function summary(db: Db, c: ClassRow, at: Date): ClassSummaryDto {
     name: c.name,
     grade: c.grade,
     subjectId: c.subject_id,
-    subjectName: getSubject(c.subject_id)?.name ?? c.subject_id,
+    subjectName: c.subject_id === 'all' ? 'All subjects' : (getSubject(c.subject_id)?.name ?? c.subject_id),
     joinCode: c.join_code,
     learnerCount: ms.length,
     activeThisWeek: active,
@@ -175,7 +182,7 @@ export function listClasses(db: Db, teacher: UserDto): ClassSummaryDto[] {
   return all<ClassRow>(db, 'SELECT * FROM classes WHERE teacher_id = ? ORDER BY archived_at IS NOT NULL, created_at DESC', teacher.id).map((c) => summary(db, c, at));
 }
 
-export function createClass(db: Db, teacher: UserDto, body: { name: string; grade: number; subjectId: SubjectId }): ClassSummaryDto {
+export function createClass(db: Db, teacher: UserDto, body: { name: string; grade: number; subjectId: ClassSubjectId }): ClassSummaryDto {
   const count = one<{ n: number }>(db, 'SELECT COUNT(*) AS n FROM classes WHERE teacher_id = ? AND archived_at IS NULL', teacher.id)?.n ?? 0;
   if (count >= 30) throw new HttpError(422, 'too_many_classes', 'You can have up to 30 active classes. Archive one first.');
   const id = newId('cls');

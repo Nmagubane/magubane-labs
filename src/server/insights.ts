@@ -7,10 +7,11 @@ import { now } from './config.ts';
 import { getProfile, getStates, summarise, lessonsCompleted, recentMistakes, localDay, type Profile } from './learner.ts';
 import { activeAssessment } from './activities.ts';
 import type { UserDto, CatalogueResponse, SkillDetailResponse, HomeResponse, ProgressResponse, RecommendationDto, ExamDto, ExamDetailResponse, WorkedExample, ResultsDto } from '../shared/api.ts';
-import { SUBJECTS, SKILLS, getSkill, getTopic, getSubject, topicsInSubject, skillsInTopic, skillsForLearner, skillsInSubject, type SubjectId } from '../shared/curriculum/catalogue.ts';
+import { SUBJECTS, SKILLS, isFoundationSkill, getSkill, getTopic, getSubject, topicsInSubject, skillsInTopic, skillsForLearner, skillsInSubject, type SubjectId } from '../shared/curriculum/catalogue.ts';
 import { getLesson } from '../shared/content/lessons.ts';
 import { mistakeInfo } from '../shared/questions/mistakes.ts';
 import { generateQuestion } from '../shared/questions/registry.ts';
+import { canonicalResponse } from '../shared/questions/answer.ts';
 import type { Difficulty } from '../shared/questions/types.ts';
 import { effectiveMastery, correctAnswersToNextBand, masteryPercent, INITIAL_RATING, type SkillState } from '../shared/mastery/model.ts';
 import { recommend, weakAreas, daysUntil, type Recommendation } from '../shared/mastery/recommend.ts';
@@ -31,13 +32,14 @@ export function catalogue(db: Db, user: UserDto): CatalogueResponse {
   const done = lessonsCompleted(db, user.id);
   const inScope = new Set(user.role === 'teacher' ? SKILLS.map((s) => s.id) : skillsForLearner(profile.subjects, profile.grade).map((s) => s.id));
   const at = now();
-  const order = [...profile.subjects, ...SUBJECTS.map((s) => s.id).filter((id) => !profile.subjects.includes(id))];
+  // Foundation Phase skills are played in the Junior experience, not in Learn.
+  const order = [...profile.subjects, ...SUBJECTS.map((s) => s.id).filter((id) => !profile.subjects.includes(id))].filter((sid) => topicsInSubject(sid).some((t) => skillsInTopic(t.id).some((s) => !isFoundationSkill(s))));
   return {
     grade: profile.grade,
     subjects: order.map((sid) => ({
       id: sid,
       name: getSubject(sid)?.name ?? sid,
-      topics: topicsInSubject(sid).map((t) => ({
+      topics: topicsInSubject(sid).filter((t) => skillsInTopic(t.id).some((s) => !isFoundationSkill(s))).map((t) => ({
         id: t.id,
         name: t.name,
         ...(t.strand ? { strand: t.strand } : {}),
@@ -90,12 +92,20 @@ export function skillDetail(db: Db, user: UserDto, skillId: string): SkillDetail
   };
 }
 
-export function workedExample(skillId: string, level: number): WorkedExample {
+export function workedExample(skillId: string, level: number, lang = 'en'): WorkedExample {
   const skill = getSkill(skillId);
   if (!skill) throw new HttpError(404, 'unknown_skill', 'That skill does not exist.');
   const lv = Math.min(5, Math.max(1, Math.round(level))) as Difficulty;
-  const q = generateQuestion(skill.templateId, randomInt(1, 2 ** 31 - 1), lv);
-  return { prompt: q.prompt, ...(q.figure ? { figure: q.figure } : {}), solution: q.solution, answerDisplay: q.answerDisplay };
+  const q = generateQuestion(skill.templateId, randomInt(1, 2 ** 31 - 1), lv, { lang });
+  const junior = skill.phase === 'foundation';
+  return {
+    prompt: q.prompt,
+    ...(q.figure ? { figure: q.figure } : {}),
+    solution: q.solution,
+    answerDisplay: q.answerDisplay,
+    // A worked example shows the answer, so sending the answer here is the point. Junior "Watch first" fills it in.
+    ...(junior ? { ...(q.scene ? { scene: q.scene } : {}), say: q.say ?? q.prompt, input: q.input, answer: canonicalResponse(q.answer) } : {}),
+  };
 }
 
 // ---------- home ----------
@@ -121,7 +131,7 @@ function nearestExam(db: Db, userId: string, at: Date) {
   return one<{ id: string; title: string; exam_date: string; skill_ids: string; subject_id: string }>(db, 'SELECT * FROM exams WHERE user_id = ? AND exam_date >= ? ORDER BY exam_date LIMIT 1', userId, today);
 }
 
-function minutesOnDay(db: Db, userId: string, day: string): number {
+export function minutesOnDay(db: Db, userId: string, day: string): number {
   const since = new Date(now().getTime() - 2 * 86_400_000).toISOString();
   const rows = all<{ created_at: string; time_ms: number }>(db, 'SELECT created_at, time_ms FROM responses WHERE user_id = ? AND created_at >= ?', userId, since);
   const ms = rows.filter((r) => localDay(new Date(r.created_at)) === day).reduce((sum, r) => sum + r.time_ms, 0);

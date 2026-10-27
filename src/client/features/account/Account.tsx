@@ -151,6 +151,7 @@ function LearningSettings() {
 export function Account() {
   const { me } = useSession();
   const teacher = me?.user?.role === 'teacher';
+  const parent = me?.user?.role === 'parent';
   return (
     <div className="account">
       <PageHeader title="Your account" />
@@ -177,8 +178,8 @@ export function Account() {
         </p>
       </section>
       {!teacher && me?.profile ? <LearningSettings /> : null}
-      {!teacher ? <MyClasses /> : null}
-      {!teacher && me?.user ? (
+      {!teacher && !parent ? <MyClasses /> : null}
+      {!teacher && !parent && me?.user ? (
         <section className="sheet">
           <h2 className="sheet-title">Your progress report</h2>
           <p className="muted">The same PDF report your parent or guardian and your teacher receive.</p>
@@ -194,7 +195,7 @@ export function Account() {
         </section>
       ) : null}
       <ChangePassword />
-      <DeleteAccount teacher={teacher} />
+      <DeleteAccount teacher={teacher} parent={parent} />
     </div>
   );
 }
@@ -331,7 +332,7 @@ function ChangePassword() {
   );
 }
 
-function DeleteAccount({ teacher }: { teacher: boolean }) {
+function DeleteAccount({ teacher, parent = false }: { teacher: boolean; parent?: boolean }) {
   const { setMe } = useSession();
   const { navigate } = useRouter();
   const [password, setPassword] = useState('');
@@ -357,7 +358,7 @@ function DeleteAccount({ teacher }: { teacher: boolean }) {
       <h2 id="delete-title" className="sheet-title">
         Delete your account
       </h2>
-      <p>{teacher ? 'This permanently deletes your teacher account, your classes and assignments. Learners keep their own accounts and progress.' : 'This permanently deletes your account and everything recorded about your learning: answers, progress, exams and tutor conversations.'} It can&apos;t be undone.</p>
+      <p>{parent ? 'This permanently deletes your account and the children you added, with everything recorded about their learning.' : teacher ? 'This permanently deletes your teacher account, your classes and assignments. Learners who signed up themselves keep their own accounts and progress. Grade 1 to 3 children you added (picture sign-in) are deleted with everything recorded about their learning.' : 'This permanently deletes your account and everything recorded about your learning: answers, progress, exams and tutor conversations.'} It can&apos;t be undone.</p>
       {confirming ? (
         <form onSubmit={remove} className="form">
           <TextInput label="Enter your password to confirm" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={error} />

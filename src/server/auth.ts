@@ -65,8 +65,13 @@ export interface UserRow {
   school: string | null;
 }
 export const USER_COLS = 'id, email, display_name, role, email_verified_at, school';
+/** Children created by an adult have a placeholder address in the reserved .invalid domain: never shown, never mailed. */
+export const CHILD_EMAIL_DOMAIN = 'child.invalid';
+export const isChildEmail = (email: string): boolean => email.toLowerCase().endsWith(`@${CHILD_EMAIL_DOMAIN}`);
+
 export function toUserDto(row: UserRow): UserDto {
-  return { id: row.id, email: row.email, displayName: row.display_name, role: row.role, emailVerified: !!row.email_verified_at, school: row.school };
+  const child = isChildEmail(row.email);
+  return { id: row.id, email: child ? '' : row.email, displayName: row.display_name, role: row.role, emailVerified: !!row.email_verified_at, school: row.school, ...(child ? { junior: true } : {}) };
 }
 export function getUser(db: Db, id: string): UserDto | null {
   const row = one<UserRow>(db, `SELECT ${USER_COLS} FROM users WHERE id = ?`, id);
@@ -95,7 +100,7 @@ export interface NewUser {
   guardianName?: string | null;
   guardianEmail?: string | null;
   consentVersion?: string | null;
-  role?: 'student' | 'teacher';
+  role?: 'student' | 'teacher' | 'parent';
   school?: string | null;
   /** Only the demo seeder and tests create pre-verified accounts. */
   verified?: boolean;
@@ -132,6 +137,13 @@ export function deleteUser(db: Db, userId: string): void {
   try {
     for (const table of ['responses', 'question_instances', 'mastery_snapshots', 'lesson_progress', 'tutor_messages']) run(db, `DELETE FROM ${table} WHERE user_id = ?`, userId);
     run(db, 'DELETE FROM email_log WHERE learner_id = ?', userId);
+    // A parent or teacher deleting their account also deletes the picture-sign-in children they created
+    // (and only those): nobody else could manage them or sign them in, so keeping them would orphan a child's data.
+    for (const c of db.prepare("SELECT id FROM users WHERE created_by = ? AND login_kind = 'picture'").all(userId) as { id: string }[]) {
+      for (const table of ['responses', 'question_instances', 'mastery_snapshots', 'lesson_progress', 'tutor_messages']) run(db, `DELETE FROM ${table} WHERE user_id = ?`, c.id);
+      run(db, 'DELETE FROM email_log WHERE learner_id = ?', c.id);
+      run(db, 'DELETE FROM users WHERE id = ?', c.id);
+    }
     run(db, 'DELETE FROM users WHERE id = ?', userId); // cascades: sessions, profile, skill states, activities, exams, conversations
     db.exec('COMMIT');
   } catch (e) {
@@ -146,6 +158,19 @@ export function deleteUser(db: Db, userId: string): void {
  */
 export function canAccessLearner(db: Db, viewer: UserDto, learnerId: string): boolean {
   if (viewer.id === learnerId) return true;
-  if (viewer.role !== 'teacher' || !viewer.emailVerified) return false;
+  if (!viewer.emailVerified) return false;
+  if (viewer.role === 'parent') return !!one(db, 'SELECT 1 FROM guardianships WHERE adult_id = ? AND child_id = ?', viewer.id, learnerId);
+  if (viewer.role !== 'teacher') return false;
   return !!one(db, 'SELECT 1 FROM class_members m JOIN classes c ON c.id = m.class_id WHERE m.learner_id = ? AND c.teacher_id = ? AND c.archived_at IS NULL', learnerId, viewer.id);
+}
+
+/**
+ * Who may manage a picture-login child (rename, change grade or language, reset the picture code, delete):
+ * a parent linked to them, or a teacher of an active class they are in. Children cannot manage themselves.
+ */
+export function canManageChild(db: Db, viewer: UserDto, childId: string): boolean {
+  if (viewer.id === childId) return false;
+  const row = one<{ login_kind: string }>(db, 'SELECT login_kind FROM users WHERE id = ?', childId);
+  if (row?.login_kind !== 'picture') return false;
+  return canAccessLearner(db, viewer, childId);
 }

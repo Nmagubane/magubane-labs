@@ -18,6 +18,8 @@ import type { UserDto } from '../shared/api.ts';
 import type { ReportSentDto } from '../shared/api-teach.ts';
 import { getSkill } from '../shared/curriculum/catalogue.ts';
 import { computeReadiness } from '../shared/mastery/readiness.ts';
+import { juniorSkills } from '../shared/junior/recommend.ts';
+import { foundationSubjectsFor } from '../shared/junior/languages.ts';
 
 const INK = hex('#1a1d21');
 const INK2 = hex('#4a5159');
@@ -134,15 +136,21 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
   const minutes = Math.round(((wk.ms ?? 0) + lessonMs) / 60000);
   const accuracy = wk.n ? Math.round((100 * (wk.c ?? 0)) / wk.n) : null;
 
+  // Grades 1–3 have no lessons, no tutor and an adult reading the report for them.
+  const junior = !!profile && profile.grade <= 3;
+  const juniorSets = junior ? (one<{ n: number }>(db, "SELECT COUNT(*) AS n FROM activities WHERE user_id = ? AND status = 'completed' AND completed_at >= ?", learnerId, sinceIso)?.n ?? 0) : 0;
+  const juniorTotal = junior && profile ? foundationSubjectsFor(profile.homeLanguage ?? 'en').reduce((n, subj) => n + juniorSkills(subj, profile.grade).length, 0) : 0;
+  const skillsStarted = [...states.values()].filter((s) => s.evidence > 0).length;
+
   const pdf = new Pdf();
   const period = `${fmtDay(since)} to ${fmtDay(at)}`;
   header(pdf, `${user.displayName}'s progress`, `${profile ? `Grade ${profile.grade}. ` : ''}${classes.length ? `${classes.map((c) => `${c.name} (${c.teacher}${c.school ? `, ${c.school}` : ''})`).join('; ')}. ` : ''}Report for ${period}.`, `${days === 7 ? 'Weekly report' : `Last ${days} days`}`);
 
   tiles(pdf, [
     { label: 'Time learning', value: `${minutes} min`, note: `${activeDays} of ${days} days active` },
-    { label: 'Questions answered', value: String(wk.n), note: `${lessons} lesson${lessons === 1 ? '' : 's'} completed` },
+    { label: 'Questions answered', value: String(wk.n), note: junior ? `${juniorSets} set${juniorSets === 1 ? '' : 's'} of 5 finished` : `${lessons} lesson${lessons === 1 ? '' : 's'} completed` },
     { label: 'Accuracy', value: accuracy === null ? '–' : `${accuracy}%`, note: 'Correct answers this period' },
-    { label: 'Skills started', value: String([...states.values()].filter((s) => s.evidence > 0).length), note: prog?.totals.improvement30 != null ? `${prog.totals.improvement30 >= 0 ? '+' : ''}${prog.totals.improvement30} pts in 30 days` : 'Overall' },
+    { label: 'Skills started', value: String(skillsStarted), note: junior ? `of ${juniorTotal} for Grade ${profile?.grade}` : prog?.totals.improvement30 != null ? `${prog.totals.improvement30 >= 0 ? '+' : ''}${prog.totals.improvement30} pts in 30 days` : 'Overall' },
   ]);
 
   if (opts.note) {
@@ -159,7 +167,7 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
   const worked = all<{ skill_id: string; n: number; c: number }>(db, 'SELECT skill_id, COUNT(*) AS n, SUM(is_correct) AS c FROM responses WHERE user_id = ? AND graded_at >= ? AND skipped = 0 GROUP BY skill_id ORDER BY n DESC', learnerId, sinceIso);
   section(pdf, 'This period');
   if (!worked.length && !lessons) {
-    pdf.para(`${user.displayName} didn't practise on Magubane Labs during this period. Even 15 to 20 minutes a few times a week makes a real difference: short, regular practice beats one long session.`, { size: 10, color: INK2 });
+    pdf.para(`${user.displayName} didn't practise on Magubane Labs during this period. ${junior ? 'Even 10 minutes on most days makes a real difference at this age.' : 'Even 15 to 20 minutes a few times a week makes a real difference: short, regular practice beats one long session.'}`, { size: 10, color: INK2 });
   } else {
     const snapBefore = (sid: string) => one<{ mastery: number }>(db, 'SELECT mastery FROM mastery_snapshots WHERE user_id = ? AND skill_id = ? AND day < ? ORDER BY day DESC LIMIT 1', learnerId, sid, localDay(since))?.mastery ?? null;
     for (const w of worked.slice(0, 10)) {
@@ -188,13 +196,15 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
   const started = [...states.values()].filter((s) => s.evidence > 0).map((s) => ({ ...summarise(s, s.skillId, at), name: getSkill(s.skillId)?.name ?? s.skillId }));
   if (started.length) {
     section(pdf, 'Strengths and what to work on next');
-    const strong = [...started].sort((a, b) => b.mastery - a.mastery).slice(0, 3);
     const weak = [...started].filter((s) => s.mastery < 70).sort((a, b) => a.mastery - b.mastery).slice(0, 3);
+    // A skill can't be both the strongest and the focus: with one or two skills started, it would be.
+    const strong = [...started].filter((s) => !weak.includes(s) && s.mastery >= 40).sort((a, b) => b.mastery - a.mastery).slice(0, 3);
     const colW = (pdf.width - 16) / 2;
     const top = pdf.y;
     pdf.text(pdf.margin, pdf.y, 'Strongest', { size: 9, bold: true, color: TICK });
     pdf.text(pdf.margin + colW + 16, pdf.y, 'Focus next', { size: 9, bold: true, color: AMBER });
     let yl = top + 16;
+    if (!strong.length) pdf.text(pdf.margin, yl, 'Early days: nothing is secure yet.', { size: 9.5, color: INK2 });
     for (const s of strong) {
       pdf.text(pdf.margin, yl, `${s.name}: ${s.mastery}%`, { size: 9.5 });
       yl += 15;
@@ -255,10 +265,18 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
 
   section(pdf, 'How to help at home');
   const tips: string[] = [];
-  if (activeDays < 3) tips.push(`Agree on a regular time: 20 minutes on 4 days a week is enough to see steady progress.`);
-  if (accuracy !== null && accuracy < 55) tips.push('Many answers were wrong this week. Encourage using hints and the worked solutions after each mistake: that is where the learning happens.');
-  if (accuracy !== null && accuracy >= 85) tips.push('Accuracy is high. Encourage trying the harder questions and the next skill on the Home screen.');
-  tips.push('Ask them to explain one thing they learnt this week to you. Explaining it out loud is one of the best ways to make it stick.');
+  if (junior) {
+    if (activeDays < 3) tips.push('Little and often works best at this age: 10 to 15 minutes on most days, at the same time each day.');
+    if (accuracy !== null && accuracy < 55) tips.push('Many answers were wrong this week. Sit with them for a set or two: after a mistake, press "Watch first" together, then let them try again on their own.');
+    if (accuracy !== null && accuracy >= 85) tips.push('Accuracy is high, so the questions will get harder by themselves. If they find something easy, ask them to show you how they know.');
+    tips.push('Do one of the Move, Make or Talk activities on their page together. They take 5 to 10 minutes and need no screen.');
+    tips.push('Ask them to show you one thing they learnt, using real objects: count spoons, read a cereal box, sort the washing.');
+  } else {
+    if (activeDays < 3) tips.push(`Agree on a regular time: 20 minutes on 4 days a week is enough to see steady progress.`);
+    if (accuracy !== null && accuracy < 55) tips.push('Many answers were wrong this week. Encourage using hints and the worked solutions after each mistake: that is where the learning happens.');
+    if (accuracy !== null && accuracy >= 85) tips.push('Accuracy is high. Encourage trying the harder questions and the next skill on the Home screen.');
+    tips.push('Ask them to explain one thing they learnt this week to you. Explaining it out loud is one of the best ways to make it stick.');
+  }
   for (const t of tips) pdf.para(`•  ${t}`, { size: 9.5, color: INK2, gap: 2 });
 
   pdf.y += 10;

@@ -1,4 +1,4 @@
-import type { QuestionTemplate, GeneratedQuestion, Difficulty } from './types.ts';
+import type { QuestionTemplate, GeneratedQuestion, Difficulty, GenContext } from './types.ts';
 import { createRng } from './rng.ts';
 import { gradeResponse, canonicalResponse } from './answer.ts';
 import { integers, orderOfOperations, fractionSimplify, fractionAdd, fractionMultiply } from './generators/math-number.ts';
@@ -14,6 +14,7 @@ import { placeValue, multiplication, fractionsBasic, decimals, perimeterArea } f
 import { exponents, quadraticFormula, sequences, trigRatios, finance, derivatives } from './generators/math-upper.ts';
 import { livingNonliving, plantNeeds, lifeCycles, matterProperties, metalsNonmetals, mixtures } from './generators/nst-life-matter.ts';
 import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './generators/nst-energy-earth.ts';
+import { JUNIOR_TEMPLATES } from '../junior/templates.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
   integers,
@@ -70,6 +71,7 @@ export const TEMPLATES: QuestionTemplate[] = [
   earthMoon,
   solarSystem,
   structures,
+  ...JUNIOR_TEMPLATES,
 ];
 
 const byId = new Map(TEMPLATES.map((t) => [t.id, t]));
@@ -81,8 +83,8 @@ export function getTemplate(id: string): QuestionTemplate {
 }
 
 /** Deterministic: the same (template, seed, level) always gives the same question. */
-export function generateQuestion(templateId: string, seed: number, level: Difficulty): GeneratedQuestion {
-  const q = getTemplate(templateId).generate(createRng(seed), level);
+export function generateQuestion(templateId: string, seed: number, level: Difficulty, ctx?: GenContext): GeneratedQuestion {
+  const q = getTemplate(templateId).generate(createRng(seed), level, ctx);
   // A predicted misconception that happens to equal the right answer (e.g. symmetric roots) is not a misconception.
   q.misconceptions = q.misconceptions.filter((m) => !gradeResponse(q.answer, canonicalResponse(m.answer)).correct);
   return q;

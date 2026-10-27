@@ -19,7 +19,8 @@ function texOk(text: string, where: string) {
 }
 
 test('every skill has a lesson for the same skill', () => {
-  for (const s of SKILLS) {
+  // Foundation Phase skills teach through "watch first" worked examples, not written lessons.
+  for (const s of SKILLS.filter((x) => x.phase !== 'foundation')) {
     const l = getLesson(s.lessonId);
     assert.ok(l, `missing lesson ${s.lessonId}`);
     assert.equal(l!.skillId, s.id);

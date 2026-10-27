@@ -4,6 +4,8 @@ Short, opinionated, and kept current. If the code and this file disagree, fix on
 
 ## 1. Who the MVP is for
 
+**Grades 1–3 (Junior, Foundation Phase)** and **Grades 4–12**. Junior is the same app, server and engine with its own child-sized experience; see §8.
+
 **Grades 4–12, South Africa (CAPS) first.** The decision between Mathematics and Mathematical Literacy happens at the end of Grade 9, but the confidence that drives it is built (or lost) from Grade 4. Content runs from place value and Natural Sciences & Technology (Grades 4–6) through Grades 7–10 algebra and science to Grade 12 calculus and finance. Each learner works in a grade band (`skillsForLearner`: grade − 4 to grade + 1); Learn shows that band first and lets curious learners look ahead.
 
 Grade 4–6 science is mostly concept checks: its question generators draw on curated fact pools (the test suite accepts at least 3 distinct prompts per level for Natural Sciences & Technology, 10 for everything else). The labs carry the engagement: sorting, growing, building and testing, with feedback in words.
@@ -103,9 +105,9 @@ Mastery ramp: grey (not started) → pen tints (learning, developing, proficient
 - Cards everywhere was replaced by sheets plus typography. Lists are lists, not card grids.
 
 ## 6. Not built yet (on purpose)
-- A separate guardian login. Guardians get weekly PDF reports by email today; a guardian dashboard would reuse `canAccessLearner`.
+- A guardian dashboard for **Grade 4–12** learners. Their guardians get weekly PDF reports by email. Parent accounts exist, but only for the Grade 1–3 children they create (§8).
 - School-level admin (many teachers, one school) and sponsor/impact dashboards.
-- Matching, ordering and diagram-labelling question types. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), root sets, coefficients, multiple choice.
+- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), root sets, coefficients and multiple choice. Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
 - Image questions to the tutor, and oral explanation assessments.
 - Career pathways ("I want to be an engineer").
 - Content authoring UI. Content is typed data in `src/shared/content` and is ready to move into the DB.
@@ -116,3 +118,58 @@ Mastery ramp: grey (not started) → pen tints (learning, developing, proficient
 - The tutor sends learner messages to the Anthropic API. It sends grade and skill context only, never names or emails. You need a data processing agreement and a policy for what gets logged.
 - Curriculum mappings in `src/shared/curriculum/catalogue.ts` are **provisional** (grade + strand only). Verify them against the CAPS documents before claiming alignment.
 - Move from SQLite to Postgres when you deploy more than one server instance.
+
+## 8. Junior: Grades 1–3 (Foundation Phase)
+
+**Same app, a separate experience.** Children have their own accounts, routes (`/junior/*`), screens and CSS (`src/client/features/junior`, `styles/junior.css`). They share the engine: generators, server-side grading, misconception codes and the mastery model. A Grade 1 child never sees the Grade 4–12 shell, and a Grade 10 learner never sees Junior.
+
+**Curriculum.** `src/shared/curriculum/foundation.ts` defines 112 skills, written as `fp-<key>-g<grade>`. Each is a CAPS topic at one grade, with 5 levels inside that grade's range.
+
+| Subject | G1 | G2 | G3 |
+|---|---|---|---|
+| Mathematics | 17 | 17 | 17 |
+| Home Language (English pack) | 8 | 8 | 8 |
+| English First Additional Language | 2 | 4 | 4 |
+| Life Skills (Beginning Knowledge, Personal & Social Well-being) | 9 | 9 | 9 |
+
+Physical Education, Creative Arts and the sensitive Personal & Social Well-being topics are **adult-led cards**, not screen questions (`src/shared/junior/cards.ts`: 19 Move/Make/Talk cards, including "My body belongs to me"). Adults tick "We did this", which is stored in `card_log`. Skills have `phase: 'foundation'` and no lessons: "Watch first" plays a worked example instead. CAPS mappings are provisional, as in §7.
+
+**How a child learns.** A child signs in, sees one tray per subject with one suggestion each, and plays a set of 5 questions. Every prompt has a `say` field that is read aloud. A child can press **Help me** (a hint) or **Watch first** (a worked example), and gets feedback with the right answer shown in place. The recommender (`src/shared/junior/recommend.ts`) works per subject: catch-up, then review due, then continue, then the next new skill in curriculum order, then practise. It never suggests the same skill three times running. There are no points, streaks or stars. The done screen shows which answers were right first time.
+
+**Generators** live in `src/shared/junior/gen/*`, with word lists in `reading/en*.ts` (CVC words, digraphs, blends, sight words, rhyme families, 12 original stories) and per-language packs in `packs/<lang>`. Questions carry a `scene` for counters, ten-frames, base-10 blocks, coins, clocks, rulers, balances, pictographs and pattern strips. Phonics questions are anchored on spoken picture words, because device text-to-speech says letter names, not sounds. `src/shared/junior/junior.test.ts` checks every template at 5 levels × 200 seeds: it must be answerable, the canonical answer must be correct, and every predicted mistake must be diagnosed.
+
+**Voice.** Device text-to-speech (`speechSynthesis`) sits behind `client/features/junior/speech.ts`, with one voice per language by BCP-47 tag and a mute toggle. It costs nothing and keeps no audio on a server. A recorded-voice or cloud voice provider can replace it behind the same `speak()` call.
+
+**Languages (all 11 official).** `src/shared/junior/languages.ts` holds the codes, BCP-47 tags and a **review-gated status** per language for instructions and reading. Only English is `live`. A child's home language decides their subjects (`foundationSubjectsFor`):
+- English: Home Language English.
+- Any other language: Mathematics and Life Skills with English instructions, plus English First Additional Language, until that language's reviewed pack exists.
+
+There is no machine translation. Children learning to read need text a fluent Foundation Phase teacher has checked, and the Nguni and Sotho-Tswana languages are taught through syllables, not English phonics. To turn a language on:
+1. Write `packs/<lang>` and a reading module.
+2. Have a teacher review them.
+3. Flip the status.
+
+Instruction strings still live inside the English generators. Moving them into packs is the first step of that work.
+
+**Accounts and sign-in.** Children never have an email or password.
+- A parent (`role = 'parent'`, invite-gated like learners) or a teacher of a Grade 1–3 class creates the child. Child accounts get `login_kind = 'picture'`, `created_by`, and a placeholder `<id>@child.invalid` address. That address is hidden from every DTO and refused by the mailer.
+- The child signs in by tapping their name, then 3 of 12 pictures in order. Picture codes are encrypted at rest with AES-256-GCM, so adults can show them again.
+- Sign-in works **only on a device an adult has set up**: an `ml_device` cookie whose hashed token is stored in `junior_devices`, scoped to a family or a class, and revocable from either list. The name list is never public.
+- Five wrong codes lock that child for 10 minutes. Sign-in is also rate-limited per IP and per device.
+- Parents get guardianships and teachers get class membership. `canAccessLearner` gained the parent rule; `canManageChild` decides edits. Deleting a parent or teacher account deletes the picture-sign-in children it created, because nobody else could manage them.
+- The AI tutor is refused server-side for Grade 1–3 learners (`requireTutorLearner`).
+
+**Adults' views.** Parents have *Your children* (`/family`). Teachers get a "Children and picture sign-in" section on Grade 1–3 classes (subject "All subjects"), plus printable sign-in cards. Both see the same child page: this week, what comes next and why, "How to help" built from mistake codes with adult-facing tips, mastery per subject, the cards, recent sessions, and settings. The weekly PDF report has Junior wording, such as sets finished instead of lessons and home tips instead of hints. Class flags for Grade 1–3 use first-try accuracy only.
+
+**Data model additions (migration v5):**
+- `users.login_kind`, `created_by`, `picture_code`, `picture_fails`, `picture_locked_until`
+- `learner_profiles.home_language`
+- `guardianships`, `junior_devices`, `card_log`
+- `classes.subject_id` may be `all`
+
+**Not built yet for Junior.**
+- Content for the 10 non-English languages, which needs fluent Foundation Phase teacher reviewers.
+- Recorded voices: device voices for most South African languages are rare, especially on cheap Android phones.
+- Handwriting and letter formation, and reading aloud with speech recognition.
+- Offline play.
+- A school-attested consent workflow beyond the teacher's checkbox, which is recorded as `:school-attested`.

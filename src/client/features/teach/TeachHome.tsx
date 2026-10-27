@@ -4,7 +4,7 @@ import { useResource, invalidate } from '../../lib/useResource.ts';
 import { Link, useRouter } from '../../lib/router.tsx';
 import { useSession } from '../../lib/session.tsx';
 import { Button, Loading, ErrorState, PageHeader, TextInput } from '../../ui/primitives.tsx';
-import { SUBJECTS } from '../../../shared/curriculum/catalogue.ts';
+import { SUBJECTS, subjectsForGrade, type SubjectId } from '../../../shared/curriculum/catalogue.ts';
 import type { ClassSummaryDto } from '../../../shared/api-teach.ts';
 
 export function TeachHome() {
@@ -135,8 +135,18 @@ function CreateClass({ onDone }: { onDone: () => void }) {
       <div className="assign-row">
         <div className="field">
           <label htmlFor="cc-grade">Grade</label>
-          <select id="cc-grade" value={grade} onChange={(e) => setGrade(Number(e.target.value))}>
-            {[4, 5, 6, 7, 8, 9, 10, 11, 12].map((g) => (
+          <select
+            id="cc-grade"
+            value={grade}
+            onChange={(e) => {
+              const g = Number(e.target.value);
+              setGrade(g);
+              // Grades 1–3 usually have one teacher for every subject.
+              if (g <= 3) setSubjectId('all');
+              else if (!subjectsForGrade(g).includes(subjectId as SubjectId)) setSubjectId('mathematics');
+            }}
+          >
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((g) => (
               <option key={g} value={g}>
                 Grade {g}
               </option>
@@ -146,7 +156,8 @@ function CreateClass({ onDone }: { onDone: () => void }) {
         <div className="field">
           <label htmlFor="cc-subject">Subject</label>
           <select id="cc-subject" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
-            {SUBJECTS.map((s) => (
+            {grade <= 3 ? <option value="all">All subjects (Foundation Phase)</option> : null}
+            {SUBJECTS.filter((s) => subjectsForGrade(grade).includes(s.id)).map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>

@@ -3,13 +3,14 @@
  * responses are typed here so the client can't drift from what the server sends.
  */
 import { z } from 'zod';
-import type { QuestionPayload, RichText, Figure, InputSpec, Difficulty } from './questions/types.ts';
+import type { QuestionPayload, RichText, Figure, InputSpec, Difficulty, Scene } from './questions/types.ts';
 import type { MasteryBand } from './mastery/model.ts';
 import type { RecAction } from './mastery/recommend.ts';
 import type { PlanDay, PlanAction } from './mastery/readiness.ts';
 import type { MistakeKind } from './questions/mistakes.ts';
 import { SUBJECT_IDS, type CurriculumId, type SubjectId } from './curriculum/catalogue.ts';
 import { passwordProblem } from './password.ts';
+import type { LanguageCode } from './junior/languages.ts';
 import type { MyAssignmentDto } from './api-teach.ts';
 import type { ResponseValue } from './questions/answer.ts';
 
@@ -17,14 +18,15 @@ export type { QuestionPayload, ResponseValue };
 
 // ---------- Requests ----------
 
-export const PRIVACY_VERSION = '2026-10-pilot';
+/** Bump when the privacy notice changes in a way that matters: consents record the version agreed to. */
+export const PRIVACY_VERSION = '2026-10-junior';
 
 const email = z.string().trim().toLowerCase().email('Enter a valid email address').max(120);
 const otp = z.string().trim().regex(/^\d{3}\s?\d{3}$/, 'Enter the 6-digit code');
 
 export const SignupBody = z
   .object({
-    accountType: z.enum(['learner', 'teacher']).default('learner'),
+    accountType: z.enum(['learner', 'teacher', 'parent']).default('learner'),
     displayName: z.string().trim().min(1, 'Tell us your name').max(40),
     email,
     password: z.string().max(200),
@@ -39,6 +41,10 @@ export const SignupBody = z
   .superRefine((v, ctx) => {
     const problem = passwordProblem(v.password, { email: v.email, name: v.displayName });
     if (problem) ctx.addIssue({ code: 'custom', path: ['password'], message: problem });
+    if (v.accountType === 'parent') {
+      if (v.ageGroup !== 'adult') ctx.addIssue({ code: 'custom', path: ['ageGroup'], message: 'Parent accounts are for adults' });
+      return;
+    }
     if (v.accountType === 'teacher') {
       if (v.ageGroup !== 'adult') ctx.addIssue({ code: 'custom', path: ['ageGroup'], message: 'Teacher accounts are for adults' });
       if (!v.school) ctx.addIssue({ code: 'custom', path: ['school'], message: 'Enter your school' });
@@ -143,6 +149,8 @@ export interface UserDto {
   role: 'student' | 'parent' | 'teacher';
   emailVerified: boolean;
   school?: string | null;
+  /** A Grades 1–3 child who signs in with pictures (created by a parent or teacher). */
+  junior?: boolean;
 }
 
 export interface ProfileDto {
@@ -152,6 +160,8 @@ export interface ProfileDto {
   goals: Goal[];
   dailyMinutes: number;
   baselineCompleted: boolean;
+  /** Grades 1–3: the child's home language (drives instructions, voice and subjects). */
+  homeLanguage?: LanguageCode;
 }
 
 export interface MeResponse {
@@ -191,6 +201,11 @@ export interface WorkedExample {
   figure?: Figure;
   solution: RichText[];
   answerDisplay: RichText;
+  /** Junior: the scene, spoken prompt and input, so "Watch first" can show the solved question. */
+  scene?: Scene;
+  say?: string;
+  input?: InputSpec;
+  answer?: ResponseValue;
 }
 
 export type ActivityKind = 'lesson' | 'practice' | 'test' | 'baseline';
@@ -220,11 +235,15 @@ export interface MistakeDto {
 
 export interface FeedbackDto {
   questionId: string;
+  /** Junior sort/pick/order: tiles that were out of place (only in the immediate answer response). */
+  wrongIds?: string[];
   correct: boolean;
   skipped: boolean;
   mistake: MistakeDto | null;
   feedback: RichText | null;
   answerDisplay: RichText;
+  /** The right response in the input's own terms (ids, a number), after answering only. */
+  correctResponse?: ResponseValue;
   solution: RichText[];
   masteryBefore: number;
   masteryAfter: number;

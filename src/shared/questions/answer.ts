@@ -15,6 +15,8 @@ export interface GradeResult {
   parseError?: string;
   mistake?: MistakeCode;
   feedback?: RichText;
+  /** Junior sorting/picking/ordering: which tiles were out of place, so the child can see them. */
+  wrongIds?: string[];
 }
 
 /** Parses "3", "-2,5", "0.75", "3/4", "-3/4", "1 1/2". Returns exact rational when possible. */
@@ -61,7 +63,18 @@ type Parsed =
   | { kind: 'expression'; text: string }
   | { kind: 'roots'; values: Rational[] }
   | { kind: 'coefficients'; values: number[] }
-  | { kind: 'choice'; id: string };
+  | { kind: 'choice'; id: string }
+  | { kind: 'set'; ids: string[] }
+  | { kind: 'sequence'; ids: string[] }
+  | { kind: 'groups'; pairs: Record<string, string> }
+  | { kind: 'text'; value: string };
+
+/** Words are compared without case, spaces at the ends, or curly apostrophes. */
+export const normaliseWord = (s: string): string => s.trim().toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, ' ');
+
+function asList(r: ResponseValue): string[] {
+  return (Array.isArray(r) ? r : r.split(',')).map((x) => x.trim()).filter(Boolean);
+}
 
 function asText(r: ResponseValue): string {
   return Array.isArray(r) ? r.join(',') : r;
@@ -112,6 +125,27 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue)
     case 'choice': {
       const id = asText(response).trim();
       return id ? { kind, id } : { error: 'Choose an option.' };
+    }
+    case 'set': {
+      const ids = asList(response);
+      return ids.length ? { kind, ids } : { error: 'Tap at least one.' };
+    }
+    case 'sequence': {
+      const ids = asList(response);
+      return ids.length ? { kind, ids } : { error: 'Put them in order first.' };
+    }
+    case 'groups': {
+      const pairs: Record<string, string> = {};
+      for (const p of asList(response)) {
+        const [item, bin] = p.split('=');
+        if (!item || !bin) return { error: 'Put every picture in a box.' };
+        pairs[item] = bin;
+      }
+      return Object.keys(pairs).length ? { kind, pairs } : { error: 'Put every picture in a box.' };
+    }
+    case 'text': {
+      const value = normaliseWord(asText(response));
+      return value ? { kind, value } : { error: 'Make the word first.' };
     }
   }
 }
@@ -168,6 +202,17 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
       return parsed.kind === 'coefficients' && parsed.values.length === spec.values.length && parsed.values.every((v, i) => v === spec.values[i]);
     case 'choice':
       return parsed.kind === 'choice' && parsed.id === spec.id;
+    case 'set':
+      return parsed.kind === 'set' && new Set(parsed.ids).size === spec.ids.length && parsed.ids.length === spec.ids.length && spec.ids.every((id) => parsed.ids.includes(id));
+    case 'sequence':
+      return parsed.kind === 'sequence' && parsed.ids.length === spec.ids.length && spec.ids.every((id, i) => parsed.ids[i] === id);
+    case 'groups': {
+      if (parsed.kind !== 'groups') return false;
+      const keys = Object.keys(spec.pairs);
+      return Object.keys(parsed.pairs).length === keys.length && keys.every((k) => parsed.pairs[k] === spec.pairs[k]);
+    }
+    case 'text':
+      return parsed.kind === 'text' && parsed.value === normaliseWord(spec.value);
   }
 }
 
@@ -199,6 +244,19 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
     }
   }
 
+  if (answer.kind === 'groups' && parsed.kind === 'groups') {
+    const wrong = Object.keys(answer.pairs).filter((k) => parsed.pairs[k] !== answer.pairs[k]);
+    return { correct: false, wrongIds: wrong };
+  }
+  if (answer.kind === 'set' && parsed.kind === 'set') {
+    const extra = parsed.ids.filter((id) => !answer.ids.includes(id));
+    const missed = answer.ids.filter((id) => !parsed.ids.includes(id));
+    return { correct: false, wrongIds: [...extra, ...missed] };
+  }
+  if (answer.kind === 'sequence' && parsed.kind === 'sequence') {
+    return { correct: false, wrongIds: answer.ids.filter((id, i) => parsed.ids[i] !== id) };
+  }
+
   if (answer.kind === 'coefficients' && parsed.kind === 'coefficients') {
     const k = parsed.values[0]! / answer.values[0]!;
     if (Number.isInteger(k) && k > 1 && parsed.values.every((v, i) => v === answer.values[i]! * k)) {
@@ -225,6 +283,13 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
       return a.values.map(String);
     case 'choice':
       return a.id;
+    case 'set':
+    case 'sequence':
+      return a.ids.slice();
+    case 'groups':
+      return Object.entries(a.pairs).map(([k, v]) => `${k}=${v}`);
+    case 'text':
+      return a.value;
   }
 }
 

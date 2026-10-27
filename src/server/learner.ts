@@ -6,6 +6,7 @@ import type { ProfileDto, Goal } from '../shared/api.ts';
 import type { CurriculumId, SubjectId } from '../shared/curriculum/catalogue.ts';
 import { INITIAL_RATING, masteryPercent, effectiveMastery, band, reviewDue, type SkillState } from '../shared/mastery/model.ts';
 import type { SkillSummary } from '../shared/api.ts';
+import { isLanguageCode, type LanguageCode } from '../shared/junior/languages.ts';
 
 interface ProfileRow {
   grade: number;
@@ -14,6 +15,7 @@ interface ProfileRow {
   goals: string;
   daily_minutes: number;
   baseline_completed_at: string | null;
+  home_language: string | null;
 }
 
 export interface Profile extends ProfileDto {}
@@ -28,6 +30,7 @@ export function getProfile(db: Db, userId: string): Profile | null {
     goals: JSON.parse(r.goals) as Goal[],
     dailyMinutes: r.daily_minutes,
     baselineCompleted: r.baseline_completed_at !== null,
+    ...(r.grade <= 3 ? { homeLanguage: (isLanguageCode(r.home_language ?? '') ? r.home_language : 'en') as LanguageCode } : {}),
   };
 }
 
