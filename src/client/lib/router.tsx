@@ -81,6 +81,13 @@ export function useRouteFocus(path: string) {
       return;
     }
     const id = window.setTimeout(() => {
+      // A page can name where to start ([data-autofocus], e.g. the password when the email is known);
+      // otherwise focus goes to the heading so screen readers announce the new page.
+      const start = document.querySelector<HTMLElement>('main [data-autofocus]');
+      if (start) {
+        start.focus({ preventScroll: true });
+        return;
+      }
       const h = document.querySelector<HTMLElement>('main h1');
       if (h) {
         h.setAttribute('tabindex', '-1');

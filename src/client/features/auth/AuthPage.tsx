@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../../lib/api.ts';
 import { useSession } from '../../lib/session.tsx';
-import { Link } from '../../lib/router.tsx';
+import { Link, useRouter } from '../../lib/router.tsx';
+import { rememberedGrownUp } from '../../lib/rememberedEmail.ts';
 import { Button, TextInput, Logo } from '../../ui/primitives.tsx';
 import { TryOne } from './TryOne.tsx';
 import { PasswordField, passwordOk } from './PasswordField.tsx';
@@ -37,7 +38,11 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
   useEffect(() => {
     api.get<PublicConfig>('/api/config').then(setCfg).catch(() => undefined);
   }, []);
-  const [h, lead] = HEADINGS[mode];
+  const { search } = useRouter();
+  // Arriving from "Grown-ups" on the children's screen: say why sign-in is needed, so the
+  // hand-over doesn't feel like the app forgot you.
+  const fromChildren = mode === 'login' && search.get('from') === 'children';
+  const [h, lead] = fromChildren ? (['Grown-ups, log in', 'You were logged out when this device was handed to a child, so children can\'t open your pages. Log in to get back to your children.'] as const) : HEADINGS[mode];
   return (
     <main id="main" className="auth">
       <header className="auth-brand">
@@ -54,22 +59,31 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
         <h2 id="auth-heading">{h}</h2>
         <p className="muted">{mode === 'signup' && cfg?.signupMode === 'closed' ? 'Sign-ups are closed at the moment.' : lead}</p>
         {mode === 'login' ? <LoginForm /> : mode === 'forgot' ? <ForgotForm /> : <SignupForm teacher={mode === 'teacher'} parent={mode === 'parent'} cfg={cfg} />}
-        <p className="auth-switch">
-          {mode === 'login' ? (
-            <>
-              New here? <Link to="/signup">Create an account</Link>
-            </>
-          ) : (
-            <>
-              Already have an account? <Link to="/login">Log in</Link>
-            </>
-          )}
-        </p>
-        {mode === 'signup' || mode === 'login' ? (
+        {fromChildren ? (
           <p className="auth-switch">
-            A child in Grades 1 to 3? <Link to="/signup/parent">Create a parent account</Link>. Children sign in <Link to="/junior">with pictures</Link>.
+            Not a grown-up? <Link to="/junior">Go back to the children&apos;s screen</Link>
           </p>
         ) : null}
+        {fromChildren ? null : (
+          <>
+            <p className="auth-switch">
+              {mode === 'login' ? (
+                <>
+                  New here? <Link to="/signup">Create an account</Link>
+                </>
+              ) : (
+                <>
+                  Already have an account? <Link to="/login">Log in</Link>
+                </>
+              )}
+            </p>
+            {mode === 'signup' || mode === 'login' ? (
+              <p className="auth-switch">
+                A child in Grades 1 to 3? <Link to="/signup/parent">Create a parent account</Link>. Children sign in <Link to="/junior">with pictures</Link>.
+              </p>
+            ) : null}
+          </>
+        )}
         {mode === 'parent' ? (
           <p className="auth-switch">
             A learner in Grade 4 or up? <Link to="/signup">Create a learner account</Link>
@@ -95,7 +109,9 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
 
 function LoginForm() {
   const { setMe } = useSession();
-  const [email, setEmail] = useState('');
+  // A grown-up coming back from the children's screen on a family device only needs their password.
+  const [remembered] = useState(rememberedGrownUp);
+  const [email, setEmail] = useState(remembered);
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const { error, fieldErr, handle, clear } = useFieldErrors();
@@ -114,7 +130,7 @@ function LoginForm() {
   return (
     <form onSubmit={submit} noValidate className="form">
       <TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErr.email} required />
-      <PasswordField value={password} onChange={setPassword} error={fieldErr.password} />
+      <PasswordField value={password} onChange={setPassword} error={fieldErr.password} autoFocus={!!remembered} />
       <p className="form-aside">
         <Link to="/forgot">Forgot your password?</Link>
       </p>

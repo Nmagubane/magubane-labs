@@ -10,6 +10,7 @@ import type { FamilyDto, CreatedChildDto, DeviceDto } from '../../../shared/api-
 import { AddChildForm, PictureCode, languageLine } from './ChildBits.tsx';
 import { relativeDay } from '../../lib/format.ts';
 import { VoicePicker } from '../junior/VoicePicker.tsx';
+import { rememberGrownUp, forgetGrownUp } from '../../lib/rememberedEmail.ts';
 
 export function FamilyHome() {
   const { data, error, reload } = useResource<FamilyDto>('/api/family');
@@ -91,7 +92,7 @@ export function FamilyHome() {
 }
 
 export function DevicePanel({ family, onChange, classId }: { family?: FamilyDto; onChange: () => void; classId?: string }) {
-  const { logout } = useSession();
+  const { logout, me } = useSession();
   const { navigate } = useRouter();
   const devices = useResource<DeviceDto[]>('/api/junior/devices');
   const [busy, setBusy] = useState(false);
@@ -107,11 +108,15 @@ export function DevicePanel({ family, onChange, classId }: { family?: FamilyDto;
       setBusy(false);
     }
   };
+  // Handing over signs the grown-up out, so a child can't reach picture codes or delete buttons.
+  // On a family device we remember the email so coming back is just the password.
   const handOver = async () => {
+    if (!classId && me?.user?.email) rememberGrownUp(me.user.email);
     await logout();
     navigate('/junior', { replace: true });
   };
   const forget = async () => {
+    forgetGrownUp();
     await api.post('/api/junior/device/forget');
     invalidate('/api/family', '/api/junior');
     onChange();
@@ -126,17 +131,20 @@ export function DevicePanel({ family, onChange, classId }: { family?: FamilyDto;
   return (
     <section className="sheet" aria-labelledby="dev-h">
       <h2 id="dev-h">Where {classId ? 'children' : 'your children'} sign in</h2>
-      <p className="muted">Children can only sign in on a phone, tablet or computer you have set up. It remembers {classId ? 'this class' : 'your family'}, not you: your own account stays private.</p>
+      <p className="muted">Children can only sign in on a phone, tablet or computer you have set up. It remembers {classId ? 'this class' : 'your family'}. Your password is never stored, so children can't get into your account.</p>
       {thisDevice ? <VoicePicker /> : null}
       {thisDevice ? (
         <div className="row-actions">
-          <Button onClick={() => void handOver()}>
+          <Button onClick={() => void handOver()} aria-describedby="handover-note">
             <Icon name="tablet" />
-            Hand this device to a child
+            Log out and hand to a child
           </Button>
           <Button variant="quiet" size="sm" onClick={() => void forget()}>
             Stop children signing in here
           </Button>
+          <p id="handover-note" className="muted small handover-note">
+            This logs you out so children can&apos;t open {classId ? 'your class pages' : 'this page'}. To come back, tap <strong>Grown-ups</strong> on the children&apos;s screen{classId ? ' and log in.' : '. Your email will already be filled in.'}
+          </p>
         </div>
       ) : (
         <Button busy={busy} onClick={() => void setUp()}>

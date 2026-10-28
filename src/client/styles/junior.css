@@ -2244,3 +2244,10 @@ button.tf-cell:hover:not(:disabled) {
   flex: 1 1 16rem;
   min-width: 0;
 }
+
+/* Under "Sign out and hand to a child": says what the button does and how to get back. */
+.handover-note {
+  flex-basis: 100%;
+  margin: 0;
+  max-width: 60ch;
+}

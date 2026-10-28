@@ -10,6 +10,7 @@ export function PasswordField({
   isNew,
   context,
   autoComplete,
+  autoFocus,
 }: {
   label?: string;
   value: string;
@@ -18,6 +19,7 @@ export function PasswordField({
   isNew?: boolean;
   context?: { email?: string; name?: string };
   autoComplete?: string;
+  autoFocus?: boolean;
 }) {
   const id = useId();
   const [show, setShow] = useState(false);
@@ -38,6 +40,8 @@ export function PasswordField({
           maxLength={128}
           spellCheck={false}
           autoCapitalize="off"
+          autoFocus={autoFocus}
+          {...(autoFocus ? { 'data-autofocus': '' } : {})}
         />
         <button type="button" className="pw-toggle" onClick={() => setShow(!show)} aria-pressed={show} aria-label={show ? 'Hide password' : 'Show password'}>
           {show ? 'Hide' : 'Show'}
