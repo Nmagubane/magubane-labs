@@ -5,7 +5,7 @@
 import type { QuestionTemplate, GeneratedQuestion } from '../../questions/types.ts';
 import type { Rng } from '../../questions/rng.ts';
 import type { FoundationGrade } from '../../curriculum/foundation.ts';
-import { jq, exactN, miss, keepJ, choiceJ, corePack, sayOp, showOp, type CorePack, type JOpt } from '../kit.ts';
+import { jq, exactN, miss, keepJ, choiceJ, corePack, sayOp, showOp, type CorePack, type JOpt, aWord } from '../kit.ts';
 import { ITEM_IDS, type ItemId } from '../packs/en/core.ts';
 import { fpTemplate, grp } from './maths-number.ts';
 
@@ -39,6 +39,8 @@ function noCarry(a: number, b: number): number {
 const carries = (a: number, b: number) => noCarry(a, b) !== a + b;
 const exchanges = (a: number, b: number) => noExchange(a, b) !== a - b;
 
+
+const tensOf = (k: number): string => `${k} ${k === 1 ? 'ten' : 'tens'}`;
 // ---------------------------------------------------------------------------
 // Add and subtract
 // ---------------------------------------------------------------------------
@@ -169,9 +171,9 @@ const bonds = (g: FoundationGrade) =>
         input: { kind: 'pad', max: 1000 },
         answer: exactN(ans),
         answerDisplay: String(ans),
-        hints: [`Think in tens: ${a / 10} tens ${add ? 'and' : 'take away'} ${b / 10} tens.`, `${a / 10} ${add ? '+' : '−'} ${b / 10} = ${add ? a / 10 + b / 10 : a / 10 - b / 10}.`],
-        solution: [`${a / 10} tens ${add ? '+' : '−'} ${b / 10} tens = ${ans / 10} tens = ${ans}.`],
-        misconceptions: keepJ([miss('fp-place-value', ans / 10, `That is ${ans / 10} ones. It is ${ans / 10} tens.`), miss('fp-operation', add ? a - b : a + b, add ? 'You took away. The sign says add.' : 'You added. The sign says take away.')], ans),
+        hints: [`Think in tens: ${tensOf(a / 10)} ${add ? 'and' : 'take away'} ${tensOf(b / 10)}.`, `${a / 10} ${add ? '+' : '−'} ${b / 10} = ${add ? a / 10 + b / 10 : a / 10 - b / 10}.`],
+        solution: [`${tensOf(a / 10)} ${add ? 'and' : 'take away'} ${tensOf(b / 10)} is ${tensOf(ans / 10)}.`, `${tensOf(ans / 10)} is ${ans}.`],
+        misconceptions: keepJ([miss('fp-place-value', ans / 10, `That is ${ans / 10} ${ans / 10 === 1 ? 'one' : 'ones'}. It is ${tensOf(ans / 10)}.`), miss('fp-operation', add ? a - b : a + b, add ? 'You took away. The sign says add.' : 'You added. The sign says take away.')], ans),
       });
     }
     // Take away from 20 (Grade 2 level 5).
@@ -294,7 +296,9 @@ const groups = (g: FoundationGrade) =>
     const p = corePack(ctx);
     const id = rng.pick(ITEM_IDS);
     const it = p.ITEMS[id];
-    const groupsOf = (n: number, size: number, show: boolean) => {
+    const groupsOf = (nIn: number, size: number, show: boolean) => {
+      // "1 group of 3" isn't multiplication yet, and it reads oddly: always at least 2 groups.
+      const n = Math.max(2, nIn);
       const ans = n * size;
       const addition = Array.from({ length: n }, () => size).join(' + ');
       return jq({
@@ -304,7 +308,7 @@ const groups = (g: FoundationGrade) =>
         input: { kind: 'pad', max: 1000 },
         answer: exactN(ans),
         answerDisplay: String(ans),
-        hints: [`Count in ${size}s, ${n} times.`, `${Array.from({ length: Math.min(n, 3) }, (_, i) => (i + 1) * size).join(', ')}${n > 3 ? ' …' : ''}`],
+        hints: [`Count in ${size}s, ${n} times.`, `Count with me: ${Array.from({ length: Math.min(n, 3) }, (_, i) => (i + 1) * size).join(', ')}${n > 3 ? ' …' : '.'}`],
         solution: [`${addition} = ${ans}.`, ...(g > 1 ? [`${n} × ${size} = ${ans}.`] : [])],
         misconceptions: keepJ([miss('fp-operation', n + size, `That adds ${n} and ${size}. There are ${n} groups of ${size}.`), miss('fp-count-step', (n + 1) * size, 'That is one group too many.'), miss('fp-count-step', (n - 1) * size, 'That is one group too few.')], ans),
       });
@@ -458,7 +462,7 @@ const fractions = (g: FoundationGrade) =>
         input: { kind: 'pad', max: 1000 },
         answer: exactN(d),
         answerDisplay: String(d),
-        hints: ['Count the equal parts in the whole circle.', `A ${FRAC_NAME[d]![0]} is 1 of ${d} equal parts.`],
+        hints: ['Count the equal parts in the whole circle.', `${aWord(FRAC_NAME[d]![0], true)} is 1 of ${d} equal parts.`],
         solution: [`${d} ${FRAC_NAME[d]![1]} make 1 whole.`],
         misconceptions: keepJ([miss('fp-miscount', d - 1, 'Count all the parts.'), miss('fp-miscount', d + 1, 'Count the parts once each.')], d),
       });
@@ -565,7 +569,13 @@ const money = (g: FoundationGrade) =>
         answer: exactN(amount),
         answerDisplay: p.money(amount),
         hints: ['Start with the biggest coin that fits.', 'Keep adding until you reach the amount.'],
-        solution: [`For example: ${greedy(amount, coins).map(p.money).join(' + ')} = ${p.money(amount)}.`],
+        solution: (() => {
+          const pieces = greedy(amount, coins);
+          const kind = (c: number) => (c >= 1000 ? 'note' : 'coin');
+          if (pieces.length === 1) return [`${aWord(p.money(amount), true)} ${kind(amount)} on its own makes ${p.money(amount)}.`];
+          const names = pieces.map(p.money);
+          return [`For example, ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} make ${p.money(amount)}.`];
+        })(),
       });
     const identify = () => {
       const all = [...COINS_G1, ...NOTES_G1];

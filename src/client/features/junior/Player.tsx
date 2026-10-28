@@ -2,7 +2,7 @@
  * A Junior session: 5 short questions on one skill. Spoken prompt, big materials on the work mat,
  * one Check button, and feedback that always shows (and says) the right answer and why.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiError } from '../../lib/api.ts';
 import { useRouter } from '../../lib/router.tsx';
 import { invalidate } from '../../lib/useResource.ts';
@@ -10,6 +10,8 @@ import type { ActivityStateResponse, AnswerResponse, PracticeItem, FeedbackDto, 
 import type { ResponseValue } from '../../../shared/questions/answer.ts';
 import { getSkill } from '../../../shared/curriculum/catalogue.ts';
 import { UI } from '../../../shared/junior/packs/en/core.ts';
+import { rightLine, wrongLine, hintLine, watchLine, doneLine } from '../../../shared/junior/narrate.ts';
+import { useSession } from '../../lib/session.tsx';
 import { Scene } from './Scene.tsx';
 import { JuniorInput, canCheck, type Reveal } from './JuniorInput.tsx';
 import { Icon } from '../../ui/Icon.tsx';
@@ -17,7 +19,7 @@ import { useSpeak, useVoiceToggle } from './voice.ts';
 import { stopSpeaking } from './speech.ts';
 import { playSound } from './sounds.ts';
 
-type Phase = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'question'; item: PracticeItem; startedAt: number } | { kind: 'feedback'; item: PracticeItem; fb: FeedbackDto } | { kind: 'done' };
+type Phase = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'question'; item: PracticeItem; startedAt: number } | { kind: 'feedback'; item: PracticeItem; fb: FeedbackDto; line: string; detail: string } | { kind: 'done' };
 
 export function Player({ id }: { id: string }) {
   const { navigate } = useRouter();
@@ -31,6 +33,9 @@ export function Player({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [watch, setWatch] = useState<WorkedExample | null>(null);
   const checkRef = useRef<HTMLButtonElement>(null);
+  // Turns the narrator's wording over, starting somewhere different each session.
+  const offset = useMemo(() => [...id].reduce((a, c) => a + c.charCodeAt(0), 0), [id]);
+  const hintTurn = useRef(0);
 
   const showQuestion = useCallback(
     (item: PracticeItem) => {
@@ -81,11 +86,13 @@ export function Player({ id }: { id: string }) {
     try {
       const r = await api.post<AnswerResponse>(`/api/questions/${phase.item.question.id}/answer`, { response: value, timeMs: Math.min(Date.now() - phase.startedAt, 600_000) });
       const fb = r.feedback as FeedbackDto;
+      const turn = offset + results.length;
+      const wrong = fb.correct ? null : wrongLine(fb.feedback, fb.solution, turn);
+      const line = wrong ? wrong.opener : rightLine(fb.answerDisplay, turn);
       setResults((x) => [...x, fb.correct]);
-      setPhase({ kind: 'feedback', item: phase.item, fb });
+      setPhase({ kind: 'feedback', item: phase.item, fb, line, detail: wrong?.detail ?? '' });
       playSound(fb.correct ? 'right' : 'notyet', voiceOn);
-      if (fb.correct) void say(UI.yes(fb.answerDisplay));
-      else void say(`${UI.notYet} ${fb.feedback ?? ''} ${fb.solution.join(' ')}`);
+      void say(wrong ? wrong.spoken : line);
       invalidate('/api/junior');
     } catch (e) {
       setPhase({ kind: 'error', message: (e as Error).message });
@@ -99,7 +106,7 @@ export function Player({ id }: { id: string }) {
     try {
       const h = await api.post<{ hint: string }>(`/api/questions/${phase.item.question.id}/hint`);
       setHints((x) => [...x, h.hint]);
-      void say(h.hint);
+      void say(hintLine(h.hint, offset + hintTurn.current++));
     } catch (e) {
       void say((e as Error).message);
     }
@@ -110,7 +117,7 @@ export function Player({ id }: { id: string }) {
     try {
       const ex = await api.get<WorkedExample>(`/api/skills/${phase.item.question.skillId}/example?level=${phase.item.question.difficulty}`);
       setWatch(ex);
-      await say(`${ex.say ?? ex.prompt} ${ex.solution.join(' ')}`);
+      await say(watchLine(ex.say ?? ex.prompt, ex.solution));
     } catch {
       setWatch(null);
     }
@@ -210,11 +217,11 @@ export function Player({ id }: { id: string }) {
           <div className="jp-fb-text">
             <p className="jp-fb-head">
               <Icon name={phase.fb.correct ? 'check' : 'cross'} size={28} />
-              <span>{phase.fb.correct ? UI.yes(phase.fb.answerDisplay) : UI.notYet}</span>
+              <span>{phase.line}</span>
             </p>
             {!phase.fb.correct ? (
               <>
-                {phase.fb.feedback ? <p>{phase.fb.feedback}</p> : null}
+                {phase.detail ? <p>{phase.detail}</p> : null}
                 <p className="jp-fb-answer">{UI.correctWas(phase.fb.answerDisplay)}</p>
                 {phase.fb.solution.length ? <p className="jp-fb-why">{phase.fb.solution.join(' ')}</p> : null}
               </>
@@ -267,11 +274,13 @@ export function Player({ id }: { id: string }) {
 
 function Done({ skillName, results, skillId }: { skillName: string; results: boolean[]; skillId: string }) {
   const { navigate } = useRouter();
+  const { me } = useSession();
   const say = useSpeak();
   const right = results.filter(Boolean).length;
   const [busy, setBusy] = useState(false);
+  const [line] = useState(() => doneLine({ name: me?.user?.displayName ?? '', skill: skillName, right, total: results.length, n: Date.now() % 7 }));
   useEffect(() => {
-    void say(`${UI.youPractised(skillName)} ${UI.firstTry(right, results.length)}`);
+    void say(line.spoken);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const again = async () => {
@@ -285,7 +294,7 @@ function Done({ skillName, results, skillId }: { skillName: string; results: boo
   };
   return (
     <main id="main" className="jp-done">
-      <h1>{UI.youPractised(skillName)}</h1>
+      <h1>{line.title}</h1>
       <ol className="jp-done-marks" aria-label={UI.firstTry(right, results.length)}>
         {results.map((r, i) => (
           <li key={i} className={r ? 'ok' : 'no'}>

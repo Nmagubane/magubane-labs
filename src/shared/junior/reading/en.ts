@@ -8,6 +8,20 @@
  * show on older phones; nothing newer.
  */
 
+/** Letter groups that make one sound, longest first. Used to sound out words that don't list their sounds. */
+const GRAPHEMES = ['tch', 'dge', 'igh', 'sh', 'ch', 'th', 'wh', 'ph', 'ck', 'ng', 'qu', 'ee', 'ea', 'oa', 'ai', 'ay', 'oo', 'ou', 'ow', 'oi', 'oy', 'ar', 'or', 'er', 'ir', 'ur', 'ie', 'ue', 'ew', 'aw', 'au'];
+
+/** "ship" → sh, i, p; "peach" → p, ea, ch. Sounds, not letters: that is how children are taught to blend. */
+export function soundsOf(word: string): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < word.length; ) {
+    const g = GRAPHEMES.find((x) => word.startsWith(x, i));
+    out.push(g ?? word[i]!);
+    i += g ? g.length : 1;
+  }
+  return out;
+}
+
 export interface PicWord {
   word: string;
   icon: string;

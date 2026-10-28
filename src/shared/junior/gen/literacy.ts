@@ -9,7 +9,7 @@
 import type { QuestionTemplate, GeneratedQuestion } from '../../questions/types.ts';
 import type { Rng } from '../../questions/rng.ts';
 import type { FoundationGrade } from '../../curriculum/foundation.ts';
-import { jq, choiceJ, corePack, tile, type JOpt } from '../kit.ts';
+import { jq, choiceJ, corePack, tile, type JOpt, aWord } from '../kit.ts';
 import { fpTemplate } from './maths-number.ts';
 import * as R from '../reading/en.ts';
 import { VOCAB, COLOURS } from '../reading/en-fal.ts';
@@ -21,7 +21,8 @@ const ALPHABET = 'abcdefghijklmnoprstuvwyz'.split('');
 // Letters and sounds
 // ---------------------------------------------------------------------------
 function letterQuestion(rng: Rng, w: R.PicWord, where: 'first' | 'last' | 'middle', nOpts: number, correct: string, wrongs: { text: string; why: string; code: 'fp-sound' | 'fp-letter-shape' }[]): GeneratedQuestion {
-  const said = where === 'first' ? 'start with' : where === 'last' ? 'end with' : 'have in the middle';
+  const letterWord = correct.length > 1 ? 'letters' : 'letter';
+  const ask = where === 'middle' ? `Which ${letterWord} ${correct.length > 1 ? 'are' : 'is'} in the middle of ${w.word}?` : `Which ${letterWord} does ${w.word} ${where === 'first' ? 'start' : 'end'} with?`;
   const picks = wrongs.filter((x, i, a) => x.text !== correct && a.findIndex((y) => y.text === x.text) === i).slice(0, nOpts - 1);
   while (picks.length < nOpts - 1) {
     const l = rng.pick(ALPHABET.filter((a) => a !== correct && !picks.some((p) => p.text === a)));
@@ -29,14 +30,14 @@ function letterQuestion(rng: Rng, w: R.PicWord, where: 'first' | 'last' | 'middl
   }
   return choiceJ(rng, {
     // The word is spoken, never printed: printing it would let a reader copy the letter.
-    prompt: `Which ${correct.length > 1 ? 'letters' : 'letter'} does it ${said}?`,
-    say: `${w.word}. Which ${correct.length > 1 ? 'letters does' : 'letter does'} ${w.word} ${said}?`,
+    prompt: where === 'middle' ? `Which ${letterWord} ${correct.length > 1 ? 'are' : 'is'} in the middle?` : `Which ${letterWord} does it ${where === 'first' ? 'start' : 'end'} with?`,
+    say: `Listen: ${w.word}. ${ask}`,
     scene: { kind: 'picture', icon: w.icon },
     correct: { id: 'c', text: correct },
     distractors: picks.map((p, i) => ({ id: `w${i}`, text: p.text, feedback: p.why, code: p.code })),
     code: 'fp-sound',
     hints: [`Say "${w.word}" slowly. Stretch the ${where} sound.`, where === 'first' ? `Listen: ${w.word}. What is the very first sound you make?` : where === 'last' ? `What sound do you finish with?` : 'Listen for the sound between the first and the last.'],
-    solution: [`"${w.word}" ${where === 'first' ? 'starts' : where === 'last' ? 'ends' : 'has'} with the sound of ${correct}${where === 'middle' ? ' in the middle' : ''}.`],
+    solution: [where === 'middle' ? `"${w.word}" has the sound of ${correct} in the middle.` : `"${w.word}" ${where === 'first' ? 'starts' : 'ends'} with the sound of ${correct}.`],
     answerDisplay: correct,
   });
 }
@@ -86,7 +87,7 @@ function vowelTeam(rng: Rng, teams: string[]): GeneratedQuestion {
   const others = rng.shuffle(teams.filter((x) => x !== t.team && !(t.team === 'ee' && x === 'ea') && !(t.team === 'ea' && x === 'ee') && !(['ir', 'ur'].includes(t.team) && ['ir', 'ur'].includes(x)))).slice(0, 2);
   return choiceJ(rng, {
     prompt: 'Which letters make the vowel sound?',
-    say: `${w.word}. Which letters make the vowel sound in ${w.word}?`,
+    say: `Listen: ${w.word}. Which letters make the vowel sound in ${w.word}?`,
     scene: { kind: 'picture', icon: w.icon },
     correct: { id: 'c', text: t.team },
     distractors: others.map((o, i) => ({ id: `w${i}`, text: o, feedback: `"${o}" says a different sound. Listen again: ${w.word}.`, code: 'fp-sound' as const })),
@@ -206,8 +207,9 @@ const phonological = (g: FoundationGrade) =>
 // ---------------------------------------------------------------------------
 const diffLetters = (a: string, b: string) => (a.length !== b.length ? 9 : [...a].filter((c, i) => c !== b[i]).length);
 
-function readWord(rng: Rng, pool: { word: string; icon: string }[], nOpts: number, similar: boolean): GeneratedQuestion {
+function readWord(rng: Rng, pool: { word: string; icon: string; sounds?: string[] }[], nOpts: number, similar: boolean): GeneratedQuestion {
   const w = rng.pick(pool);
+  const sounds = w.sounds ?? R.soundsOf(w.word);
   const others = pool.filter((x) => x.word !== w.word && x.icon !== w.icon);
   const close = similar ? others.filter((x) => diffLetters(x.word, w.word) === 1) : [];
   const wrong = [...rng.shuffle(close), ...rng.shuffle(others.filter((x) => !close.includes(x)))].slice(0, nOpts - 1);
@@ -216,10 +218,10 @@ function readWord(rng: Rng, pool: { word: string; icon: string }[], nOpts: numbe
     say: 'Read the word. Then tap its picture.',
     scene: { kind: 'text', text: w.word, size: 'word' },
     correct: { id: 'c', text: '', icon: w.icon },
-    distractors: wrong.map((x, i) => ({ id: `w${i}`, text: '', icon: x.icon, feedback: `That picture is "${x.word}". Sound out every letter: ${w.word.split('').join('-')}.`, code: 'fp-similar-word' as const })),
+    distractors: wrong.map((x, i) => ({ id: `w${i}`, text: '', icon: x.icon, feedback: `That picture is "${x.word}". Sound out each part: ${sounds.join('-')}.`, code: 'fp-similar-word' as const })),
     code: 'fp-similar-word',
-    hints: ['Say the sound of each letter, left to right.', `Push the sounds together: ${w.word.split('').join('… ')}.`, `Listen: ${w.word}.`],
-    solution: [`${w.word.split('').join('-')}: ${w.word}.`],
+    hints: ['Say each sound, from left to right.', `Push the sounds together: ${sounds.join('… ')}.`, `Listen: ${w.word}.`],
+    solution: [`${sounds.join('-')}: ${w.word}.`],
     answerDisplay: w.word,
   });
 }
@@ -228,7 +230,7 @@ function spell(rng: Rng, w: { word: string; icon: string; sounds: string[] }, ex
   const tiles = rng.shuffle([...w.sounds, ...extras.filter((e) => !w.sounds.includes(e))]);
   return jq({
     prompt: 'Spell the word.',
-    say: `Spell ${w.word}.`,
+    say: `Let's spell ${w.word}. Say it slowly: ${w.word}.`,
     scene: { kind: 'picture', icon: w.icon },
     input: { kind: 'spell', tiles, length: w.sounds.length },
     answer: { kind: 'text', value: w.word },
@@ -279,7 +281,7 @@ function sightWord(rng: Rng, pool: string[], all: string[], nOpts: number): Gene
   const wrong = [...new Set([...(partner ? [partner] : []), ...rng.shuffle(sameStart), ...rng.shuffle(all.filter((x) => x !== w))])].filter((x) => x !== w).slice(0, nOpts - 1);
   return choiceJ(rng, {
     prompt: 'Tap the word you hear.',
-    say: `Tap the word: ${w}.`,
+    say: `Find the word ${w}.`,
     correct: { id: 'c', text: w },
     distractors: wrong.map((x, i) => ({ id: `w${i}`, text: x, feedback: x === partner ? `That says "${x}". Look at every letter, from left to right.` : `That says "${x}". Listen again: ${w}.`, code: 'fp-similar-word' as const })),
     code: 'fp-similar-word',
@@ -305,10 +307,10 @@ function sentencePicture(rng: Rng, grade: 1 | 2 | 3): GeneratedQuestion {
     say: `Read the sentence. ${s.q}`,
     scene: { kind: 'text', text: s.text, size: 'sentence' },
     correct: { id: 'c', text: s.a.word, icon: s.a.icon },
-    distractors: s.wrong.map((w, i) => ({ id: `w${i}`, text: w.word, icon: w.icon, feedback: `Read the sentence again and look for the word that answers: ${s.q}`, code: 'fp-similar-word' as const })),
+    distractors: s.wrong.map((w, i) => ({ id: `w${i}`, text: w.word, icon: w.icon, feedback: 'Read the sentence again, and find the word that tells you.', code: 'fp-similar-word' as const })),
     code: 'fp-similar-word',
     hints: ['Point to each word as you read.', `Listen: "${s.text}"`],
-    solution: [`"${s.text}" ${s.q} ${cap(s.a.word)}.`],
+    solution: [`The sentence says: "${s.text}"`, `So the answer is ${s.a.word}.`],
   });
 }
 
@@ -430,10 +432,10 @@ const language = (g: FoundationGrade) =>
       return choiceJ(rng, {
         prompt: 'Which one needs a question mark?',
         correct: { id: 'c', text: `${q} _` },
-        distractors: wrong.map((w, i) => ({ id: `w${i}`, text: `${w} _`, feedback: `"${w}" tells us something. It ends with a full stop.`, code: 'fp-grammar' as const })),
+        distractors: wrong.map((w, i) => ({ id: `w${i}`, text: `${w} _`, feedback: 'That one tells us something, so it ends with a full stop.', code: 'fp-grammar' as const })),
         code: 'fp-grammar',
         hints: ['A question asks something.', 'Questions often start with what, where, can or do.'],
-        solution: [`"${q}?" asks something, so it ends with a question mark.`],
+        solution: [`This one asks something, so it ends with a question mark: "${q}?"`],
         answerDisplay: `${q}?`,
       });
     };
@@ -467,9 +469,9 @@ const language = (g: FoundationGrade) =>
       const j = rng.pick(R.JOINING);
       return choiceJ(rng, {
         prompt: `${j.a} ___ ${j.b}.`,
-        say: `Which word joins the sentence? ${j.a}, something, ${j.b}.`,
+        say: `Listen: ${j.a} … ${j.b}. Which word joins them: and, but or because?`,
         correct: { id: j.join, text: j.join, say: j.join },
-        distractors: (['and', 'but', 'because'] as const).filter((x) => x !== j.join).map((x) => ({ id: x, text: x, say: x, feedback: x === 'because' ? '"Because" gives a reason.' : x === 'but' ? '"But" shows something different or surprising.' : '"And" adds more of the same.', code: 'fp-grammar' as const })),
+        distractors: (['and', 'but', 'because'] as const).filter((x) => x !== j.join).map((x) => ({ id: x, text: x, say: x, feedback: x === 'because' ? '"Because" gives a reason.' : x === 'but' ? '"But" shows a change or a surprise.' : '"And" adds more of the same.', code: 'fp-grammar' as const })),
         code: 'fp-grammar',
         keepOrder: true,
         hints: ['Read it with each word. Which sounds right?', '"Because" gives a reason. "But" shows a change. "And" adds more.'],
@@ -484,6 +486,22 @@ const language = (g: FoundationGrade) =>
 // ---------------------------------------------------------------------------
 // English First Additional Language
 // ---------------------------------------------------------------------------
+/** "It is a body word." Said as the second hint for a picture word. */
+const THEME_HINT: Record<string, string> = {
+  'my body': 'part of your body',
+  'my family': 'someone in a family',
+  food: 'something you eat or drink',
+  colours: 'a colour',
+  'the classroom': 'something in the classroom',
+  animals: 'an animal',
+  clothes: 'something you wear',
+  weather: 'a kind of weather',
+  places: 'a place',
+  actions: 'something you do',
+  feelings: 'a feeling',
+  'people who help us': 'someone who helps us',
+};
+
 function vocabQuestion(rng: Rng, grades: number[], nOpts: number): GeneratedQuestion {
   const themes = VOCAB.filter((t) => grades.includes(t.grade));
   const theme = rng.pick(themes);
@@ -491,14 +509,14 @@ function vocabQuestion(rng: Rng, grades: number[], nOpts: number): GeneratedQues
   const wrong = rng.shuffle(theme.words.filter((x) => x.word !== w.word && x.icon !== w.icon)).slice(0, nOpts - 1);
   return choiceJ(rng, {
     prompt: 'Tap what you hear.',
-    say: `Tap: ${w.word}.`,
+    say: theme.theme === 'colours' ? `Find the colour ${w.word}.` : theme.theme === 'actions' || theme.theme === 'feelings' ? `Which one means ${w.word}?` : `Find the ${w.word}.`,
     // Pictures only: this is listening, so printed words would let a reader skip it.
     correct: { id: 'c', text: '', icon: w.icon },
-    distractors: wrong.map((x, i) => ({ id: `w${i}`, text: '', icon: x.icon, feedback: `That is "${x.word}". Listen again: ${w.word}.`, code: 'fp-knowledge' as const })),
+    distractors: wrong.map((x, i) => ({ id: `w${i}`, text: '', icon: x.icon, feedback: `That is the picture for "${x.word}". Listen again: ${w.word}.`, code: 'fp-knowledge' as const })),
     answerDisplay: w.word,
     code: 'fp-knowledge',
-    hints: [`Listen again: ${w.word}.`, `It is one of the ${theme.theme} words.`],
-    solution: [`This is "${w.word}".`],
+    hints: [`Listen again: ${w.word}.`, `It is ${THEME_HINT[theme.theme] ?? `${aWord(theme.theme)} word`}.`],
+    solution: [`This is the picture for "${w.word}".`],
   });
 }
 
@@ -520,7 +538,7 @@ const falInstructions = (g: FoundationGrade) =>
       const opts: JOpt[] = [
         { id: 'c', text: '', icon: shapeTok(s, c, size) },
         { id: 'wc', text: '', icon: shapeTok(s, c2, size), feedback: `That ${s} is ${c2}. Listen for the colour.`, code: 'fp-knowledge' },
-        { id: 'ws', text: '', icon: shapeTok(s2, c, size), feedback: `That is a ${s2}. Listen for the shape.`, code: 'fp-knowledge' },
+        { id: 'ws', text: '', icon: shapeTok(s2, c, size), feedback: `That is ${aWord(s2)}. Listen for the shape.`, code: 'fp-knowledge' },
         ...(withSize ? [{ id: 'wz', text: '', icon: shapeTok(s, c, size === 'big' ? 'small' : 'big'), feedback: `That one is ${size === 'big' ? 'small' : 'big'}.`, code: 'fp-knowledge' as const }] : []),
       ];
       return choiceJ(rng, {
@@ -539,7 +557,7 @@ const falInstructions = (g: FoundationGrade) =>
       const others = rng.shuffle(COLOURS.filter((x) => x !== c)).slice(0, 2);
       return choiceJ(rng, {
         prompt: 'Listen and tap.',
-        say: `Tap ${c}.`,
+        say: `Find the colour ${c}.`,
         correct: { id: c, text: '', icon: `color:${c}` },
         distractors: others.map((o) => ({ id: o, text: '', icon: `color:${o}`, feedback: `That is ${o}. Listen again: ${c}.`, code: 'fp-knowledge' as const })),
         code: 'fp-knowledge',
@@ -557,10 +575,10 @@ const falInstructions = (g: FoundationGrade) =>
         prompt: 'Listen and tap.',
         say: `Tap ${n === 1 ? `one ${it.one}` : `${n} ${it.many}`}.`,
         correct: { id: String(n), text: '', icon: `count:${n}:${it.icon}` },
-        distractors: others.map((o) => ({ id: String(o), text: '', icon: `count:${o}:${it.icon}`, feedback: `There are ${o} there. Count them.`, code: 'fp-miscount' as const })),
+        distractors: others.map((o) => ({ id: String(o), text: '', icon: `count:${o}:${it.icon}`, feedback: `That one has ${o}. Count them.`, code: 'fp-miscount' as const })),
         code: 'fp-miscount',
         hints: ['Listen for the number.', 'Count each group.'],
-        solution: [`There are ${n} ${n === 1 ? it.one : it.many} here.`],
+        solution: [`This one has ${n} ${n === 1 ? it.one : it.many}.`],
         answerDisplay: `${n} ${n === 1 ? it.one : it.many}`,
       });
     };
@@ -571,12 +589,12 @@ const falInstructions = (g: FoundationGrade) =>
       const target = others[0]!;
       return choiceJ(rng, {
         prompt: 'Listen and tap.',
-        say: `Tap the shape that is not a ${s} and not a ${others[1]}.`,
+        say: `Tap the shape that is not ${aWord(s)} and not ${aWord(others[1]!)}.`,
         correct: { id: 'c', text: '', icon: shapeTok(target, c) },
-        distractors: [s, others[1]!].map((x, i) => ({ id: `w${i}`, text: '', icon: shapeTok(x, c), feedback: `That is a ${x}. Listen for the word "not".`, code: 'fp-knowledge' as const })),
+        distractors: [s, others[1]!].map((x, i) => ({ id: `w${i}`, text: '', icon: shapeTok(x, c), feedback: `That is ${aWord(x)}. Listen for the word "not".`, code: 'fp-knowledge' as const })),
         code: 'fp-knowledge',
         hints: ['"Not" means leave those out.', `Leave out the ${s} and the ${others[1]}.`],
-        solution: [`The ${target} is not a ${s} and not a ${others[1]}.`],
+        solution: [`The ${target} is not ${aWord(s)} and not ${aWord(others[1]!)}.`],
         answerDisplay: `the ${target}`,
       });
     };

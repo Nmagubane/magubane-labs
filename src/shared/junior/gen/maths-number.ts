@@ -6,7 +6,7 @@
 import type { Difficulty, QuestionTemplate, Scene, GenContext, GeneratedQuestion } from '../../questions/types.ts';
 import type { Rng } from '../../questions/rng.ts';
 import type { FoundationGrade } from '../../curriculum/foundation.ts';
-import { jq, exactN, miss, keepJ, choiceJ, nearNumbers, digitSwap, tile, corePack, type JOpt } from '../kit.ts';
+import { jq, exactN, miss, keepJ, choiceJ, nearNumbers, digitSwap, tile, corePack, type JOpt, type CorePack, aWord } from '../kit.ts';
 import { ITEM_IDS } from '../packs/en/core.ts';
 
 type Gen = (rng: Rng, level: Difficulty, ctx?: GenContext) => GeneratedQuestion;
@@ -28,21 +28,21 @@ const COUNT_RANGE: Record<FoundationGrade, [number, number][]> = {
   3: [[100, 200], [200, 400], [400, 600], [600, 900], [900, 1000]],
 };
 
-function countSolution(n: number, layout: 'loose' | 'frames' | 'blocks'): string[] {
+function countSolution(p: CorePack, n: number, layout: 'loose' | 'frames' | 'blocks'): string[] {
   if (layout === 'loose') {
-    const said = n <= 6 ? Array.from({ length: n }, (_, i) => i + 1).join(', ') : `1, 2, 3 … ${n}`;
+    const said = n <= 6 ? Array.from({ length: n }, (_, i) => i + 1).join(', ') : `1, 2, 3, all the way to ${n}`;
     return [`Touch each one and count: ${said}.`, `There ${n === 1 ? 'is 1' : `are ${n}`}.`];
   }
   if (layout === 'frames') {
     const tens = Math.floor(n / 10);
     const ones = n % 10;
     const tensSaid = Array.from({ length: tens }, (_, i) => (i + 1) * 10).join(', ');
-    return [tens ? `Each full frame is 10. Count the full frames: ${tensSaid}.` : 'Count the dots in the frame.', ones ? `Then count on the rest: ${tens * 10 + 1}${ones > 1 ? ` … ${n}` : ''}.` : 'There are no extras.', `So there are ${n}.`];
+    return [tens ? `Each full frame is 10. Count the full frames: ${tensSaid}.` : 'Count the dots in the frame.', ones ? `Then count on the rest: ${tens * 10 + 1}${ones > 1 ? `, all the way to ${n}` : ''}.` : 'There are no extras.', `So there are ${n}.`];
   }
   const b = base10Of(n);
   return [
     `Each flat is 100, each long rod is 10, each small cube is 1.`,
-    `${b.hundreds ? `${b.hundreds} hundreds, ` : ''}${b.tens} tens and ${b.ones} ones.`,
+    `${p.placeWords(b)}.`,
     `${b.hundreds ? `${b.hundreds * 100} + ` : ''}${b.tens * 10} + ${b.ones} = ${grp(n)}.`,
   ];
 }
@@ -64,7 +64,7 @@ const countObjects = (g: FoundationGrade) =>
         answer: exactN(n),
         answerDisplay: String(n),
         hints: ['Count as you put each counter down.', tool === 'tenframe' ? 'Fill one frame first. A full frame is 10.' : 'Say one number for each counter.'],
-        solution: tool === 'tenframe' ? countSolution(n, 'frames') : [`Put down counters one at a time: 1, 2, 3 … ${n}.`],
+        solution: tool === 'tenframe' ? countSolution(p, n, 'frames') : [`Put down counters one at a time: 1, 2, 3, all the way to ${n}.`],
         misconceptions: keepJ([miss('fp-miscount', n + 1, `That is ${n + 1}. One too many.`), miss('fp-miscount', n - 1, `That is ${n - 1}. One more counter makes ${n}.`)], n),
       });
     }
@@ -82,11 +82,11 @@ const countObjects = (g: FoundationGrade) =>
         answer: exactN(n),
         answerDisplay: grp(n),
         hints: ['A flat is 100. A long rod is 10. A small cube is 1.', `Count in hundreds first, then tens, then ones.`],
-        solution: countSolution(n, 'blocks'),
+        solution: countSolution(p, n, 'blocks'),
         misconceptions: keepJ(
           [
             miss('fp-place-value', loose, `You counted every block as 1. A rod is worth 10${b.hundreds ? ' and a flat is worth 100' : ''}.`),
-            miss('fp-digit-swap', swapped, `That swaps the tens and the ones. There are ${b.tens} tens and ${b.ones} ones.`),
+            miss('fp-digit-swap', swapped, `That swaps the tens and the ones. There ${b.tens === 1 ? 'is' : 'are'} ${p.placeWords({ ...b, hundreds: 0 }, false)}.`),
             miss('fp-miscount', n + 10, `That is one ten too many. Count the rods again.`),
             miss('fp-miscount', n - 10, `That is one ten too few. Count the rods again.`),
             miss('fp-miscount', n + 1, 'Nearly! Count the small cubes again.'),
@@ -106,7 +106,7 @@ const countObjects = (g: FoundationGrade) =>
       answer: exactN(n),
       answerDisplay: String(n),
       hints: frames ? ['Each full frame holds 10.', 'Count the full frames in tens, then count on the rest.'] : ['Touch each one as you count.', 'Say one number for each one.'],
-      solution: countSolution(n, frames ? 'frames' : 'loose'),
+      solution: countSolution(p, n, frames ? 'frames' : 'loose'),
       misconceptions: keepJ(
         [
           miss('fp-miscount', n + 1, `That is one too many. Touch each ${it.one} once.`),
@@ -151,7 +151,8 @@ const COUNT_CFG: Record<FoundationGrade, CountCfg[]> = {
 };
 
 const counting = (g: FoundationGrade) =>
-  fpTemplate('counting', g, (rng, level) => {
+  fpTemplate('counting', g, (rng, level, ctx) => {
+    const p = corePack(ctx);
     const cfg = COUNT_CFG[g][level - 1]!;
     const step = rng.pick(cfg.steps);
     const back = cfg.dir === 'back' || (cfg.dir === 'mix' && rng.chance(0.5));
@@ -172,13 +173,12 @@ const counting = (g: FoundationGrade) =>
     const cells = seq.map((v, i) => (i === gap ? null : v));
     const dirWord = back ? 'back' : 'on';
     const stepWords = step === 1 ? 'ones' : `${step}s`;
-    const spoken = cells.map((c) => (c === null ? 'something' : String(c))).join(', ');
     const prevVal = gap > 0 ? seq[gap - 1]! : null;
     const nextVal = gap < len - 1 ? seq[gap + 1]! : null;
     const delta = back ? -step : step;
     return jq({
       prompt: 'What number is missing?',
-      say: `Count ${dirWord} in ${stepWords}. ${spoken}. What number is missing?`,
+      say: p.saySequence(cells, `Let's count ${dirWord} in ${stepWords}.`),
       scene: { kind: 'track', cells },
       input: { kind: 'pad', max: 1000 },
       answer: exactN(ans),
@@ -260,17 +260,17 @@ const numerals = (g: FoundationGrade) =>
         distractors: opts.slice(1),
         code: 'fp-place-value',
         hints: ['Read the word slowly, part by part.', n > 20 ? 'The first part tells you the tens.' : 'Count on your fingers to check.'],
-        solution: [`${p.numberWords(n)} is ${grp(n)}.`],
+        solution: [`The word "${p.numberWords(n)}" means ${grp(n)}.`],
       });
     }
     return choiceJ(rng, {
       prompt: 'Tap the number you hear.',
-      say: `Tap ${n}.`,
+      say: `Find the number ${n}.`,
       correct: opts[0]!,
       distractors: opts.slice(1),
       code: 'fp-place-value',
       hints: [`Listen again: ${n}.`, n >= 20 ? `${n} starts with ${n >= 100 ? `${Math.floor(n / 100)} hundred` : `${Math.floor(n / 10) * 10}`}.` : 'Count up on your fingers.'],
-      solution: [`${n} looks like this: ${grp(n)}.`],
+      solution: [n < 10 ? `${n} is written like this: ${n}.` : `${grp(n)} is written with ${[...String(n)].map((d) => `${aWord(d)}`).join(', then ')}.`],
     });
   });
 
@@ -300,7 +300,7 @@ function orderQuestion(rng: Rng, hi: number, count: number, biggestFirst: boolea
     answer: { kind: 'sequence', ids: sorted.map((v) => `n${v}`) },
     answerDisplay: sorted.map(grp).join(', '),
     hints: [hi > 20 ? 'Look at the tens first. More tens means a bigger number.' : 'Which number comes first when you count?', biggestFirst ? 'Find the biggest and tap it first.' : 'Find the smallest and tap it first.'],
-    solution: [`In order: ${sorted.map(grp).join(', ')}.`],
+    solution: [`From ${biggestFirst ? 'biggest to smallest' : 'smallest to biggest'}: ${sorted.map(grp).join(', ')}.`],
   });
 }
 
@@ -414,7 +414,8 @@ const compare = (g: FoundationGrade) =>
 const PV_RANGE: Record<FoundationGrade, [number, number]> = { 1: [11, 20], 2: [21, 99], 3: [101, 999] };
 
 const placeValue = (g: FoundationGrade) =>
-  fpTemplate('place-value', g, (rng, level) => {
+  fpTemplate('place-value', g, (rng, level, ctx) => {
+    const p = corePack(ctx);
     const [lo, hi] = PV_RANGE[g];
     let n = rng.int(lo, hi);
     if (n % 10 === 0 && level >= 3) n += rng.int(1, 9);
@@ -431,8 +432,8 @@ const placeValue = (g: FoundationGrade) =>
         answer: exactN(n),
         answerDisplay: grp(n),
         hints: [g === 3 ? 'How many hundreds? How many tens? How many ones?' : 'How many tens? How many ones?', `${grp(n)} is ${expanded}.`],
-        solution: [`${grp(n)} = ${expanded}.`, `${b.hundreds ? `${b.hundreds} hundreds, ` : ''}${b.tens} ${b.tens === 1 ? 'ten' : 'tens'} and ${b.ones} ones.`],
-        misconceptions: keepJ([miss('fp-digit-swap', b.hundreds * 100 + b.ones * 10 + b.tens, `That swaps the tens and the ones. ${grp(n)} has ${b.tens} tens.`)], n),
+        solution: [`${grp(n)} = ${expanded}.`, `That is ${p.placeWords(b, g === 3)}.`],
+        misconceptions: keepJ([miss('fp-digit-swap', b.hundreds * 100 + b.ones * 10 + b.tens, `That swaps the tens and the ones. ${grp(n)} has ${p.nOf(b.tens, 'ten', 'tens')}.`)], n),
       });
     }
     if (level === 2) {
@@ -472,7 +473,7 @@ const placeValue = (g: FoundationGrade) =>
       const ans = hideOnes ? b.ones : tensPart;
       return jq({
         prompt: hideOnes ? `${grp(n)} = ${grp(tensPart)} + ?` : `${grp(n)} = ? + ${b.ones}`,
-        say: hideOnes ? `${n} equals ${tensPart} plus what?` : `${n} equals what plus ${b.ones}?`,
+        say: hideOnes ? `What do you add to ${tensPart} to make ${n}?` : `What number and ${b.ones} make ${n}?`,
         input: { kind: 'pad', max: 1000 },
         answer: exactN(ans),
         answerDisplay: grp(ans),

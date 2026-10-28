@@ -10,6 +10,7 @@ import type { SubjectId } from '../../../shared/curriculum/catalogue.ts';
 import { UI } from '../../../shared/junior/packs/en/core.ts';
 import { Icon } from '../../ui/Icon.tsx';
 import { useSpeak, useVoiceToggle } from './voice.ts';
+import { greetingLine } from '../../../shared/junior/narrate.ts';
 
 const WORLD_LABEL = UI.worlds as Record<string, string>;
 
@@ -86,7 +87,7 @@ export function JuniorHome() {
   const { start, busy } = useStartSkill();
 
   useEffect(() => {
-    if (data) void say(`${UI.greeting(data.name)} ${UI.todayIntro}`);
+    if (data) void say(greetingLine(data.name, new Date().getHours(), Date.now() % 5).spoken);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.name]);
 
@@ -114,7 +115,7 @@ export function JuniorHome() {
   return (
     <main id="main" className="jh">
       <header className="jh-top">
-        <h1 className="jh-hello">{UI.greeting(data.name)}</h1>
+        <h1 className="jh-hello">{greetingLine(data.name, new Date().getHours(), 0).title}</h1>
         <div className="jh-tools">
           <button type="button" className="jp-icon-btn" onClick={() => setVoiceOn(!voiceOn)} aria-pressed={voiceOn} aria-label={voiceOn ? 'Voice is on. Turn it off.' : 'Voice is off. Turn it on.'}>
             <Icon name={voiceOn ? 'speaker' : 'mute'} size={26} />

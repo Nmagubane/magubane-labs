@@ -6,7 +6,7 @@
 import type { QuestionTemplate, GeneratedQuestion, Scene } from '../../questions/types.ts';
 import type { Rng } from '../../questions/rng.ts';
 import type { FoundationGrade } from '../../curriculum/foundation.ts';
-import { jq, exactN, miss, keepJ, choiceJ, corePack, tile, type JOpt } from '../kit.ts';
+import { jq, exactN, miss, keepJ, choiceJ, corePack, tile, type JOpt, aWord } from '../kit.ts';
 import { ITEM_IDS, SHAPE_NAMES, DAYS, MONTHS, type ShapeId, type ItemId } from '../packs/en/core.ts';
 import { fpTemplate, grp } from './maths-number.ts';
 
@@ -50,7 +50,7 @@ function numberPattern(rng: Rng, start: number, step: number, len: number, gapAt
   const up = step > 0;
   return jq({
     prompt: 'What number is missing?',
-    say: `${cells.map((c) => (c === null ? 'something' : c)).join(', ')}. What number is missing?`,
+    say: corePack().saySequence(cells, 'Look at the number pattern.'),
     scene: { kind: 'track', cells },
     input: { kind: 'pad', max: 1000 },
     answer: exactN(ans),
@@ -191,10 +191,10 @@ const shapes = (g: FoundationGrade) =>
       return choiceJ(rng, {
         prompt: `Tap the ${SHAPE_NAMES[target]}.`,
         correct: { id: target, text: SHAPE_NAMES[target], icon: tok(target) },
-        distractors: others.map((o) => ({ id: o, text: SHAPE_NAMES[o], icon: tok(o), feedback: `That is a ${SHAPE_NAMES[o]}. ${target === 'circle' ? 'A circle is round with no corners.' : `A ${SHAPE_NAMES[target]} has ${SIDES[target]} straight sides.`}`, code: 'fp-shape-name' as const })),
+        distractors: others.map((o) => ({ id: o, text: SHAPE_NAMES[o], icon: tok(o), feedback: `That is ${aWord(SHAPE_NAMES[o])}. ${target === 'circle' ? 'A circle is round with no corners.' : `${aWord(SHAPE_NAMES[target], true)} has ${SIDES[target]} straight sides.`}`, code: 'fp-shape-name' as const })),
         code: 'fp-shape-name',
-        hints: ['Count the sides and the corners.', target === 'circle' ? 'A circle is round all the way.' : `A ${SHAPE_NAMES[target]} has ${SIDES[target]} sides.`],
-        solution: [target === 'circle' ? 'A circle is round with no straight sides.' : `A ${SHAPE_NAMES[target]} has ${SIDES[target]} straight sides${target === 'square' ? ', all the same length' : target === 'rectangle' ? ': two long and two short' : ''}.`],
+        hints: ['Count the sides and the corners.', target === 'circle' ? 'A circle is round all the way.' : `${aWord(SHAPE_NAMES[target], true)} has ${SIDES[target]} sides.`],
+        solution: [target === 'circle' ? 'A circle is round with no straight sides.' : `${aWord(SHAPE_NAMES[target], true)} has ${SIDES[target]} straight sides${target === 'square' ? ', all the same length' : target === 'rectangle' ? ': two long and two short' : ''}.`],
         answerDisplay: SHAPE_NAMES[target],
       });
     }
@@ -218,17 +218,17 @@ const shapes = (g: FoundationGrade) =>
       const real = rng.pick(REAL_3D[target]!);
       const wrongShapes = rng.shuffle(threeD.filter((s) => s !== target && REAL_3D[s])).slice(0, 2);
       return choiceJ(rng, {
-        prompt: `Which one is shaped like a ${SHAPE_NAMES[target]}?`,
-        say: `Which one is shaped like a ${SHAPE_NAMES[target]}?`,
+        prompt: `Which one is shaped like ${aWord(SHAPE_NAMES[target])}?`,
+        say: `Which one is shaped like ${aWord(SHAPE_NAMES[target])}?`,
         scene: { kind: 'shapes', items: [{ shape: target, label: SHAPE_NAMES[target] }] },
         correct: { id: 'c', text: real.name, icon: real.icon, say: real.name },
         distractors: wrongShapes.map((w, i) => {
           const r = rng.pick(REAL_3D[w]!);
-          return { id: `w${i}`, text: r.name, icon: r.icon, say: r.name, feedback: `A ${r.name} is shaped like a ${SHAPE_NAMES[w]}.`, code: 'fp-shape-name' as const };
+          return { id: `w${i}`, text: r.name, icon: r.icon, say: r.name, feedback: `${aWord(r.name, true)} is shaped like ${aWord(SHAPE_NAMES[w])}.`, code: 'fp-shape-name' as const };
         }),
         code: 'fp-shape-name',
         hints: [target === 'sphere' ? 'A ball shape is round all over.' : target === 'cylinder' ? 'A cylinder has two flat circles and a curved side.' : target === 'box' ? 'A box has flat faces and corners.' : 'A cone has one flat circle and a point.', 'Imagine holding it.'],
-        solution: [`A ${real.name} is shaped like a ${SHAPE_NAMES[target]}.`],
+        solution: [`${aWord(real.name, true)} is shaped like ${aWord(SHAPE_NAMES[target])}.`],
       });
     }
     if (level === 4) {
@@ -248,13 +248,13 @@ const shapes = (g: FoundationGrade) =>
       const target = rng.pick(twoD.filter((s) => s !== 'circle'));
       const sides = SIDES[target]!;
       return jq({
-        prompt: `How many sides does a ${SHAPE_NAMES[target]} have?`,
+        prompt: `How many sides does ${aWord(SHAPE_NAMES[target])} have?`,
         scene: { kind: 'shapes', items: [{ shape: target }] },
         input: { kind: 'pad', max: 1000 },
         answer: exactN(sides),
         answerDisplay: String(sides),
         hints: ['Touch each straight side as you count.', 'Count the corners: there are as many corners as sides.'],
-        solution: [`A ${SHAPE_NAMES[target]} has ${sides} sides and ${sides} corners.`],
+        solution: [`${aWord(SHAPE_NAMES[target], true)} has ${sides} sides and ${sides} corners.`],
         misconceptions: keepJ([miss('fp-miscount', sides - 1, 'You missed a side. Touch each one.'), miss('fp-miscount', sides + 1, 'You counted a side twice.')], sides),
       });
     }
@@ -499,7 +499,7 @@ const time = (g: FoundationGrade) =>
       },
       () => {
         const y = rng.int(1, 2);
-        return { q: `How many months are in ${y === 1 ? '1 year' : '2 years'}?`, a: 12 * y, sol: `${y} × 12 = ${12 * y} months.`, wrong: 10 * y };
+        return { q: `How many months are in ${y === 1 ? '1 year' : '2 years'}?`, a: 12 * y, sol: y === 1 ? 'A year has 12 months.' : `A year has 12 months. 12 + 12 = 24 months.`, wrong: 10 * y };
       },
     ])();
     return jq({ prompt: conv.q, input: { kind: 'pad', max: 1000 }, answer: exactN(conv.a), answerDisplay: String(conv.a), hints: ['A week has 7 days. A year has 12 months.'], solution: [conv.sol], misconceptions: keepJ([miss('fp-unit', conv.wrong, 'A week has 7 days, and a year has 12 months.')], conv.a) });
@@ -591,10 +591,10 @@ const measure = (g: FoundationGrade) =>
       return choiceJ(rng, {
         prompt: ask === 'more' ? 'Which holds more water?' : 'Which holds less water?',
         correct: { id: 'c', text: ans.name, icon: ans.icon, say: ans.name },
-        distractors: [{ id: 'w', text: other.name, icon: other.icon, say: other.name, feedback: `A ${big.name} holds more than a ${small.name}. Imagine filling them.`, code: 'fp-more-less' }],
+        distractors: [{ id: 'w', text: other.name, icon: other.icon, say: other.name, feedback: `${aWord(big.name, true)} holds more than ${aWord(small.name)}. Imagine filling them.`, code: 'fp-more-less' }],
         code: 'fp-more-less',
         hints: ['Imagine pouring water into each.', 'Which would you use to fill the other?'],
-        solution: [`A ${big.name} holds more than a ${small.name}.`],
+        solution: [`${aWord(big.name, true)} holds more than ${aWord(small.name)}.`],
       });
     };
     const informal = () => {
@@ -771,15 +771,15 @@ const data = (g: FoundationGrade) =>
       const sorted = rows.slice().sort((a, b) => b.count - a.count);
       const ans = ask === 'most' ? sorted[0]! : sorted.at(-1)!;
       return choiceJ(rng, {
-        prompt: ask === 'most' ? 'Which was chosen most?' : 'Which was chosen least?',
-        say: `${intro} Which was chosen ${ask}?`,
+        prompt: ask === 'most' ? 'Which did the most children choose?' : 'Which did the fewest children choose?',
+        say: `${intro} Which did the ${ask === 'most' ? 'most' : 'fewest'} children choose?`,
         scene,
         correct: { id: ans.label, text: ans.label, icon: ans.icon, say: ans.label },
         distractors: rows.filter((r) => r !== ans).map((r) => ({ id: r.label, text: r.label, icon: r.icon, say: r.label, feedback: `${cap(r.label)}: ${r.count}. Compare all the ${g === 3 ? 'bars' : 'rows'}.`, code: 'fp-more-less' as const })),
         code: 'fp-more-less',
         keepOrder: true,
         hints: [`Look for the ${ask === 'most' ? 'longest' : 'shortest'} ${g === 3 ? 'bar' : 'row'}.`, 'Count each one if you need to.'],
-        solution: [`${cap(ans.label)} has ${ans.count}, the ${ask === 'most' ? 'most' : 'least'}.`],
+        solution: [`${ans.count} ${ans.count === 1 ? 'child' : 'children'} chose ${ans.label}.`, `That is the ${ask === 'most' ? 'most' : 'fewest'}.`],
       });
     }
     if (ask === 'count') {

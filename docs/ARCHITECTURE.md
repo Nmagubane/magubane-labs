@@ -138,7 +138,12 @@ Physical Education, Creative Arts and the sensitive Personal & Social Well-being
 
 **Generators** live in `src/shared/junior/gen/*`, with word lists in `reading/en*.ts` (CVC words, digraphs, blends, sight words, rhyme families, 12 original stories) and per-language packs in `packs/<lang>`. Questions carry a `scene` for counters, ten-frames, base-10 blocks, coins, clocks, rulers, balances, pictographs and pattern strips. Phonics questions are anchored on spoken picture words, because device text-to-speech says letter names, not sounds. `src/shared/junior/junior.test.ts` checks every template at 5 levels × 200 seeds: it must be answerable, the canonical answer must be correct, and every predicted mistake must be diagnosed.
 
-**Voice.** Device text-to-speech (`speechSynthesis`) sits behind `client/features/junior/speech.ts`, with one voice per language by BCP-47 tag and a mute toggle. It costs nothing and keeps no audio on a server. A recorded-voice or cloud voice provider can replace it behind the same `speak()` call.
+**Voice.** Device text-to-speech (`speechSynthesis`) sits behind `client/features/junior/speech.ts`. It costs nothing and keeps no audio on a server. Three layers keep it from sounding robotic:
+- **Words** (`shared/junior/packs/en/spoken.ts`): written maths becomes what a teacher would say. "3 + 4 = 7" becomes "3 plus 4 is 7", 12:05 becomes "five past twelve", R12,50 becomes "12 rand 50", "c-a-t" becomes "c, a, t", and numbers from 100 are said the South African way ("one hundred and five").
+- **Narrator** (`shared/junior/narrate.ts`, phrases in `TALK` in the pack): praise, "not yet", hints, "Watch first" and the end of a set use varied lines. A diagnosed mistake is said once and is never repeated by the worked solution.
+- **Voice choice**: natural or neural voices are preferred, then South African English, then British or Irish, then American. Novelty voices are pushed to the bottom. Speech is spoken a sentence at a time. Adults can choose and test a voice per device under "Where your children sign in".
+
+`narration.test.ts` checks everything a child can hear, across every template, level and many seeds: no symbols read literally, no "something" for a blank, no "1 tens", no "a ice-cream". A recorded-voice or cloud voice provider can replace device speech behind the same `speak()` call.
 
 **Languages (all 11 official).** `src/shared/junior/languages.ts` holds the codes, BCP-47 tags and a **review-gated status** per language for instructions and reading. Only English is `live`. A child's home language decides their subjects (`foundationSubjectsFor`):
 - English: Home Language English.

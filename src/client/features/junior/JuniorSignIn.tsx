@@ -9,7 +9,7 @@ import { Link, useRouter } from '../../lib/router.tsx';
 import type { MeResponse } from '../../../shared/api.ts';
 import type { JuniorDeviceDto, DeviceChildDto } from '../../../shared/api-junior.ts';
 import { PICTURES, CODE_LENGTH } from '../../../shared/junior/pictures.ts';
-import { UI } from '../../../shared/junior/packs/en/core.ts';
+import { UI, TALK } from '../../../shared/junior/packs/en/core.ts';
 import { Logo } from '../../ui/primitives.tsx';
 import { Icon } from '../../ui/Icon.tsx';
 import { speak } from './speech.ts';
@@ -50,7 +50,7 @@ export function JuniorSignIn() {
       window.setTimeout(() => setShake(false), 450);
       const text = err.code === 'locked' || err.status === 429 || (err.details as { left?: number } | undefined)?.left === 0 ? UI.locked : UI.wrongCode;
       setMsg(text);
-      void speak(text);
+      void speak(text === UI.locked ? TALK.locked : TALK.wrongPictures);
       setCode([]);
       if (text === UI.locked) void load();
     }
@@ -88,7 +88,7 @@ export function JuniorSignIn() {
         <section className="jsi-who" aria-labelledby="who">
           <h1 id="who" className="jsi-title">
             {UI.whoIsPlaying}
-            <button type="button" className="jp-icon-btn" onClick={() => void speak(UI.whoIsPlaying)} aria-label={UI.listen}>
+            <button type="button" className="jp-icon-btn" onClick={() => void speak(TALK.whoIsLearning)} aria-label={UI.listen}>
               <Icon name="speaker" size={24} />
             </button>
           </h1>
@@ -105,7 +105,7 @@ export function JuniorSignIn() {
                       setChild(c);
                       setCode([]);
                       setMsg(null);
-                      void speak(`${c.name}. ${UI.pictureCode}`);
+                      void speak(TALK.pictures(c.name));
                     }}
                   >
                     <span className="jsi-initial" style={{ background: c.colour }} aria-hidden>

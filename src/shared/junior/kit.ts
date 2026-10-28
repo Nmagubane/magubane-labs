@@ -10,6 +10,8 @@ import * as enCore from './packs/en/core.ts';
  * back to English until their pack is written and reviewed (see languages.ts).
  */
 export type CorePack = typeof enCore;
+/** English article helper, re-exported for generators. */
+export { aWord } from './packs/en/core.ts';
 export function corePack(_ctx?: GenContext): CorePack {
   return enCore;
 }

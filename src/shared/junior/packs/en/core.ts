@@ -84,18 +84,12 @@ export const UI = {
   done: 'I am done',
   goHome: 'Back',
   play: 'Play',
-  yes: (answer: string) => `Yes! ${answer}.`,
-  notYet: 'Not yet.',
-  lookTogether: "Let's look together.",
   correctWas: (answer: string) => `The answer is ${answer}.`,
   picked: (n: number) => (n === 1 ? '1 picked' : `${n} picked`),
   tapToPlace: 'Tap a picture, then tap its box.',
   tapInOrder: 'Tap them in order.',
   youMade: (n: string) => `You made ${n}.`,
-  sessionDone: (name: string) => `Well done for practising, ${name}.`,
-  youPractised: (skill: string) => `You practised ${skill}.`,
   firstTry: (n: number, of: number) => `${n} of ${of} right first time.`,
-  greeting: (name: string) => `Hello, ${name}!`,
   todayIntro: 'What shall we learn today?',
   worlds: { mathematics: 'Maths', 'home-language': 'Reading', 'english-fal': 'English', 'life-skills': 'My world' },
   worldSay: { mathematics: 'Maths', 'home-language': 'Reading and words', 'english-fal': 'English words', 'life-skills': 'My world' },
@@ -112,6 +106,77 @@ export const UI = {
   grownUps: 'Grown-ups',
   hour: (h: number) => `${h} o'clock`,
 } as const;
+
+const cap1 = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * What the voice says around the questions. Several ways of saying each thing, so it sounds like a person
+ * and not a recording on repeat. Warm, short and honest: praise the thinking, never the child's "cleverness",
+ * and no prizes or points.
+ * TRANSLATORS: write as many or as few variants as sound natural in your language.
+ */
+export const TALK = {
+  /** Right first time, saying the answer back. Used when the answer is short. */
+  rightWithAnswer: [(a: string) => `Yes! ${cap1(a)}.`, (a: string) => `That's right: ${a}.`, (a: string) => `${cap1(a)}. Well done!`],
+  /** Extra ways to say a number answer back. */
+  rightWithNumber: [(a: string) => `Yes, it's ${a}.`, (a: string) => `${a} is right!`],
+  /** Right first time, when the answer is too long to repeat. */
+  right: ["Yes, that's right!", 'Well done!', 'You got it!', 'Good thinking!', "That's it!", 'Spot on!'],
+  /** A wrong answer. Kind, then straight to the thinking. */
+  notYet: ['Not quite.', 'Not yet.', 'Good try.', 'Hmm, not this time.'],
+  nearly: ['Oh, so close!', 'Nearly!'],
+  together: ["Let's look together.", "Let's work it out.", "Here's how."],
+  /** Before a hint. */
+  clue: ["Here's a clue.", 'Try this.', 'Think about this.'],
+  /** Watch first. */
+  watchStart: 'Watch me do one.',
+  watchEnd: 'Now you try.',
+  /** End of a set of 5. */
+  doneAll: (n: number, name: string) => `You got all ${n} right first time, ${name}! Great thinking.`,
+  doneSome: (r: number, n: number) => `You finished! ${r} of ${n} right first time.`,
+  doneNone: (n: number) => `You finished all ${n}. These were tricky.`,
+  doneEncourage: ['Every mistake helps your brain grow.', 'The more you practise, the easier it gets.', 'Keep going, you are getting stronger.'],
+  doneSkill: (skill: string) => `You practised ${skill.charAt(0).toLowerCase()}${skill.slice(1)}.`,
+  /** Home and sign-in. */
+  greeting: (name: string, hour: number) => `${hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'}, ${name}!`,
+  homeAsk: ['What shall we learn today?', 'What would you like to do?', 'Pick something to play.'],
+  whoIsLearning: "Who's learning today? Tap your name.",
+  pictures: (name: string) => `Hi ${name}! Now tap your 3 pictures.`,
+  wrongPictures: "Hmm, those aren't your pictures. Let's try again.",
+  locked: "Let's ask a grown-up to help you.",
+} as const;
+
+/** "a cone", "an oval", "an 8". English only: other packs decide their own articles. */
+export function aWord(w: string, capital = false): string {
+  const an = (/^[aeiou]/i.test(w) && !/^(one|once|uni|use|usu|eu)/i.test(w)) || /^(8|11|18)(?!\d)|^8\d/.test(w);
+  return `${capital ? (an ? 'An' : 'A') : an ? 'an' : 'a'} ${w}`;
+}
+
+/** "1 ten", "3 tens", "1 group". */
+export const nOf = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+
+/** "4 hundreds, 1 ten and 0 ones" (hundreds only when asked for or present). */
+export function placeWords(b: { hundreds: number; tens: number; ones: number }, withHundreds = b.hundreds > 0): string {
+  const parts = [...(withHundreds ? [nOf(b.hundreds, 'hundred', 'hundreds')] : []), nOf(b.tens, 'ten', 'tens'), nOf(b.ones, 'one', 'ones')];
+  return parts.length === 3 ? `${parts[0]}, ${parts[1]} and ${parts[2]}` : `${parts[0]} and ${parts[1]}`;
+}
+
+/**
+ * A number sequence with a gap, as a teacher reads it aloud: "90, 80, 70, 60. What comes next?" or
+ * "87, 77, 67, then a gap, then 47. What number goes in the gap?"
+ */
+export function saySequence(cells: (number | string | null)[], lead = ''): string {
+  const gap = cells.indexOf(null);
+  const start = lead ? `${lead} ` : '';
+  if (gap === cells.length - 1) return `${start}${cells.slice(0, -1).join(', ')}. What comes next?`;
+  if (gap === 0) return `${start}What number comes just before ${cells.slice(1).join(', ')}?`;
+  return `${start}${cells.slice(0, gap).join(', ')}, then a gap, then ${cells.slice(gap + 1).join(', ')}. What number goes in the gap?`;
+}
+
+/** Pick a variant. `n` turns over as the session goes on so the same line doesn't come twice in a row. */
+export function vary<T>(list: readonly T[], n: number): T {
+  return list[((n % list.length) + list.length) % list.length]!;
+}
 
 export const SHAPE_NAMES = {
   circle: 'circle',

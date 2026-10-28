@@ -9,6 +9,7 @@ import { Icon } from '../../ui/Icon.tsx';
 import type { FamilyDto, CreatedChildDto, DeviceDto } from '../../../shared/api-junior.ts';
 import { AddChildForm, PictureCode, languageLine } from './ChildBits.tsx';
 import { relativeDay } from '../../lib/format.ts';
+import { VoicePicker } from '../junior/VoicePicker.tsx';
 
 export function FamilyHome() {
   const { data, error, reload } = useResource<FamilyDto>('/api/family');
@@ -126,6 +127,7 @@ export function DevicePanel({ family, onChange, classId }: { family?: FamilyDto;
     <section className="sheet" aria-labelledby="dev-h">
       <h2 id="dev-h">Where {classId ? 'children' : 'your children'} sign in</h2>
       <p className="muted">Children can only sign in on a phone, tablet or computer you have set up. It remembers {classId ? 'this class' : 'your family'}, not you: your own account stays private.</p>
+      {thisDevice ? <VoicePicker /> : null}
       {thisDevice ? (
         <div className="row-actions">
           <Button onClick={() => void handOver()}>

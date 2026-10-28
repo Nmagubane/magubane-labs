@@ -12,7 +12,7 @@
 import type { QuestionTemplate, GeneratedQuestion, Tile } from '../../questions/types.ts';
 import type { Rng } from '../../questions/rng.ts';
 import type { FoundationGrade } from '../../curriculum/foundation.ts';
-import { jq, choiceJ, tile } from '../kit.ts';
+import { jq, choiceJ, tile, aWord } from '../kit.ts';
 import { fpTemplate } from './maths-number.ts';
 
 interface T {
@@ -21,6 +21,8 @@ interface T {
 }
 const t = (text: string, icon?: string): T => ({ text, ...(icon ? { icon } : {}) });
 const toTile = (id: string, x: T): Tile => tile(id, x.text, x.icon, x.text);
+/** "a, b and c" */
+const andList = (xs: string[]): string => (xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
 /** A one-answer question. Options are always spoken when tapped: Life Skills is not a reading test. */
 function fact(rng: Rng, q: { q: string; a: T; wrong: (T & { why?: string })[]; why: string; hint: string; scene?: GeneratedQuestion['scene'] }): GeneratedQuestion {
@@ -45,11 +47,12 @@ function pick(rng: Rng, q: { q: string; yes: T[]; no: T[]; why: string; hint: st
   const all = rng.shuffle([...yes.map((x, i) => ({ id: `y${i}`, x })), ...no.map((x, i) => ({ id: `n${i}`, x }))]);
   return jq({
     prompt: q.q,
+    say: `${q.q} There is more than one.`,
     input: { kind: 'pick', options: all.map((a) => toTile(a.id, a.x)) },
     answer: { kind: 'set', ids: all.filter((a) => a.id.startsWith('y')).map((a) => a.id) },
     answerDisplay: yes.map((y) => y.text).join(', '),
     hints: [q.hint, 'Think about each picture on its own.'],
-    solution: [`${yes.map((y) => y.text).join(', ')}.`, q.why],
+    solution: [`The right ones are ${andList(yes.map((y) => y.text))}.`, q.why],
   });
 }
 
@@ -83,7 +86,7 @@ function order(rng: Rng, q: { q: string; steps: T[]; why: string; hint: string }
     answer: { kind: 'sequence', ids: items.map((x) => x.id) },
     answerDisplay: q.steps.map((s) => s.text).join(', then '),
     hints: [q.hint, 'What has to happen first?'],
-    solution: [q.steps.map((s) => s.text).join(', then ') + '.', q.why],
+    solution: [`First ${q.steps.map((s) => s.text).join(', then ')}.`, q.why],
   });
 }
 
@@ -115,7 +118,7 @@ const myBody = (g: FoundationGrade) =>
   fpTemplate('my-body', g, (rng, level) => {
     const partQ = () => {
       const p = rng.pick(PARTS);
-      return fact(rng, { q: `Tap the ${p.text}.`, a: p, wrong: rng.shuffle(PARTS.filter((x) => x !== p)).slice(0, level <= 1 ? 2 : 3), why: `This is a ${p.text}.`, hint: 'Point to it on your own body first.' });
+      return fact(rng, { q: `Tap the ${p.text}.`, a: p, wrong: rng.shuffle(PARTS.filter((x) => x !== p)).slice(0, level <= 1 ? 2 : 3), why: `This is ${aWord(p.text)}.`, hint: 'Point to it on your own body first.' });
     };
     const senseQ = () => {
       const s = rng.pick(SENSES);
@@ -135,7 +138,7 @@ const myBody = (g: FoundationGrade) =>
       ]);
     const habitsSort = () =>
       sort(rng, {
-        q: 'Sort them: good for my body, or not good for my body.',
+        q: 'Sort them into two groups: good for my body, and not good for my body.',
         bins: [t('good for my body', '👍'), t('not good for my body', '👎')],
         items: [
           { ...t('brush teeth'), bin: 0 },
@@ -190,7 +193,7 @@ const healthy = (g: FoundationGrade) =>
       });
     const foodSort = () =>
       sort(rng, {
-        q: 'Sort the food: everyday food, or sometimes food.',
+        q: 'Sort the food into everyday food and sometimes food.',
         bins: [t('everyday food', '🥗'), t('sometimes food', '🍬')],
         items: [...rng.shuffle(EVERYDAY).slice(0, 5).map((x) => ({ ...x, bin: 0 })), ...rng.shuffle(TREATS).slice(0, 4).map((x) => ({ ...x, bin: 1 }))],
         why: 'Fruit, vegetables, milk, eggs, bread and water are everyday food. Sweets, chips, cake and cool drinks are sometimes food.',
@@ -198,7 +201,7 @@ const healthy = (g: FoundationGrade) =>
       });
     const fruitVeg = () =>
       sort(rng, {
-        q: 'Sort them: fruit or vegetables.',
+        q: 'Sort them into fruit and vegetables.',
         bins: [t('fruit', '🍎'), t('vegetables', '🥕')],
         items: [...rng.shuffle(FRUIT).slice(0, 3).map((x) => ({ ...x, bin: 0 })), ...rng.shuffle(VEG).slice(0, 3).map((x) => ({ ...x, bin: 1 }))],
         why: 'Fruit is usually sweet and has seeds inside. Vegetables are other plant parts we eat.',
@@ -249,7 +252,7 @@ const safety = (g: FoundationGrade) =>
         { q: 'Where is the safest place to cross the road?', a: t('at a pedestrian crossing', '🚸'), wrong: [t('between parked cars'), t('on a bend in the road')], why: 'Cross at a pedestrian crossing or a robot, where drivers can see you.', hint: 'Look for the stripes on the road.' },
         { q: 'The robot for walkers shows a red person. What do you do?', a: t('wait', '✋'), wrong: [t('run across'), t('walk slowly across')], why: 'A red person means wait. Cross when it shows green and the road is clear.', hint: 'Red means stop.' },
         { q: 'What should you wear when you ride a bicycle?', a: t('a helmet', '⛑️'), wrong: [t('a scarf'), t('sunglasses only')], why: 'A helmet protects your head if you fall.', hint: 'It protects your head.' },
-        { q: 'Where should you sit in a car?', a: t('in the back with a seatbelt on'), wrong: [t('on someone’s lap'), t('in the front without a seatbelt')], why: 'Children are safest in the back seat with a seatbelt or car seat.', hint: 'Click!' },
+        { q: 'Where should you sit in a car?', a: t('in the back with a seatbelt on'), wrong: [t('on someone’s lap'), t('in the front without a seatbelt')], why: 'Children are safest in the back seat with a seatbelt or car seat.', hint: 'Click! Put the seatbelt on before the car moves.' },
       ]);
     const electricity = () =>
       fromPool(rng, [
@@ -353,7 +356,7 @@ const animals = (g: FoundationGrade) =>
       });
     const petsSort = () =>
       sort(rng, {
-        q: 'Sort them: pets, or wild animals.',
+        q: 'Sort them into pets and wild animals.',
         bins: [t('pets', '🏠'), t('wild animals', '🌳')],
         items: [...rng.shuffle(PETS).slice(0, 3).map((x) => ({ ...x, bin: 0 })), ...rng.shuffle(WILD).slice(0, 3).map((x) => ({ ...x, bin: 1 }))],
         why: 'Pets live with people and are cared for. Wild animals look after themselves in nature.',
@@ -361,7 +364,7 @@ const animals = (g: FoundationGrade) =>
       });
     const farmWild = () =>
       sort(rng, {
-        q: 'Sort them: farm animals, or wild animals.',
+        q: 'Sort them into farm animals and wild animals.',
         bins: [t('farm animals', '🚜'), t('wild animals', '🦁')],
         items: [...rng.shuffle(FARM).slice(0, 3).map((x) => ({ ...x, bin: 0 })), ...rng.shuffle(WILD).slice(0, 3).map((x) => ({ ...x, bin: 1 }))],
         why: 'Farmers keep cows, sheep, goats, chickens, pigs and horses. Lions, elephants and zebras live wild.',
@@ -392,7 +395,7 @@ const animals = (g: FoundationGrade) =>
       ])();
     const eaters = () =>
       sort(rng, {
-        q: 'Sort them: plant-eaters, or meat-eaters.',
+        q: 'Sort them into plant-eaters and meat-eaters.',
         bins: [t('plant-eaters', '🌿'), t('meat-eaters', '🍖')],
         items: [
           { ...t('cow', '🐄'), bin: 0 },
@@ -439,7 +442,7 @@ const weather = (g: FoundationGrade) =>
     };
     const dress = () => {
       const w = rng.pick(WEATHER);
-      return fact(rng, { q: `It is ${w.name}. What is best?`, scene: { kind: 'picture', icon: w.icon }, a: w.wear, wrong: w.wrongWear, why: w.name === 'stormy' ? 'In a thunderstorm, go inside. Never shelter under a tree.' : `On a ${w.name} day, ${w.wear.text} is best.`, hint: 'What would keep you safe and comfortable?' });
+      return fact(rng, { q: `It is ${w.name}. What is best?`, scene: { kind: 'picture', icon: w.icon }, a: w.wear, wrong: w.wrongWear, why: w.name === 'stormy' ? 'In a thunderstorm, go inside. Never shelter under a tree.' : `On ${aWord(w.name)} day, ${w.wear.text} is best.`, hint: 'What would keep you safe and comfortable?' });
     };
     const season = () => {
       const s = rng.pick(SEASONS);
@@ -516,7 +519,7 @@ const waterSky = (g: FoundationGrade) =>
           ]);
     const save = () =>
       sort(rng, {
-        q: 'Sort them: saves water, or wastes water.',
+        q: 'Which ones save water, and which ones waste it? Sort them.',
         bins: [t('saves water', '👍'), t('wastes water', '👎')],
         items: [
           { ...t('close the tap while brushing'), bin: 0 },
@@ -590,7 +593,7 @@ const feelings = (g: FoundationGrade) =>
       ]);
     const kindSort = () =>
       sort(rng, {
-        q: 'Sort them: kind, or unkind.',
+        q: 'Sort them into kind and unkind.',
         bins: [t('kind', '😊'), t('unkind', '😠')],
         items: [
           { ...t('sharing toys'), bin: 0 },
@@ -613,7 +616,7 @@ const feelings = (g: FoundationGrade) =>
       ]);
     const rights = () =>
       sort(rng, {
-        q: 'Sort them: a right I have, or my responsibility.',
+        q: 'Sort them into my rights and my responsibilities.',
         bins: [t('my right', '🛡️'), t('my responsibility', '✅')],
         items: [
           { ...t('to go to school', '🏫'), bin: 0 },
@@ -662,7 +665,7 @@ const community = (g: FoundationGrade) =>
       ]);
     const transport = () =>
       sort(rng, {
-        q: 'Sort the transport: land, water or air.',
+        q: 'Sort the transport: does it go on land, on water, or in the air?',
         bins: [t('land', '🛣️'), t('water', '🌊'), t('air', '☁️')],
         items: [
           { ...t('bus', '🚌'), bin: 0 },

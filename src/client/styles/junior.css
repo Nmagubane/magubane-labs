@@ -2038,3 +2038,19 @@ button.tf-cell:hover:not(:disabled) {
   color: var(--ink-2);
   min-height: 32px;
 }
+
+/* Grown-ups: the voice children hear on this device. */
+.voice-pick {
+  margin: 0.75rem 0 1rem;
+  max-width: 40rem;
+}
+.voice-pick-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.voice-pick-row select {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
