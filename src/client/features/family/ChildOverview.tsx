@@ -303,7 +303,7 @@ function Manage({ data, onChanged, backTo }: { data: ChildOverviewDto; onChanged
         </Button>
       </form>
       <details className="danger-zone">
-        <summary>Delete {c.name}’s account</summary>
+        <div className="pt-3"><summary>Delete {c.name}’s account</summary></div>
         <p>This permanently deletes {c.name} and everything recorded about their learning. It cannot be undone.</p>
         <TextInput label={`Type ${c.name} to confirm`} value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" />
         <Button variant="danger" disabled={confirm.trim().toLowerCase() !== c.name.toLowerCase()} onClick={() => void del()}>
