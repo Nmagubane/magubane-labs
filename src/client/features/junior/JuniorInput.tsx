@@ -383,7 +383,7 @@ function Sort({ input, value, onChange, locked, reveal, say }: Props & { input: 
       <p className="sort-help" aria-live="polite">
         {held ? 'Now tap a box.' : loose.length ? 'Tap a picture, then tap its box.' : ''}
       </p>
-      <div className="sort-bins" style={{ gridTemplateColumns: `repeat(${input.bins.length}, 1fr)` }}>
+      <div className="sort-bins" style={{ gridTemplateColumns: `repeat(${input.bins.length}, minmax(0, 1fr))` }}>
         {input.bins.map((b) => (
           <div key={b.id} className={`bin${held ? ' ready' : ''}`}>
             <button type="button" className="bin-head" onClick={() => (held ? place(b.id) : b.say && say(b.say))} disabled={locked} aria-label={`${held ? 'Put it in: ' : ''}${b.text ?? b.say ?? ''}`}>

@@ -99,6 +99,20 @@ Mastery ramp: grey (not started) → pen tints (learning, developing, proficient
 
 **Shape:** sheets 12px radius with a 1px rule and no shadow; controls 6px; chips 4px. Shadows only on things that float (menus, toasts). Motion only when it answers an action or shows cause and effect (sim trajectories, equation steps), and `prefers-reduced-motion` is respected.
 
+### Phone rules (from the October 2026 mobile audit)
+Phones from 320 px wide are the main target. Most of the overlaps came from four CSS habits:
+- **Grid columns:** always `minmax(0, 1fr)` or `minmax(min(Npx, 100%), 1fr)`, never `1fr` or `minmax(Npx, 1fr)` on their own. Content wider than the screen makes a mobile browser zoom the whole page out, and everything looks squashed together.
+- **Flex rows that should wrap:** give the main part a real basis (`flex: 1 1 9rem`), not `flex: 1`, which never wraps.
+- **Form fields and selects:** `width: 100%; min-width: 0`. A select is as wide as its longest option.
+- **Buttons:** labels wrap below 560 px.
+
+Junior adds its own rules:
+- A question, its answer and the Check bar fit on one phone screen, with a 5-column number pad and stacked feedback.
+- Tens and ones stay side by side, because left-to-right place value is the lesson.
+- Phones held sideways get compact bars.
+
+The audit checks every screen, all 54 lessons and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
 - The first draft gave links and accents an "AI blue" with no meaning. Pen blue is now reserved for learner-manipulable things and input. Primary buttons are ink.

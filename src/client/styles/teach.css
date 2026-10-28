@@ -3,7 +3,7 @@
 .pw-wrap input { flex: 1; padding-right: 72px !important; }
 .pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); min-height: 36px; padding: 0 10px; border: 0; background: none; color: var(--pen); font-weight: 700; font-size: var(--t-sm); cursor: pointer; border-radius: var(--r-chip); }
 .pw-toggle:focus-visible { outline: 2px solid var(--pen); }
-.pw-rules { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2px var(--s3); font-size: var(--t-sm); color: var(--ink-3); }
+.pw-rules { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 2px var(--s3); font-size: var(--t-sm); color: var(--ink-3); }
 .pw-rules li { display: flex; gap: 6px; align-items: baseline; }
 .pw-rules .pw-mark { width: 1em; text-align: center; font-weight: 700; }
 .pw-rules li.ok { color: var(--tick); }
@@ -30,7 +30,7 @@
 .teach-intro { margin-bottom: var(--s4); }
 .steps-inline { margin: 0; padding-left: 1.3em; display: grid; gap: var(--s2); max-width: 70ch; }
 .create-class { margin-top: var(--s3); max-width: 560px; }
-.assign-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s3); }
+.assign-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: var(--s3); }
 .class-list { list-style: none; margin: var(--s5) 0 0; padding: 0; display: grid; gap: var(--s3); }
 .class-row { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)) auto; align-items: center; gap: var(--s4); padding: var(--s4) var(--s5); background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r-sheet); color: inherit; text-decoration: none; }
 .class-row:hover { border-color: var(--ink); }
@@ -59,7 +59,7 @@
 .join-label { font-size: var(--t-xs); font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
 .join-value { font-size: var(--t-2xl); font-weight: 700; letter-spacing: 0.2em; }
 .class-page > .segmented { margin-bottom: var(--s5); }
-.class-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--s4); margin-bottom: var(--s4); align-items: start; }
+.class-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: var(--s4); margin-bottom: var(--s4); align-items: start; }
 .class-grid-work { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
 @media (max-width: 860px) { .class-grid-work { grid-template-columns: 1fr; } }
 .stack { display: grid; gap: var(--s4); }
@@ -99,12 +99,12 @@
 .progress-bar span { display: block; height: 100%; background: var(--tick); border-radius: 3px; }
 .assign-form.compact { margin-top: 0; }
 .assign-form select { width: 100%; }
-.stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s3); margin-bottom: var(--s4); }
+.stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: var(--s3); margin-bottom: var(--s4); }
 .stat-strip > div { display: grid; padding: var(--s3) var(--s4); background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r-sheet); }
 .stat-strip .num { font-size: var(--t-xl); font-weight: 700; }
 .stat-strip .muted { font-size: var(--t-xs); }
 .tl-subject h3 { font-size: var(--t-sm); color: var(--ink-2); margin: var(--s3) 0 0; }
-.tl-bar { width: 180px; font-weight: 400; }
+.tl-bar { width: 180px; max-width: 100%; font-weight: 400; }
 
 /* ---------- Learner: assignments on Home ---------- */
 .assignments { background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--pen); border-radius: var(--r-sheet); padding: var(--s4) var(--s5); margin-bottom: var(--s5); }
@@ -117,10 +117,18 @@
 .overdue-text { color: var(--red); }
 .join-form { grid-template-columns: minmax(0, 220px) auto; align-items: end; }
 .join-form > .btn { align-self: end; }
-@media (max-width: 520px) { .assign-list li { flex-wrap: wrap; } .join-form { grid-template-columns: 1fr; } }
+@media (max-width: 520px) {
+  /* Phones: type, then the details at full width, then the button. Three columns don't fit. */
+  .assign-list li { display: grid; grid-template-columns: 1fr; justify-items: start; gap: var(--s2); }
+  .assignments { padding: var(--s4); }
+  .join-form { grid-template-columns: 1fr; }
+}
 
 /* ---------- Present mode ---------- */
-.present { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; background: var(--desk); }
+.present { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); background: var(--desk); }
+.present-stage { min-width: 0; }
+.present-stage > *, .present-cover { min-width: 0; max-width: 100%; }
+.present-sig { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
 .present-bar { display: flex; align-items: center; gap: var(--s4); padding: var(--s2) var(--s4); background: var(--paper); border-bottom: 1px solid var(--rule); }
 .present-title { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .present-count { color: var(--ink-3); font-weight: 700; }
@@ -141,7 +149,7 @@
 .present-dots li { width: 10px; height: 10px; border-radius: 50%; background: var(--rule); }
 .present-dots li.done { background: var(--ink-3); }
 .present-dots li.on { background: var(--pen); transform: scale(1.3); }
-@media (max-width: 640px) { .present-stage { font-size: 1.05rem; padding: var(--s4) var(--s3); } .present-dots { display: none; } }
+@media (max-width: 640px) { .present-stage { font-size: 1.05rem; padding: var(--s4) var(--s3); } .present-dots { display: none; } .present-cover { padding: var(--s5) var(--s4); } .present-sig { font-size: 1.3rem; } }
 .heat-legend .band-dot { display: inline-block; vertical-align: -1px; margin-right: 2px; }
 .band-dot.band-learning { background: var(--m-learning); }
 .band-dot.band-developing { background: var(--m-developing); }
@@ -156,5 +164,6 @@
   .class-grid { grid-template-columns: 1fr; }
   .class-grid .rows .row { flex-wrap: wrap; }
   .class-grid .rows .row-end.flag-tags { width: 100%; margin-left: 0; }
+  .class-grid .rows .row-end.tl-bar { width: 100%; }
   .join-code { width: 100%; }
 }

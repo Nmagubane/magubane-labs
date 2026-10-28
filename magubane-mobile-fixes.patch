@@ -1,0 +1,596 @@
+diff --git a/docs/ARCHITECTURE.md b/docs/ARCHITECTURE.md
+index 0f69e0e..0e3ffce 100755
+--- a/docs/ARCHITECTURE.md
++++ b/docs/ARCHITECTURE.md
+@@ -99,6 +99,20 @@ Mastery ramp: grey (not started) → pen tints (learning, developing, proficient
+ 
+ **Shape:** sheets 12px radius with a 1px rule and no shadow; controls 6px; chips 4px. Shadows only on things that float (menus, toasts). Motion only when it answers an action or shows cause and effect (sim trajectories, equation steps), and `prefers-reduced-motion` is respected.
+ 
++### Phone rules (from the October 2026 mobile audit)
++Phones from 320 px wide are the main target. Most of the overlaps came from four CSS habits:
++- **Grid columns:** always `minmax(0, 1fr)` or `minmax(min(Npx, 100%), 1fr)`, never `1fr` or `minmax(Npx, 1fr)` on their own. Content wider than the screen makes a mobile browser zoom the whole page out, and everything looks squashed together.
++- **Flex rows that should wrap:** give the main part a real basis (`flex: 1 1 9rem`), not `flex: 1`, which never wraps.
++- **Form fields and selects:** `width: 100%; min-width: 0`. A select is as wide as its longest option.
++- **Buttons:** labels wrap below 560 px.
++
++Junior adds its own rules:
++- A question, its answer and the Check bar fit on one phone screen, with a 5-column number pad and stacked feedback.
++- Tens and ones stay side by side, because left-to-right place value is the lesson.
++- Phones held sideways get compact bars.
++
++The audit checks every screen, all 54 lessons and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
++
+ ### Review against the generic defaults
+ - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
+ - The first draft gave links and accents an "AI blue" with no meaning. Pen blue is now reserved for learner-manipulable things and input. Primary buttons are ink.
+diff --git a/src/client/features/junior/JuniorInput.tsx b/src/client/features/junior/JuniorInput.tsx
+index 5a435f0..c44c27f 100644
+--- a/src/client/features/junior/JuniorInput.tsx
++++ b/src/client/features/junior/JuniorInput.tsx
+@@ -383,7 +383,7 @@ function Sort({ input, value, onChange, locked, reveal, say }: Props & { input:
+       <p className="sort-help" aria-live="polite">
+         {held ? 'Now tap a box.' : loose.length ? 'Tap a picture, then tap its box.' : ''}
+       </p>
+-      <div className="sort-bins" style={{ gridTemplateColumns: `repeat(${input.bins.length}, 1fr)` }}>
++      <div className="sort-bins" style={{ gridTemplateColumns: `repeat(${input.bins.length}, minmax(0, 1fr))` }}>
+         {input.bins.map((b) => (
+           <div key={b.id} className={`bin${held ? ' ready' : ''}`}>
+             <button type="button" className="bin-head" onClick={() => (held ? place(b.id) : b.say && say(b.say))} disabled={locked} aria-label={`${held ? 'Put it in: ' : ''}${b.text ?? b.say ?? ''}`}>
+diff --git a/src/client/styles/components.css b/src/client/styles/components.css
+index 4a05a8a..1bf15d5 100755
+--- a/src/client/styles/components.css
++++ b/src/client/styles/components.css
+@@ -18,6 +18,19 @@
+     border-color 0.12s var(--ease),
+     transform 0.08s var(--ease);
+   white-space: nowrap;
++  max-width: 100%;
++}
++/* A long label on a narrow phone wraps inside the button instead of pushing it off screen. */
++@media (max-width: 560px) {
++  .btn {
++    white-space: normal;
++    text-align: center;
++    padding-top: 6px;
++    padding-bottom: 6px;
++  }
++  .btn .icon {
++    flex: none;
++  }
+ }
+ .btn > span {
+   display: inline-flex;
+@@ -164,6 +177,7 @@
+ .field {
+   display: grid;
+   gap: 6px;
++  min-width: 0;
+ }
+ .field label {
+   font-weight: 700;
+@@ -171,6 +185,10 @@
+ }
+ .field input,
+ .field select {
++  /* A select is as wide as its longest option unless told otherwise: keep it inside its card. */
++  width: 100%;
++  min-width: 0;
++  max-width: 100%;
+   min-height: 48px;
+   padding: 0 var(--s3);
+   border: 1.5px solid var(--rule-strong);
+@@ -258,11 +276,13 @@ a.row:hover .row-title,
+ }
+ .row-main {
+   display: grid;
+-  flex: 1;
++  /* A real basis, so rows that are allowed to wrap actually do on phones (flex: 1 never wraps). */
++  flex: 1 1 9rem;
+   min-width: 0;
+ }
+ .row-title {
+   font-weight: 700;
++  overflow-wrap: anywhere;
+ }
+ .row-sub {
+   font-size: var(--t-sm);
+diff --git a/src/client/styles/junior.css b/src/client/styles/junior.css
+index 3f71f65..7e60a64 100644
+--- a/src/client/styles/junior.css
++++ b/src/client/styles/junior.css
+@@ -72,6 +72,8 @@
+   gap: var(--s3);
+ }
+ .jh-hello {
++  min-width: 0;
++  overflow-wrap: anywhere;
+   font-size: clamp(1.9rem, 6vw, 2.6rem);
+   line-height: 1.1;
+   letter-spacing: -0.01em;
+@@ -169,17 +171,22 @@
+ 
+ /* subject marks, drawn from each subject's own materials */
+ .wm {
++  /* One size knob: every subject mark is drawn from these, so it never spills out of its box. */
++  --mark: 84px;
++  --dot: 12px;
++  --tile-w: 24px;
++  --tile-h: 32px;
+   display: grid;
+   place-items: center;
+-  width: 84px;
+-  height: 84px;
++  width: var(--mark);
++  height: var(--mark);
+   flex: none;
+   justify-self: center;
+ }
+ .wm-maths {
+-  grid-template-columns: repeat(5, 12px);
+-  gap: 3px;
+-  padding: 14px 8px;
++  grid-template-columns: repeat(5, var(--dot));
++  gap: calc(var(--dot) / 4);
++  padding: calc(var(--dot) * 1.15) calc(var(--dot) * 0.65);
+   width: auto;
+   height: auto;
+   border: 2px solid var(--ink);
+@@ -189,8 +196,8 @@
+ .wm-maths span {
+   display: block;
+   box-sizing: border-box;
+-  width: 12px;
+-  height: 12px;
++  width: var(--dot);
++  height: var(--dot);
+   border-radius: 50%;
+   border: 1.5px solid var(--rule-strong);
+ }
+@@ -209,13 +216,13 @@
+   display: grid;
+   place-items: center;
+   box-sizing: border-box;
+-  width: 24px;
+-  height: 32px;
++  width: var(--tile-w);
++  height: var(--tile-h);
+   border: 2px solid var(--ink);
+   border-radius: 4px;
+   background: var(--paper);
+   font-weight: 700;
+-  font-size: 1.15rem;
++  font-size: calc(var(--tile-h) * 0.58);
+ }
+ .wm-letters span:nth-child(2) {
+   background: var(--hl);
+@@ -225,7 +232,7 @@
+   background: var(--pen-tint);
+ }
+ .wm-world {
+-  font-size: 3.2rem;
++  font-size: calc(var(--mark) * 0.6);
+   background: var(--lab-plant-tint);
+   border-radius: 50%;
+ }
+@@ -258,7 +265,7 @@
+   padding: 0;
+   margin: 0;
+   display: grid;
+-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
++  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+   gap: var(--s3);
+ }
+ .jw-skill {
+@@ -435,6 +442,31 @@
+ .jp-fb-why {
+   color: var(--ink-2);
+ }
++@media (max-width: 560px) {
++  /* Phones: stack the feedback, keep it short enough that the answer above stays visible. */
++  .jp-feedback {
++    flex-direction: column;
++    align-items: stretch;
++    gap: var(--s2);
++  }
++  .jp-feedback .jp-check {
++    width: 100%;
++  }
++  .jp-fb-text {
++    max-height: 38dvh;
++    overflow-y: auto;
++    font-size: 1.05rem;
++  }
++  .jp-fb-head {
++    font-size: 1.3rem;
++  }
++  .jp-bar {
++    flex-wrap: wrap;
++  }
++  .jp-bar .jp-check {
++    flex: 1 1 140px;
++  }
++}
+ @keyframes jrise {
+   from {
+     transform: translateY(40%);
+@@ -646,7 +678,7 @@
+   min-height: 84px;
+ }
+ .j-choice.wide {
+-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
++  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+ }
+ .j-choice.pics {
+   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+@@ -1049,6 +1081,11 @@ button.tf-cell:hover:not(:disabled) {
+   color: var(--ink);
+   cursor: pointer;
+   text-align: center;
++  overflow-wrap: anywhere;
++  padding: var(--s1);
++}
++.bin {
++  min-width: 0;
+ }
+ .bin-items {
+   display: flex;
+@@ -1532,7 +1569,7 @@ button.tf-cell:hover:not(:disabled) {
+   padding: 0;
+   margin: 0;
+   display: grid;
+-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
++  grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr));
+   gap: var(--s3);
+ }
+ .jsi-name {
+@@ -1635,13 +1672,14 @@ button.tf-cell:hover:not(:disabled) {
+ }
+ .jsi-pad {
+   display: grid;
+-  grid-template-columns: repeat(4, minmax(64px, 104px));
++  grid-template-columns: repeat(4, minmax(0, 104px));
+   gap: var(--s3);
+   margin-bottom: var(--s3);
+ }
+ .jsi-pic {
+   aspect-ratio: 1;
+-  min-height: 72px;
++  width: 100%;
++  min-height: 64px;
+   border: 2.5px solid var(--pen);
+   border-radius: var(--r-sheet);
+   background: var(--paper);
+@@ -1680,6 +1718,16 @@ button.tf-cell:hover:not(:disabled) {
+     padding: var(--s5);
+   }
+ }
++@media (max-width: 560px) {
++  /* Tools on their own row above the greeting, so a long name never pushes them off screen. */
++  .jh-top {
++    flex-direction: column-reverse;
++    align-items: stretch;
++  }
++  .jh-tools {
++    justify-content: space-between;
++  }
++}
+ @media (max-width: 420px) {
+   .tray-go {
+     grid-template-columns: auto 1fr;
+@@ -1688,18 +1736,160 @@ button.tf-cell:hover:not(:disabled) {
+     display: none;
+   }
+   .wm {
+-    width: 64px;
+-    height: 64px;
++    --mark: 60px;
++    --dot: 9px;
++    --tile-w: 18px;
++    --tile-h: 25px;
+   }
+-  .pad-keys {
+-    grid-template-columns: repeat(3, 1fr);
+-    width: 100%;
++  .tray-go {
++    gap: var(--s3);
++    padding: var(--s3);
+   }
+   .jp-check {
+     min-width: 140px;
+   }
+   .jsi-pad {
+-    grid-template-columns: repeat(4, 1fr);
++    grid-template-columns: repeat(4, minmax(0, 1fr));
++    gap: var(--s2);
++  }
++}
++/* Phones: a question should fit on one screen with the Check bar, without scrolling under it. */
++@media (max-width: 560px) {
++  .jp-top {
++    padding: var(--s2) var(--s3);
++  }
++  .jp-top .jp-icon-btn {
++    width: 52px;
++    height: 52px;
++  }
++  .jp-dots {
++    gap: 6px;
++  }
++  .jp-dots li {
++    width: 14px;
++    height: 14px;
++  }
++  .jp-main {
++    padding: 0 var(--s3) var(--s4);
++    gap: var(--s3);
++  }
++  .jp-mat {
++    min-height: 120px;
++    padding: var(--s3) var(--s2);
++  }
++  .pad-display {
++    font-size: 2.4rem;
++    min-width: 160px;
++    padding: var(--s1) var(--s4);
++  }
++  /* 1 2 3 4 5 / 6 7 8 9 0 / delete: three short rows instead of four tall ones. */
++  .pad-keys {
++    grid-template-columns: repeat(5, minmax(0, 1fr));
++    width: 100%;
++    max-width: 420px;
++  }
++  .pad-keys > span {
++    display: none;
++  }
++  .pad-keys .key-del {
++    grid-column: 5;
++  }
++  .key {
++    min-height: 54px;
++    font-size: 1.6rem;
++  }
++  /* Answer tiles: whole words must fit (never break a word a child is learning to read). */
++  .tile {
++    min-width: 0;
++    padding: var(--s2);
++  }
++  .j-choice .tile,
++  .j-pick .tile {
++    font-size: 1.15rem;
++  }
++  /* Sorting boxes: picture above the label, label wraps, so two or three boxes fit side by side. */
++  .bin-head {
++    flex-direction: column;
++    gap: 2px;
++    font-size: 0.95rem;
++    line-height: 1.15;
++  }
++  .bin-head > * {
++    min-width: 0;
++    max-width: 100%;
++  }
++  /* Tens and ones side by side, as on a desk. */
++  .b10-builder {
++    flex-wrap: nowrap;
++    width: 100%;
++  }
++  .b10-col {
++    flex: 1 1 0;
++    min-width: 0;
++    padding: var(--s2);
++  }
++  .b10-col-area {
++    min-height: 90px;
++  }
++  .b10-col-label {
++    font-size: 0.95rem;
++  }
++  /* Hundreds, tens, ones stay side by side (that order is the lesson); each column's
++     controls stack (+ on top) so three columns fit a 320px phone. */
++  .b10-col-btns {
++    flex-direction: column-reverse;
++    gap: var(--s1);
++  }
++  .b10-col .key-sm {
++    min-width: 52px;
++    min-height: 44px;
++    padding: 0;
++  }
++  .b10-col .b10-flat {
++    width: 44px;
++    height: 44px;
++    background-size: 4.4px 4.4px, 4.4px 4.4px, auto;
++  }
++  .b10-col .b10-rod {
++    height: 44px;
++    width: 8px;
++  }
++  .b10-col .b10-group {
++    max-width: 100%;
++    justify-content: center;
++  }
++}
++/* Phones held sideways (short screens): keep the work visible between the two bars. */
++@media (max-height: 500px) {
++  .jp-top {
++    position: static;
++    padding: var(--s1) var(--s3);
++  }
++  .jp-top .jp-icon-btn {
++    width: 48px;
++    height: 48px;
++  }
++  .jp-prompt {
++    font-size: 1.4rem;
++  }
++  .jp-mat {
++    min-height: 96px;
++    padding: var(--s2);
++  }
++  .jp-bar,
++  .jp-feedback {
++    padding-top: var(--s2);
++    padding-bottom: calc(var(--s2) + env(safe-area-inset-bottom));
++  }
++  .jp-check {
++    min-height: 52px !important;
++  }
++  .jp-fb-text {
++    max-height: 30vh;
++    overflow-y: auto;
++  }
++  .key {
++    min-height: 48px;
+   }
+ }
+ @media (prefers-reduced-motion: reduce) {
+@@ -1990,7 +2180,7 @@ button.tf-cell:hover:not(:disabled) {
+   padding: 0;
+   margin: var(--s5) 0 0;
+   display: grid;
+-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
++  grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+   gap: var(--s3);
+ }
+ .login-card {
+diff --git a/src/client/styles/learning.css b/src/client/styles/learning.css
+index c718db8..3444dc9 100755
+--- a/src/client/styles/learning.css
++++ b/src/client/styles/learning.css
+@@ -1260,7 +1260,7 @@
+ /* ---------- Progress ---------- */
+ .subject-summary {
+   display: grid;
+-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
++  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+   gap: var(--s4);
+   margin-bottom: var(--s5);
+ }
+@@ -1435,7 +1435,7 @@
+   padding: 0;
+   margin: var(--s2) 0 0;
+   display: grid;
+-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
++  grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+   gap: 0 var(--s4);
+ }
+ .readiness-head {
+diff --git a/src/client/styles/teach.css b/src/client/styles/teach.css
+index 143c633..4f7a22d 100755
+--- a/src/client/styles/teach.css
++++ b/src/client/styles/teach.css
+@@ -3,7 +3,7 @@
+ .pw-wrap input { flex: 1; padding-right: 72px !important; }
+ .pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); min-height: 36px; padding: 0 10px; border: 0; background: none; color: var(--pen); font-weight: 700; font-size: var(--t-sm); cursor: pointer; border-radius: var(--r-chip); }
+ .pw-toggle:focus-visible { outline: 2px solid var(--pen); }
+-.pw-rules { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2px var(--s3); font-size: var(--t-sm); color: var(--ink-3); }
++.pw-rules { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 2px var(--s3); font-size: var(--t-sm); color: var(--ink-3); }
+ .pw-rules li { display: flex; gap: 6px; align-items: baseline; }
+ .pw-rules .pw-mark { width: 1em; text-align: center; font-weight: 700; }
+ .pw-rules li.ok { color: var(--tick); }
+@@ -30,7 +30,7 @@
+ .teach-intro { margin-bottom: var(--s4); }
+ .steps-inline { margin: 0; padding-left: 1.3em; display: grid; gap: var(--s2); max-width: 70ch; }
+ .create-class { margin-top: var(--s3); max-width: 560px; }
+-.assign-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s3); }
++.assign-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: var(--s3); }
+ .class-list { list-style: none; margin: var(--s5) 0 0; padding: 0; display: grid; gap: var(--s3); }
+ .class-row { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)) auto; align-items: center; gap: var(--s4); padding: var(--s4) var(--s5); background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r-sheet); color: inherit; text-decoration: none; }
+ .class-row:hover { border-color: var(--ink); }
+@@ -59,7 +59,7 @@
+ .join-label { font-size: var(--t-xs); font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
+ .join-value { font-size: var(--t-2xl); font-weight: 700; letter-spacing: 0.2em; }
+ .class-page > .segmented { margin-bottom: var(--s5); }
+-.class-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--s4); margin-bottom: var(--s4); align-items: start; }
++.class-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: var(--s4); margin-bottom: var(--s4); align-items: start; }
+ .class-grid-work { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+ @media (max-width: 860px) { .class-grid-work { grid-template-columns: 1fr; } }
+ .stack { display: grid; gap: var(--s4); }
+@@ -99,12 +99,12 @@
+ .progress-bar span { display: block; height: 100%; background: var(--tick); border-radius: 3px; }
+ .assign-form.compact { margin-top: 0; }
+ .assign-form select { width: 100%; }
+-.stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s3); margin-bottom: var(--s4); }
++.stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: var(--s3); margin-bottom: var(--s4); }
+ .stat-strip > div { display: grid; padding: var(--s3) var(--s4); background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r-sheet); }
+ .stat-strip .num { font-size: var(--t-xl); font-weight: 700; }
+ .stat-strip .muted { font-size: var(--t-xs); }
+ .tl-subject h3 { font-size: var(--t-sm); color: var(--ink-2); margin: var(--s3) 0 0; }
+-.tl-bar { width: 180px; font-weight: 400; }
++.tl-bar { width: 180px; max-width: 100%; font-weight: 400; }
+ 
+ /* ---------- Learner: assignments on Home ---------- */
+ .assignments { background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--pen); border-radius: var(--r-sheet); padding: var(--s4) var(--s5); margin-bottom: var(--s5); }
+@@ -117,10 +117,18 @@
+ .overdue-text { color: var(--red); }
+ .join-form { grid-template-columns: minmax(0, 220px) auto; align-items: end; }
+ .join-form > .btn { align-self: end; }
+-@media (max-width: 520px) { .assign-list li { flex-wrap: wrap; } .join-form { grid-template-columns: 1fr; } }
++@media (max-width: 520px) {
++  /* Phones: type, then the details at full width, then the button. Three columns don't fit. */
++  .assign-list li { display: grid; grid-template-columns: 1fr; justify-items: start; gap: var(--s2); }
++  .assignments { padding: var(--s4); }
++  .join-form { grid-template-columns: 1fr; }
++}
+ 
+ /* ---------- Present mode ---------- */
+-.present { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; background: var(--desk); }
++.present { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); background: var(--desk); }
++.present-stage { min-width: 0; }
++.present-stage > *, .present-cover { min-width: 0; max-width: 100%; }
++.present-sig { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+ .present-bar { display: flex; align-items: center; gap: var(--s4); padding: var(--s2) var(--s4); background: var(--paper); border-bottom: 1px solid var(--rule); }
+ .present-title { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .present-count { color: var(--ink-3); font-weight: 700; }
+@@ -141,7 +149,7 @@
+ .present-dots li { width: 10px; height: 10px; border-radius: 50%; background: var(--rule); }
+ .present-dots li.done { background: var(--ink-3); }
+ .present-dots li.on { background: var(--pen); transform: scale(1.3); }
+-@media (max-width: 640px) { .present-stage { font-size: 1.05rem; padding: var(--s4) var(--s3); } .present-dots { display: none; } }
++@media (max-width: 640px) { .present-stage { font-size: 1.05rem; padding: var(--s4) var(--s3); } .present-dots { display: none; } .present-cover { padding: var(--s5) var(--s4); } .present-sig { font-size: 1.3rem; } }
+ .heat-legend .band-dot { display: inline-block; vertical-align: -1px; margin-right: 2px; }
+ .band-dot.band-learning { background: var(--m-learning); }
+ .band-dot.band-developing { background: var(--m-developing); }
+@@ -156,5 +164,6 @@
+   .class-grid { grid-template-columns: 1fr; }
+   .class-grid .rows .row { flex-wrap: wrap; }
+   .class-grid .rows .row-end.flag-tags { width: 100%; margin-left: 0; }
++  .class-grid .rows .row-end.tl-bar { width: 100%; }
+   .join-code { width: 100%; }
+ }
+diff --git a/src/client/styles/widgets.css b/src/client/styles/widgets.css
+index 7335d3e..4d8bead 100755
+--- a/src/client/styles/widgets.css
++++ b/src/client/styles/widgets.css
+@@ -525,6 +525,22 @@
+ .chemb {
+   display: grid;
+   gap: var(--s3);
++  min-width: 0;
++}
++.chemb > * {
++  min-width: 0;
++}
++@media (max-width: 420px) {
++  /* Small phones: a long equation and its tally table must fit beside nothing. */
++  .chemb-eq {
++    font-size: var(--t-lg);
++    gap: var(--s2);
++  }
++  .tally th,
++  .tally td {
++    padding-right: var(--s2);
++    overflow-wrap: anywhere;
++  }
+ }
+ .chemb-name {
+   font-weight: 700;
+@@ -1064,7 +1080,7 @@
+ .planet-dot text, .planet-ball text { font-size: 12px; fill: var(--ink-2); }
+ .planet-dot.on text, .planet-ball.on text { fill: var(--pen); font-weight: 700; }
+ .planet-note { font-size: 11px; fill: var(--ink-3); }
+-.planet-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s2) var(--s4); margin: var(--s3) 0 0; }
++.planet-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: var(--s2) var(--s4); margin: var(--s3) 0 0; }
+ .planet-facts dt { font-size: var(--t-xs); color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.04em; }
+ .planet-facts dd { margin: 0; font-weight: 600; }
+ 

@@ -18,6 +18,19 @@
     border-color 0.12s var(--ease),
     transform 0.08s var(--ease);
   white-space: nowrap;
+  max-width: 100%;
+}
+/* A long label on a narrow phone wraps inside the button instead of pushing it off screen. */
+@media (max-width: 560px) {
+  .btn {
+    white-space: normal;
+    text-align: center;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .btn .icon {
+    flex: none;
+  }
 }
 .btn > span {
   display: inline-flex;
@@ -164,6 +177,7 @@
 .field {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 .field label {
   font-weight: 700;
@@ -171,6 +185,10 @@
 }
 .field input,
 .field select {
+  /* A select is as wide as its longest option unless told otherwise: keep it inside its card. */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 48px;
   padding: 0 var(--s3);
   border: 1.5px solid var(--rule-strong);
@@ -258,11 +276,13 @@ a.row:hover .row-title,
 }
 .row-main {
   display: grid;
-  flex: 1;
+  /* A real basis, so rows that are allowed to wrap actually do on phones (flex: 1 never wraps). */
+  flex: 1 1 9rem;
   min-width: 0;
 }
 .row-title {
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 .row-sub {
   font-size: var(--t-sm);

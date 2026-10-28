@@ -525,6 +525,22 @@
 .chemb {
   display: grid;
   gap: var(--s3);
+  min-width: 0;
+}
+.chemb > * {
+  min-width: 0;
+}
+@media (max-width: 420px) {
+  /* Small phones: a long equation and its tally table must fit beside nothing. */
+  .chemb-eq {
+    font-size: var(--t-lg);
+    gap: var(--s2);
+  }
+  .tally th,
+  .tally td {
+    padding-right: var(--s2);
+    overflow-wrap: anywhere;
+  }
 }
 .chemb-name {
   font-weight: 700;
@@ -1064,7 +1080,7 @@
 .planet-dot text, .planet-ball text { font-size: 12px; fill: var(--ink-2); }
 .planet-dot.on text, .planet-ball.on text { fill: var(--pen); font-weight: 700; }
 .planet-note { font-size: 11px; fill: var(--ink-3); }
-.planet-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s2) var(--s4); margin: var(--s3) 0 0; }
+.planet-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: var(--s2) var(--s4); margin: var(--s3) 0 0; }
 .planet-facts dt { font-size: var(--t-xs); color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.04em; }
 .planet-facts dd { margin: 0; font-weight: 600; }
 
