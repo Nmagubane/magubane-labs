@@ -442,6 +442,8 @@ function Manage({
         </div>
       </form>
       <details className="danger-zone">
+        <div> </div>
+        <div> </div>
         <summary>Delete {c.name}’s account</summary>
         <p>
           This permanently deletes {c.name} and everything recorded about their
