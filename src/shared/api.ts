@@ -112,6 +112,8 @@ export type CreateActivityRequest = z.infer<typeof CreateActivityBody>;
 export const NextQuestionBody = z.object({
   adjust: z.enum(['easier', 'harder', 'same']).optional(),
   level: z.number().int().min(1).max(5).optional(),
+  /** Junior: a second try at the question just missed. */
+  retry: z.boolean().optional(),
 });
 
 const responseValue = z.union([z.string().max(300), z.array(z.string().max(60)).max(8)]);
@@ -151,6 +153,8 @@ export interface UserDto {
   school?: string | null;
   /** A Grades 1–3 child who signs in with pictures (created by a parent or teacher). */
   junior?: boolean;
+  /** Moved up from picture sign-in (Grade 3) to their own login: the app welcomes them into Grade 4. */
+  movedUp?: boolean;
 }
 
 export interface ProfileDto {
@@ -270,6 +274,8 @@ export interface AnswerResponse {
   saved: boolean;
   answered: number;
   done: boolean;
+  /** Junior: this answer made the skill secure, so the child has a new "I can…" statement. */
+  ican?: { skillId: string; text: string; spoken: string };
 }
 
 export interface ReviewItem {

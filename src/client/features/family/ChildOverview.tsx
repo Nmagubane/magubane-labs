@@ -31,6 +31,15 @@ import {
   languageLine,
 } from "./ChildBits.tsx";
 import { relativeDay } from "../../lib/format.ts";
+import { useSession } from "../../lib/session.tsx";
+import { MoveUp } from "./MoveUp.tsx";
+
+const SUBJECT_LABEL: Record<string, string> = {
+  mathematics: "Mathematics",
+  "home-language": "Home Language",
+  "english-fal": "English",
+  "life-skills": "Life Skills",
+};
 
 const KIND_LABEL: Record<ActivityCard["kind"], string> = {
   move: "Move",
@@ -50,6 +59,7 @@ export function ChildOverview({
   const { data, error, reload } = useResource<ChildOverviewDto>(
     `/api/children/${id}/overview`,
   );
+  const { me } = useSession();
   if (error) return <ErrorState error={error} onRetry={() => void reload()} />;
   if (!data) return <Loading label="Loading" />;
   const c = data.child;
@@ -105,6 +115,34 @@ export function ChildOverview({
           Ten to fifteen minutes a day works better than one long session a
           week.
         </p>
+      </section>
+
+      <section className="sheet" aria-labelledby="ic">
+        <h2 id="ic">What {c.name} can do</h2>
+        {data.ican.length ? (
+          <>
+            <p className="muted">
+              Each line is a skill {c.name} now gets right reliably, in the
+              words {c.name} sees. Ask them to show you one.
+            </p>
+            <ul className="ch-ican">
+              {data.ican.map((i) => (
+                <li key={i.skillId}>
+                  <span>{i.text}</span>
+                  <span className="muted">
+                    {SUBJECT_LABEL[i.subjectId] ?? i.subjectId},{" "}
+                    {relativeDay(i.earnedAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="muted">
+            Nothing yet. A line appears here when {c.name} gets a skill right
+            reliably, usually after a few short sessions on it.
+          </p>
+        )}
       </section>
 
       <section className="sheet" aria-labelledby="nx">
@@ -206,6 +244,16 @@ export function ChildOverview({
             ))}
           </ul>
         </section>
+      ) : null}
+
+      {c.canManage && c.grade === 3 ? (
+        <MoveUp
+          childId={c.id}
+          name={c.name}
+          forTeacher={me?.user?.role === "teacher"}
+          guardianEmail={c.guardianEmail}
+          backTo={backTo}
+        />
       ) : null}
 
       {c.canManage ? (

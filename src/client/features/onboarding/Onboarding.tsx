@@ -22,9 +22,10 @@ export function Onboarding() {
   const { navigate } = useRouter();
   const existing = me?.profile;
   const [step, setStep] = useState(existing && !existing.baselineCompleted ? 4 : 0);
-  const [grade, setGrade] = useState<number | null>(existing?.grade ?? null);
+  const movedUp = !!me?.user?.movedUp && !existing;
+  const [grade, setGrade] = useState<number | null>(existing?.grade ?? (movedUp ? 4 : null));
   const [curriculum, setCurriculum] = useState<CurriculumId>(existing?.curriculumId ?? 'za-caps');
-  const [subjects, setSubjects] = useState<SubjectId[]>(existing?.subjects ?? ['mathematics']);
+  const [subjects, setSubjects] = useState<SubjectId[]>(existing?.subjects ?? (movedUp ? defaultSubjects(4) : ['mathematics']));
   const [goals, setGoals] = useState<Goal[]>(existing?.goals ?? []);
   const [daily, setDaily] = useState(existing?.dailyMinutes ?? 30);
   const [busy, setBusy] = useState(false);
@@ -87,8 +88,17 @@ export function Onboarding() {
       <section className="onboard-body">
         {step === 0 ? (
           <>
-            <h1>Hi {first}. Which grade are you in?</h1>
-            <p className="lead">We use this to pitch questions at the right level. You can change it later.</p>
+            {movedUp ? (
+              <>
+                <h1>Welcome to Grade 4, {first}.</h1>
+                <p className="lead">Everything you learnt in Grades 1 to 3 is still here. This part of Magubane Labs has more to read, harder problems and labs to try. Check your grade, then choose your subjects.</p>
+              </>
+            ) : (
+              <>
+                <h1>Hi {first}. Which grade are you in?</h1>
+                <p className="lead">We use this to pitch questions at the right level. You can change it later.</p>
+              </>
+            )}
             <div className="grade-grid" role="radiogroup" aria-label="Grade">
               {[4, 5, 6, 7, 8, 9, 10, 11, 12].map((g) => (
                 <button key={g} type="button" role="radio" aria-checked={grade === g} className={`grade-btn${grade === g ? ' on' : ''}`} onClick={() => chooseGrade(g)}>

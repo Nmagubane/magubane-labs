@@ -78,6 +78,8 @@ export const UI = {
   help: 'Help me',
   check: 'Check',
   next: 'Next',
+  tryOneLikeIt: 'Try one like it',
+  oneLikeIt: 'One like it',
   clear: 'Start again',
   undo: 'Undo',
   watch: 'Watch first',
@@ -126,6 +128,20 @@ export const TALK = {
   notYet: ['Not quite.', 'Not yet.', 'Good try.', 'Hmm, not this time.'],
   nearly: ['Oh, so close!', 'Nearly!'],
   together: ["Let's look together.", "Let's work it out.", "Here's how."],
+  /** "Try one like it": after a wrong first try, the same kind of question with new numbers. */
+  retryOffer: ["Let's try one like it.", 'Now try one like it.', "Here comes one like it. You can do it."],
+  retryIntro: ["Here's one like it.", 'One like it.', 'Your turn.'],
+  retryRight: ['You got it this time!', 'Yes! You worked it out.', "That's it. You fixed it!"],
+  retryWrong: ["That's a tricky one.", 'Not this time.', 'Still tricky.'],
+  retryLater: "We'll practise it again soon.",
+  doneFixed: (n: number) => `And you fixed ${n === 1 ? 'one more' : `${n} more`} on a second try!`,
+  /** "I can…" */
+  icanNew: 'And something new:',
+  icanNewLabel: 'New',
+  icanTitle: 'Things I can do',
+  icanAll: (n: number) => `All ${n} things I can do`,
+  icanEmpty: 'Keep playing. Each thing you learn goes here.',
+  icanIntro: (name: string) => `${name}, here are the things you can do.`,
   /** Before a hint. */
   clue: ["Here's a clue.", 'Try this.', 'Think about this.'],
   /** Watch first. */

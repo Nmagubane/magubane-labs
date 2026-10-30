@@ -1,3 +1,4 @@
+import { listIcan } from './ican.ts';
 import { createServer, type Server, type ServerResponse } from 'node:http';
 import type { Db } from './db.ts';
 import { one } from './db.ts';
@@ -18,7 +19,8 @@ import { SignupBody, DeleteAccountBody, VerifyBody, ForgotBody, ResetBody, Chang
 import { CreateClassBody, UpdateClassBody, CreateAssignmentBody, SendReportBody } from '../shared/api-teach.ts';
 import { passwordProblem } from '../shared/password.ts';
 import { CURRICULA, subjectsForGrade } from '../shared/curriculum/catalogue.ts';
-import { CreateChildBody, UpdateChildBody, PictureCodeBody, DeviceBody, JuniorLoginBody, CardLogBody, DeleteChildBody } from '../shared/api-junior.ts';
+import { CreateChildBody, UpdateChildBody, PictureCodeBody, DeviceBody, JuniorLoginBody, CardLogBody, DeleteChildBody, MoveUpBody } from '../shared/api-junior.ts';
+import { moveUpChild } from './moveup.ts';
 import { DEVICE_COOKIE, DEVICE_DAYS, createChild, updateChild, resetPictureCode, canDeleteChild, listFamily, createDevice, listDevices, revokeDevice, revokeDeviceToken, deviceInfo, juniorLogin, juniorHome, juniorWorld, childOverview, logCard, classLoginCards, isJuniorLearner, childSummary } from './junior.ts';
 import { questionLanguage } from './activities.ts';
 
@@ -69,8 +71,8 @@ function startSession(ctx: Ctx, db: Db, userId: string): void {
 
 /** Emails a guardian once their child's account is confirmed. */
 async function noticeToGuardian(db: Db, userId: string): Promise<void> {
-  const g = one<{ display_name: string; is_minor: number; guardian_email: string | null; guardian_name: string | null }>(db, 'SELECT display_name, is_minor, guardian_email, guardian_name FROM users WHERE id = ?', userId);
-  if (!g?.is_minor || !g.guardian_email) return;
+  const g = one<{ display_name: string; is_minor: number; guardian_email: string | null; guardian_name: string | null; moved_up_at: string | null }>(db, 'SELECT display_name, is_minor, guardian_email, guardian_name, moved_up_at FROM users WHERE id = ?', userId);
+  if (!g?.is_minor || !g.guardian_email || g.moved_up_at) return;
   const { html, text } = layout({
     heading: `${g.display_name} created a Magubane Labs account`,
     paragraphs: [
@@ -390,6 +392,11 @@ export function buildRouter(db: Db): Router {
     return { ok: true };
   });
   r.get('/api/junior/home', (ctx) => juniorHome(db, requireLearner(ctx)));
+  r.get('/api/junior/ican', (ctx) => {
+    const u = requireLearner(ctx);
+    if (!isJuniorLearner(db, u.id)) throw new HttpError(403, 'not_junior', 'This is for Grade 1 to 3 learners.');
+    return listIcan(db, u.id);
+  });
   r.get('/api/junior/world/:subject', (ctx) => juniorWorld(db, requireLearner(ctx), ctx.params.subject as string));
 
   r.get('/api/family', (ctx) => listFamily(db, requireParent(ctx), deviceToken(ctx)));
@@ -409,6 +416,11 @@ export function buildRouter(db: Db): Router {
   r.post('/api/children/:id/cards', async (ctx) => {
     const body = await readJson(ctx, CardLogBody);
     return logCard(db, requireAdult(ctx), ctx.params.id as string, body.cardId, body.note);
+  });
+  r.post('/api/children/:id/move-up', async (ctx) => {
+    const adult = requireAdult(ctx);
+    const body = await readJson(ctx, MoveUpBody);
+    return moveUpChild(db, adult, ctx.params.id as string, body);
   });
   r.post('/api/children/:id/delete', async (ctx) => {
     const adult = requireAdult(ctx);

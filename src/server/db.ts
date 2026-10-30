@@ -274,6 +274,21 @@ const MIGRATIONS: string[] = [
   );
   CREATE INDEX card_log_child ON card_log(child_id, done_at);
   `,
+  // v6: Junior "try one like it" (a retry question points at the one it retries), "I can…" statements, and
+  // the Grade 3 → 4 handover (a picture-sign-in child becomes an email learner; moved_up_at records when).
+  `
+  ALTER TABLE question_instances ADD COLUMN retry_of TEXT;
+  ALTER TABLE users ADD COLUMN moved_up_at TEXT;
+
+  CREATE TABLE junior_ican (
+    child_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    skill_id TEXT NOT NULL,
+    activity_id TEXT,
+    earned_at TEXT NOT NULL,
+    PRIMARY KEY (child_id, skill_id)
+  );
+  CREATE INDEX junior_ican_child ON junior_ican(child_id, earned_at);
+  `,
 ];
 
 /** A per-installation secret (for signed links in emails), created on first use and kept in the database. */

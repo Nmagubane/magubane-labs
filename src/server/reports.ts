@@ -20,6 +20,7 @@ import { getSkill } from '../shared/curriculum/catalogue.ts';
 import { computeReadiness } from '../shared/mastery/readiness.ts';
 import { juniorSkills } from '../shared/junior/recommend.ts';
 import { foundationSubjectsFor } from '../shared/junior/languages.ts';
+import { listIcan } from './ican.ts';
 
 const INK = hex('#1a1d21');
 const INK2 = hex('#4a5159');
@@ -134,7 +135,9 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
   const lessons = one<{ n: number }>(db, 'SELECT COUNT(*) AS n FROM lesson_progress WHERE user_id = ? AND completed_at >= ?', learnerId, sinceIso)?.n ?? 0;
   const lessonMs = all<{ started_at: string; completed_at: string }>(db, "SELECT started_at, completed_at FROM activities WHERE user_id = ? AND kind = 'lesson' AND status = 'completed' AND completed_at >= ?", learnerId, sinceIso).reduce((s, r) => s + Math.min(30 * 60000, new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()), 0);
   const minutes = Math.round(((wk.ms ?? 0) + lessonMs) / 60000);
-  const accuracy = wk.n ? Math.round((100 * (wk.c ?? 0)) / wk.n) : null;
+  // Accuracy is first tries only: a Junior "try one like it" second chance is learning, not a score.
+  const first = one<{ n: number; c: number | null }>(db, 'SELECT COUNT(*) AS n, SUM(is_correct) AS c FROM responses WHERE user_id = ? AND graded_at >= ? AND skipped = 0 AND question_id NOT IN (SELECT id FROM question_instances WHERE retry_of IS NOT NULL)', learnerId, sinceIso) ?? { n: 0, c: 0 };
+  const accuracy = first.n ? Math.round((100 * (first.c ?? 0)) / first.n) : null;
 
   // Grades 1–3 have no lessons, no tutor and an adult reading the report for them.
   const junior = !!profile && profile.grade <= 3;
@@ -176,6 +179,15 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
       const delta = before === null ? null : s.mastery - before;
       barRow(pdf, getSkill(w.skill_id)?.name ?? w.skill_id, s.mastery, `${w.c}/${w.n} correct${delta !== null && delta !== 0 ? `  ${delta > 0 ? '+' : ''}${delta}` : ''}`);
     }
+  }
+
+  // "I can…" statements earned this period (Foundation Phase): the plainest answer to "what did they learn?"
+  const icanNew = junior ? listIcan(db, learnerId).filter((i) => i.earnedAt >= sinceIso) : [];
+  if (icanNew.length) {
+    section(pdf, `New things ${user.displayName} can do`);
+    for (const i of icanNew.slice(0, 8)) pdf.para(`•  ${i.text}`, { size: 10, gap: 3 });
+    if (icanNew.length > 8) pdf.para(`And ${icanNew.length - 8} more on ${user.displayName}'s page.`, { size: 9, color: INK2 });
+    pdf.y += 4;
   }
 
   // Mastery by subject
@@ -270,7 +282,7 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
     if (accuracy !== null && accuracy < 55) tips.push('Many answers were wrong this week. Sit with them for a set or two: after a mistake, press "Watch first" together, then let them try again on their own.');
     if (accuracy !== null && accuracy >= 85) tips.push('Accuracy is high, so the questions will get harder by themselves. If they find something easy, ask them to show you how they know.');
     tips.push('Do one of the Move, Make or Talk activities on their page together. They take 5 to 10 minutes and need no screen.');
-    tips.push('Ask them to show you one thing they learnt, using real objects: count spoons, read a cereal box, sort the washing.');
+    tips.push(icanNew.length ? `Ask them to show you: "${icanNew[0]!.text}" Use real objects: spoons, a cereal box, the washing.` : 'Ask them to show you one thing they learnt, using real objects: count spoons, read a cereal box, sort the washing.');
   } else {
     if (activeDays < 3) tips.push(`Agree on a regular time: 20 minutes on 4 days a week is enough to see steady progress.`);
     if (accuracy !== null && accuracy < 55) tips.push('Many answers were wrong this week. Encourage using hints and the worked solutions after each mistake: that is where the learning happens.');

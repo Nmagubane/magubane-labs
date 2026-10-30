@@ -1,5 +1,6 @@
 /** Junior (Grades 1–3): the API contract for child profiles, picture sign-in, the child's screens and adult views. */
 import { z } from 'zod';
+import { passwordProblem } from './password.ts';
 import { LANGUAGE_CODES, type LanguageCode } from './junior/languages.ts';
 import { PICTURE_IDS, CODE_LENGTH } from './junior/pictures.ts';
 import type { SubjectId } from './curriculum/catalogue.ts';
@@ -36,6 +37,23 @@ export const DeviceBody = z.object({ classId: z.string().max(60).optional(), lab
 export const JuniorLoginBody = z.object({ childId: z.string().min(1).max(60), code: pictureCode });
 export const CardLogBody = z.object({ cardId: z.string().min(1).max(60), note: z.string().trim().max(280).optional() });
 export const DeleteChildBody = z.object({ confirmName: z.string().trim().max(30) });
+/**
+ * Grade 3 → Grade 4: the child gets their own email login and the full learner app.
+ * The grown-up chooses the email and password with the child; the password rules are the same as everyone's.
+ */
+export const MoveUpBody = z
+  .object({
+    email: z.string().trim().toLowerCase().email('Enter a valid email address').max(120),
+    password: z.string().max(200),
+    /** Teachers only: the parent or guardian to tell (and send weekly reports to). */
+    guardianEmail: z.string().trim().toLowerCase().email('Enter a valid email address').max(120).optional().or(z.literal('')),
+    consent: z.literal(true, { errorMap: () => ({ message: 'Consent from a parent or guardian is needed' }) }),
+  })
+  .superRefine((v, ctx) => {
+    const problem = passwordProblem(v.password, { email: v.email });
+    if (problem) ctx.addIssue({ code: 'custom', path: ['password'], message: problem });
+  });
+export type MoveUpRequest = z.infer<typeof MoveUpBody>;
 
 // ---------- responses ----------
 
@@ -83,6 +101,8 @@ export interface ChildSummaryDto {
   minutes7d: number;
   answers7d: number;
   skillsStarted: number;
+  /** Set once the child has moved up to Grade 4 and logs in with email: no picture sign-in, no Junior page. */
+  movedUp: { at: string; email: string } | null;
 }
 
 export interface DeviceDto {
@@ -124,6 +144,19 @@ export interface ChildOverviewDto {
   mistakes: { code: string; label: string; kind: MistakeKind; tip: string; count: number; skills: string[] }[];
   recent: { title: string; completedAt: string; firstTry: number; total: number }[];
   cardsDone: { cardId: string; title: string; doneAt: string }[];
+  /** "I can…" statements earned, newest first. */
+  ican: IcanDto[];
+}
+
+/** One "I can…" statement a child has earned. */
+export interface IcanDto {
+  skillId: string;
+  subjectId: SubjectId;
+  /** "I can count to 50." */
+  text: string;
+  /** "You can count to 50 now!" */
+  spoken: string;
+  earnedAt: string;
 }
 
 export interface CreatedChildDto {
@@ -136,3 +169,6 @@ export interface ClassChildrenCardsDto {
   grade: number;
   children: { id: string; name: string; colour: string; pictureCode: string[] }[];
 }
+
+/** "Try one like it": at most this many second tries in one 5-question set. */
+export const MAX_JUNIOR_RETRIES = 3;

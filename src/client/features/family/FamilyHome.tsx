@@ -34,7 +34,28 @@ export function FamilyHome() {
       ) : null}
       {data.children.length ? (
         <ul className="kids">
-          {data.children.map((c) => (
+          {data.children.map((c) =>
+            c.movedUp ? (
+              <li key={c.id}>
+                <div className="kid-row kid-moved">
+                  <span className="jsi-initial sm" style={{ background: c.colour }} aria-hidden>
+                    {c.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="kid-main">
+                    <span className="kid-name">{c.name}</span>
+                    <span className="muted">
+                      Moved up to Grade {c.grade} {relativeDay(c.movedUp.at)}. Logs in with {c.movedUp.email}.
+                    </span>
+                  </span>
+                  <span className="kid-week">
+                    <span>{c.minutes7d} min this week</span>
+                    <a href={`/api/reports/learner/${c.id}`} target="_blank" rel="noopener">
+                      Progress report (PDF)
+                    </a>
+                  </span>
+                </div>
+              </li>
+            ) : (
             <li key={c.id}>
               <Link to={`/family/children/${c.id}`} className="kid-row">
                 <span className="jsi-initial sm" style={{ background: c.colour }} aria-hidden>
@@ -53,7 +74,8 @@ export function FamilyHome() {
                 <Icon name="next" />
               </Link>
             </li>
-          ))}
+            ),
+          )}
         </ul>
       ) : !adding ? (
         <Empty title="Add your first child" action={<Button onClick={() => setAdding(true)}>Add a child</Button>}>

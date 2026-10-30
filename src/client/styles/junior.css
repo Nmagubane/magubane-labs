@@ -338,6 +338,33 @@
   background: var(--tick);
   border-color: var(--tick);
 }
+.jp-dots li.fixed {
+  background: var(--tick-tint);
+  border-color: var(--tick);
+  border-style: dashed;
+}
+/* The question being tried again: a slow pulse so the child sees which one they're fixing. */
+.jp-dots li.retrying {
+  border-color: var(--ink);
+  border-style: solid;
+  background: var(--hl);
+  animation: jpulse 1.2s ease-in-out infinite;
+}
+@keyframes jpulse {
+  50% {
+    transform: scale(1.25);
+  }
+}
+.jp-retry-tag {
+  justify-self: start;
+  margin: 0;
+  padding: 2px 10px;
+  border-radius: var(--r-chip);
+  background: var(--hl);
+  color: var(--hl-ink);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
 .jp-dots li.no {
   background: var(--paper);
   border-color: var(--ink-3);
@@ -553,9 +580,19 @@
   background: var(--paper);
   color: var(--ink-2);
 }
+/* Fixed on a second try: right in the end, but honestly not first time (dashed tick ring). */
+.jp-done-marks li.fixed {
+  border-style: dashed;
+  background: var(--paper);
+}
 .jp-done-line {
   font-size: 1.35rem;
   font-weight: 700;
+}
+.jp-done-fixed {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--tick);
 }
 .jp-done-actions {
   display: flex;
@@ -1727,6 +1764,12 @@ button.tf-cell:hover:not(:disabled) {
   .jh-tools {
     justify-content: space-between;
   }
+  /* Pages with a back button keep it beside the title, where it is expected. */
+  .jh-top.jh-top-back {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
 }
 @media (max-width: 420px) {
   .tray-go {
@@ -2084,6 +2127,7 @@ button.tf-cell:hover:not(:disabled) {
 .ch-mistakes,
 .ch-skills,
 .ch-recent,
+.ch-ican,
 .cards-list {
   list-style: none;
   padding: 0;
@@ -2092,9 +2136,13 @@ button.tf-cell:hover:not(:disabled) {
   gap: var(--s3);
 }
 .ch-next li,
-.ch-recent li {
+.ch-recent li,
+.ch-ican li {
   display: grid;
   gap: 2px;
+}
+.ch-ican li > span:first-child {
+  font-weight: 700;
 }
 .ch-next-skill,
 .ch-m-label {
@@ -2250,4 +2298,159 @@ button.tf-cell:hover:not(:disabled) {
   flex-basis: 100%;
   margin: 0;
   max-width: 60ch;
+}
+
+/* ---------- "I can…": a child's own record of what they can do ---------- */
+/* Written on ruled lines like an exercise book, each with a tick in the margin. No counters, no slots to fill. */
+.ican {
+  margin-top: var(--s6);
+}
+.ican-h {
+  font-size: 1.35rem;
+  margin: 0 0 var(--s2);
+}
+.ican-empty {
+  color: var(--ink-2);
+  margin: 0;
+}
+.ican-list {
+  list-style: none;
+  margin: 0 0 var(--s2);
+  padding: 0;
+  border-top: 2px solid var(--rule);
+}
+.ican-line {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--s2) var(--s2);
+  border: 0;
+  border-bottom: 2px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+}
+.ican-line > svg {
+  color: var(--ink-3);
+}
+.ican-line:hover > svg {
+  color: var(--pen);
+}
+.ican-tick {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid var(--tick);
+  color: var(--tick);
+  background: var(--tick-tint);
+}
+.ican-words {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The moment on the done screen: one new line, written large, highlighted the way a teacher would. */
+.ican-new {
+  display: grid;
+  gap: var(--s2);
+  justify-items: center;
+  margin: var(--s2) auto 0;
+  padding: var(--s4);
+  max-width: 34rem;
+  width: 100%;
+  border: 2.5px solid var(--tick);
+  border-radius: var(--r-sheet);
+  background: var(--paper);
+}
+.ican-new-label {
+  background: var(--hl);
+  color: var(--hl-ink);
+  font-weight: 700;
+  padding: 1px 10px;
+  border-radius: var(--r-chip);
+}
+.ican-new-text {
+  margin: 0;
+  font-size: clamp(1.4rem, 5vw, 1.8rem);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.ican-new-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ican-new-all {
+  color: var(--pen);
+  font-weight: 700;
+  padding: var(--s2);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ican-new {
+    animation: ican-in 420ms var(--ease) 300ms both;
+  }
+  @keyframes ican-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+}
+
+/* A child who has moved up to Grade 4: no Junior page to open, so the row is not a link. */
+.kid-row.kid-moved {
+  grid-template-columns: auto 1fr auto;
+  background: transparent;
+  border-style: dashed;
+}
+.kid-row.kid-moved:hover {
+  border-color: var(--rule);
+}
+.kid-moved .kid-main .muted {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 560px) {
+  .kid-row.kid-moved {
+    grid-template-columns: auto 1fr;
+  }
+  .kid-moved .kid-week {
+    display: grid;
+    grid-column: 2;
+    text-align: left;
+  }
+}
+
+/* Moving up to Grade 4 */
+.moveup-what {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: var(--s3) var(--s5);
+  margin: var(--s3) 0 var(--s4);
+}
+.moveup-what dt {
+  font-weight: 700;
+}
+.moveup-what dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+.moveup-steps {
+  display: grid;
+  gap: var(--s2);
+  padding-left: 1.4em;
+}
+.moveup-steps strong {
+  overflow-wrap: anywhere;
 }

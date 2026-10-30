@@ -149,4 +149,6 @@ export interface QuestionPayload {
   say?: string;
   input: InputSpec;
   hintsAvailable: number;
+  /** Junior: a second try straight after a wrong answer ("try one like it"). */
+  retry?: boolean;
 }

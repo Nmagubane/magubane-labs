@@ -150,6 +150,12 @@ Physical Education, Creative Arts and the sensitive Personal & Social Well-being
 
 **How a child learns.** A child signs in, sees one tray per subject with one suggestion each, and plays a set of 5 questions. Every prompt has a `say` field that is read aloud. A child can press **Help me** (a hint) or **Watch first** (a worked example), and gets feedback with the right answer shown in place. The recommender (`src/shared/junior/recommend.ts`) works per subject: catch-up, then review due, then continue, then the next new skill in curriculum order, then practise. It never suggests the same skill three times running. There are no points, streaks or stars. The done screen shows which answers were right first time.
 
+**Try one like it.** After a wrong first try, the feedback button offers "Try one like it": `POST /api/activities/:id/next { retry: true }` makes a new question with the same skill and difficulty, with `question_instances.retry_of` pointing at the miss, and grows the set by one. Rules, enforced on the server: practice sets only, only straight after a wrong answer, never a retry of a retry, at most `MAX_JUNIOR_RETRIES` (3) per set. A retry counts like an answer with one hint, so it earns less credit than a clean first try. Every adult-facing "right first time" number (child page, class flags, PDF report) excludes retries. The done screen shows a dashed tick for "fixed on a second try".
+
+**"I can…".** When a Foundation Phase skill first reaches Proficient (mastery ≥ 70 with at least 6 answers), the child earns one statement in their own words, such as "I can find the pairs of numbers that make 10." Statements live in `packs/en/ican.ts` (one per skill and grade, describing what the middle levels ask, not the hardest edge) and are said back as "You can … now!". Earned once per skill (`junior_ican`). The child sees it on the done screen with a short chime, under "Things I can do" on home and on `/play/ican`. Adults see "What {name} can do" on the child page, and the weekly PDF lists the new ones. This is a record of learning, not a collection: no counts to chase, no locked slots.
+
+**Moving up to Grade 4.** On a Grade 3 child's page, the managing parent or teacher can give the child their own login (`POST /api/children/:id/move-up`, `server/moveup.ts`). The adult chooses an email and password with the child (the normal password rules) and confirms consent. The account switches to `login_kind = 'email'` with an unverified email, so the first login sends a code. The picture code is wiped, sessions end, Foundation Phase class memberships are removed, and the profile is cleared so the full app welcomes them into Grade 4 (grade pre-selected, then subjects, goals and the starting-point check). Learning history, "I can…" statements, the guardianship and the weekly report stay. The account remains a minor's. `users.moved_up_at` records the move: the family page shows "Moved up to Grade 4" with the login email and the report link. When a teacher does it, the guardian is emailed. Deleting the parent's account no longer deletes a child who has moved up, because that child now has their own login.
+
 **Generators** live in `src/shared/junior/gen/*`, with word lists in `reading/en*.ts` (CVC words, digraphs, blends, sight words, rhyme families, 12 original stories) and per-language packs in `packs/<lang>`. Questions carry a `scene` for counters, ten-frames, base-10 blocks, coins, clocks, rulers, balances, pictographs and pattern strips. Phonics questions are anchored on spoken picture words, because device text-to-speech says letter names, not sounds. `src/shared/junior/junior.test.ts` checks every template at 5 levels × 200 seeds: it must be answerable, the canonical answer must be correct, and every predicted mistake must be diagnosed.
 
 **Voice.** Device text-to-speech (`speechSynthesis`) sits behind `client/features/junior/speech.ts`. It costs nothing and keeps no audio on a server. Three layers keep it from sounding robotic:
@@ -186,7 +192,14 @@ Instruction strings still live inside the English generators. Moving them into p
 - `guardianships`, `junior_devices`, `card_log`
 - `classes.subject_id` may be `all`
 
+**Data model additions (migration v6):**
+- `question_instances.retry_of`
+- `junior_ican (child_id, skill_id, activity_id, earned_at)`
+- `users.moved_up_at`
+
 **Not built yet for Junior.**
+- Automatic grade change at the start of a school year. Grade 1 → 2 and 2 → 3 are a manual grade change on the child page, and the new grade starts every skill at level 2 regardless of what the child mastered the year before.
+- Grade 4 recommendations that use Foundation Phase mastery (a Grade 4 learner's catch-up does not look at their Grade 3 skills yet).
 - Content for the 10 non-English languages, which needs fluent Foundation Phase teacher reviewers.
 - Recorded voices: device voices for most South African languages are rare, especially on cheap Android phones.
 - Handwriting and letter formation, and reading aloud with speech recognition.

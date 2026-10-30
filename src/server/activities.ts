@@ -3,6 +3,8 @@
  * All grading happens here. The client never receives an answer before it has responded, and in
  * assessment mode it receives nothing about correctness until the activity is submitted.
  */
+import { earnIcan } from './ican.ts';
+import { MAX_JUNIOR_RETRIES } from '../shared/api-junior.ts';
 import { randomInt } from 'node:crypto';
 import type { Db } from './db.ts';
 import { all, one, run, newId, tx } from './db.ts';
@@ -49,7 +51,12 @@ interface QuestionRow {
   payload: string;
   secret: string;
   hints_used: number;
+  /** Junior "try one like it": the question this one gives a second chance at. */
+  retry_of?: string | null;
 }
+
+/** At most this many "try one like it" questions in one Junior set: enough to recover, not a slog. */
+const MAX_RETRIES = MAX_JUNIOR_RETRIES;
 
 interface ResponseRow {
   id: string;
@@ -131,7 +138,7 @@ export function questionLanguage(db: Db, userId: string): string {
   return p?.homeLanguage ? instructionLanguage(p.homeLanguage) : 'en';
 }
 
-function createQuestion(db: Db, activity: ActivityRow, skill: Skill, level: Difficulty, position: number): QuestionRow {
+function createQuestion(db: Db, activity: ActivityRow, skill: Skill, level: Difficulty, position: number, retryOf: string | null = null): QuestionRow {
   const seed = randomInt(1, 2 ** 31 - 1);
   const g = generateQuestion(skill.templateId, seed, level, { lang: questionLanguage(db, activity.user_id) });
   const payload: Omit<QuestionPayload, 'id'> = {
@@ -143,6 +150,7 @@ function createQuestion(db: Db, activity: ActivityRow, skill: Skill, level: Diff
     ...(g.say ? { say: g.say } : {}),
     input: g.input,
     hintsAvailable: activity.mode === 'learning' ? g.hints.length : 0,
+    ...(retryOf ? { retry: true } : {}),
   };
   const secret: Secret = { answer: g.answer, answerDisplay: g.answerDisplay, hints: g.hints, solution: g.solution, misconceptions: g.misconceptions };
   const row: QuestionRow = {
@@ -157,11 +165,12 @@ function createQuestion(db: Db, activity: ActivityRow, skill: Skill, level: Diff
     payload: JSON.stringify(payload),
     secret: JSON.stringify(secret),
     hints_used: 0,
+    retry_of: retryOf,
   };
   run(
     db,
-    `INSERT INTO question_instances (id, activity_id, user_id, position, template_id, skill_id, difficulty, seed, payload, secret, hints_used, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+    `INSERT INTO question_instances (id, activity_id, user_id, position, template_id, skill_id, difficulty, seed, payload, secret, hints_used, retry_of, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
     row.id,
     row.activity_id,
     row.user_id,
@@ -172,6 +181,7 @@ function createQuestion(db: Db, activity: ActivityRow, skill: Skill, level: Diff
     row.seed,
     row.payload,
     row.secret,
+    retryOf,
     now().toISOString(),
   );
   return row;
@@ -413,17 +423,19 @@ export function getActivityState(db: Db, user: UserDto, id: string): ActivitySta
 
 // ---------- learning mode: next question, hints ----------
 
-export function nextQuestion(db: Db, user: UserDto, id: string, opts: { adjust?: 'easier' | 'harder' | 'same'; level?: number }): PracticeItem {
+export function nextQuestion(db: Db, user: UserDto, id: string, opts: { adjust?: 'easier' | 'harder' | 'same'; level?: number; retry?: boolean }): PracticeItem {
   const a = loadActivity(db, user, id);
   if (a.mode !== 'learning') throw new HttpError(403, 'assessment_mode', 'Questions in a test are fixed in advance.');
   if (a.status !== 'in_progress') throw new HttpError(409, 'finished', 'This activity is finished.');
   const questions = all<QuestionRow>(db, 'SELECT * FROM question_instances WHERE activity_id = ? ORDER BY position', a.id);
   const responses = responsesFor(db, a.id);
   const open = questions.find((q) => !responses.has(q.id));
+  if (opts.retry && open && !open.retry_of) throw new HttpError(409, 'no_retry', 'Answer this one first.');
   if (open && !opts.level) {
     const secret = JSON.parse(open.secret) as Secret;
     return { question: payloadOf(open), response: null, hints: secret.hints.slice(0, open.hints_used), feedback: null };
   }
+  if (opts.retry) return retryQuestion(db, a, questions, responses);
   if (a.kind === 'practice' && responses.size >= a.target_count) throw new HttpError(409, 'complete', 'Practice set complete.');
 
   let offset = a.difficulty_offset;
@@ -460,6 +472,23 @@ export function nextQuestion(db: Db, user: UserDto, id: string, opts: { adjust?:
   return { question: payloadOf(q), response: null, hints: [], feedback: null };
 }
 
+/**
+ * Junior "try one like it": straight after a wrong first try, the same kind of question at the same level
+ * with new numbers, so the child leaves the mistake by getting one right. It adds a question to the set
+ * (the five first tries stay five) and is capped, so a hard day doesn't turn into a long one.
+ */
+function retryQuestion(db: Db, a: ActivityRow, questions: QuestionRow[], responses: Map<string, ResponseRow>): PracticeItem {
+  if (a.kind !== 'practice') throw new HttpError(403, 'no_retry', 'Second tries are for practice sets.');
+  const last = questions.at(-1);
+  const r = last ? responses.get(last.id) : undefined;
+  if (!last || !r || r.is_correct === 1 || last.retry_of) throw new HttpError(409, 'no_retry', 'There is nothing to try again.');
+  if (questions.filter((q) => q.retry_of).length >= MAX_RETRIES) throw new HttpError(409, 'retry_limit', 'That is enough second tries for one set.');
+  const skill = getSkill(last.skill_id) as Skill;
+  run(db, 'UPDATE activities SET target_count = target_count + 1 WHERE id = ?', a.id);
+  const q = createQuestion(db, a, skill, last.difficulty as Difficulty, last.position + 1, last.id);
+  return { question: payloadOf(q), response: null, hints: [], feedback: null };
+}
+
 export function takeHint(db: Db, user: UserDto, questionId: string): { hint: RichText; index: number; remaining: number } {
   const { q, a } = loadQuestion(db, user, questionId);
   if (a.mode !== 'learning') throw new HttpError(403, 'hints_disabled', 'Hints are off in test mode.');
@@ -492,7 +521,8 @@ export function answerQuestion(db: Db, user: UserDto, questionId: string, body: 
     const state = getState(db, user.id, q.skill_id);
     const g = grade(q, secret, body.response, state.rating);
     if (g.parseError) throw new HttpError(422, 'unreadable', g.parseError);
-    const score = answerScore(g.correct, q.hints_used);
+    // A second try comes straight after the worked solution, so it counts like an answer with one hint.
+    const score = answerScore(g.correct, q.hints_used + (q.retry_of ? 1 : 0));
     const before = state.rating;
     const after = updateRating({ rating: before, evidence: state.evidence, level: q.difficulty as Difficulty, score, mode: 'learning' });
     tx(db, () => {
@@ -525,7 +555,9 @@ export function answerQuestion(db: Db, user: UserDto, questionId: string, body: 
     fb.band = band(st, at);
     fb.masteryAfter = effectiveMastery(st, at);
     if (g.wrongIds?.length) fb.wrongIds = g.wrongIds;
-    return { feedback: fb, saved: true, answered, done: a.kind === 'practice' && answered >= a.target_count };
+    // Grades 1–3: the moment a skill becomes secure, the child earns an "I can…" statement (once).
+    const ican = earnIcan(db, user.id, q.skill_id, a.id, st, at);
+    return { feedback: fb, saved: true, answered, done: a.kind === 'practice' && answered >= a.target_count, ...(ican ? { ican } : {}) };
   }
 
   // Assessment: save only. No feedback until submit.

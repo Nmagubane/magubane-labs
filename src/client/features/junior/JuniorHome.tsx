@@ -11,6 +11,7 @@ import { UI } from '../../../shared/junior/packs/en/core.ts';
 import { Icon } from '../../ui/Icon.tsx';
 import { useSpeak, useVoiceToggle } from './voice.ts';
 import { greetingLine } from '../../../shared/junior/narrate.ts';
+import { IcanShelf } from './Ican.tsx';
 
 const WORLD_LABEL = UI.worlds as Record<string, string>;
 
@@ -149,6 +150,7 @@ export function JuniorHome() {
           </li>
         ))}
       </ul>
+      <IcanShelf />
     </main>
   );
 }
@@ -159,7 +161,7 @@ export function JuniorWorld({ subject }: { subject: string }) {
   const say = useSpeak();
   return (
     <main id="main" className="jh jw">
-      <header className="jh-top">
+      <header className="jh-top jh-top-back">
         <Link to="/play" className="jp-icon-btn" aria-label={UI.goHome}>
           <Icon name="back" size={28} />
         </Link>

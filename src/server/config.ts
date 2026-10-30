@@ -7,27 +7,29 @@ try {
 }
 
 const env = process.env;
+/** A setting's value, or undefined when it is missing or blank: `PUBLIC_URL=` in .env means "not set", not "empty". */
+const setting = (name: string): string | undefined => env[name]?.trim() || undefined;
 
 export const config = {
-  port: Number(env.PORT ?? 5174),
+  port: Number(setting('PORT') ?? 5174),
   dev: env.NODE_ENV !== 'production',
-  databasePath: resolve(env.DATABASE_PATH ?? './data/magubane.db'),
-  clientDir: resolve(env.CLIENT_DIR ?? './dist/client'),
+  databasePath: resolve(setting('DATABASE_PATH') ?? './data/magubane.db'),
+  clientDir: resolve(setting('CLIENT_DIR') ?? './dist/client'),
   sessionDays: 30,
   /** Anything that isn't a real key (blank, "none", a placeholder) means the tutor is off. */
   anthropicKey: /^sk-ant-/.test(env.ANTHROPIC_API_KEY?.trim() ?? '') ? (env.ANTHROPIC_API_KEY as string).trim() : null,
-  anthropicBaseUrl: (env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com').replace(/\/$/, ''),
+  anthropicBaseUrl: (setting('ANTHROPIC_BASE_URL') ?? 'https://api.anthropic.com').replace(/\/$/, ''),
   tutorModel: env.TUTOR_MODEL?.trim() || 'claude-haiku-5-5',
-  tutorDailyLimit: Number(env.TUTOR_DAILY_LIMIT ?? 80),
+  tutorDailyLimit: Number(setting('TUTOR_DAILY_LIMIT') ?? 80),
   /** Site-wide cap on tutor messages per 24 hours: protects the API bill if sign-ups spike. */
-  tutorGlobalDailyLimit: Number(env.TUTOR_GLOBAL_DAILY_LIMIT ?? 600),
+  tutorGlobalDailyLimit: Number(setting('TUTOR_GLOBAL_DAILY_LIMIT') ?? 600),
   /** 'invite' (default in production): sign-up needs a code from INVITE_CODES. 'open' or 'closed' otherwise. */
-  signupMode: (env.SIGNUP_MODE ?? (env.NODE_ENV === 'production' ? 'invite' : 'open')) as 'invite' | 'open' | 'closed',
+  signupMode: (setting('SIGNUP_MODE') ?? (env.NODE_ENV === 'production' ? 'invite' : 'open')) as 'invite' | 'open' | 'closed',
   inviteCodes: (env.INVITE_CODES ?? '')
     .split(',')
     .map((c) => c.trim().toUpperCase())
     .filter(Boolean),
-  signupRatePerHour: Number(env.SIGNUP_RATE_PER_HOUR ?? 40),
+  signupRatePerHour: Number(setting('SIGNUP_RATE_PER_HOUR') ?? 40),
   /** Behind a reverse proxy (Render, Fly, nginx): read the client IP from X-Forwarded-For. */
   trustProxy: env.TRUST_PROXY === '1' || env.TRUST_PROXY === 'true',
   /** Shown on the privacy page for access and deletion requests. */
@@ -38,7 +40,7 @@ export const config = {
     .map((c) => c.trim().toUpperCase())
     .filter(Boolean),
   /** Public address of the site, for links in emails. Render sets RENDER_EXTERNAL_URL automatically. */
-  publicUrl: (env.PUBLIC_URL ?? env.RENDER_EXTERNAL_URL ?? `http://localhost:${env.PORT ?? 5174}`).replace(/\/$/, ''),
+  publicUrl: (setting('PUBLIC_URL') ?? setting('RENDER_EXTERNAL_URL') ?? `http://localhost:${setting('PORT') ?? 5174}`).replace(/\/$/, ''),
   /** Email delivery: 'brevo' or 'resend' with EMAIL_API_KEY; anything else logs emails to the console instead. */
   email: {
     provider: (['brevo', 'resend'].includes(env.EMAIL_PROVIDER?.trim().toLowerCase() ?? '') && env.EMAIL_API_KEY?.trim() ? env.EMAIL_PROVIDER!.trim().toLowerCase() : 'log') as 'brevo' | 'resend' | 'log',
@@ -49,8 +51,8 @@ export const config = {
     apiBase: env.EMAIL_API_BASE?.replace(/\/$/, '') || null,
   },
   /** Weekly progress reports: day 0 = Sunday, hour in South African time. */
-  reportDay: Number(env.REPORT_DAY ?? 0),
-  reportHour: Number(env.REPORT_HOUR ?? 17),
+  reportDay: Number(setting('REPORT_DAY') ?? 0),
+  reportHour: Number(setting('REPORT_HOUR') ?? 17),
   reportsEnabled: env.REPORTS_ENABLED !== '0',
 };
 

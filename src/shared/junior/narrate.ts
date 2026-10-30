@@ -72,16 +72,43 @@ export function watchLine(prompt: string, solution: string[], lang = 'en'): stri
   return [t.watchStart, prompt, ...solution, t.watchEnd].join(' ');
 }
 
-export function doneLine(opts: { name: string; skill: string; right: number; total: number; n: number }, lang = 'en'): { title: string; spoken: string } {
+export function doneLine(opts: { name: string; skill: string; right: number; total: number; n: number; fixed?: number }, lang = 'en'): { title: string; spoken: string } {
   const t = talk(lang);
-  const { name, skill, right, total, n } = opts;
+  const { name, skill, right, total, n, fixed = 0 } = opts;
   const result = right === total ? t.doneAll(total, name) : right === 0 ? t.doneNone(total) : t.doneSome(right, total);
+  const fixedLine = fixed > 0 ? ` ${t.doneFixed(fixed)}` : '';
   const extra = right === total ? '' : ` ${vary(t.doneEncourage, n)}`;
-  return { title: t.doneSkill(skill), spoken: `${result}${extra}` };
+  return { title: t.doneSkill(skill), spoken: `${result}${fixedLine}${extra}` };
 }
 
 export function greetingLine(name: string, hour: number, n: number, lang = 'en'): { title: string; spoken: string } {
   const t = talk(lang);
   const title = t.greeting(name, hour);
   return { title, spoken: `${title} ${vary(t.homeAsk, n)}` };
+}
+
+/** Said before a second-try question. */
+export function retryIntroLine(n: number, lang = 'en'): string {
+  return vary(talk(lang).retryIntro, n);
+}
+
+/** A second try that worked: the point of the whole feature, so it gets its own words. */
+export function retryRightLine(answer: string, n: number, lang = 'en'): string {
+  const t = talk(lang);
+  const a = sayableAnswer(answer);
+  return a && !/^[a-z]{1,2}$/.test(a) ? `${vary(t.retryRight, n)} ${/\d/.test(a) ? `It's ${a}.` : `${cap(a)}.`}` : vary(t.retryRight, n);
+}
+
+/**
+ * A wrong answer, with the "try one like it" offer when a second try is coming, or a gentle
+ * "we'll practise it again" when the second try also missed.
+ */
+export function wrongWithRetry(feedback: string | null | undefined, solution: string[], n: number, opts: { offerRetry: boolean; wasRetry: boolean }, lang = 'en'): WrongLine {
+  const t = talk(lang);
+  const w = wrongLine(feedback, solution, n, lang);
+  if (opts.wasRetry) {
+    const opener = vary(t.retryWrong, n);
+    return { opener, detail: w.detail, spoken: `${opener} ${w.spoken.slice(w.opener.length).trim()} ${t.retryLater}`.trim() };
+  }
+  return opts.offerRetry ? { ...w, spoken: `${w.spoken} ${vary(t.retryOffer, n)}` } : w;
 }

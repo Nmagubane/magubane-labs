@@ -27,6 +27,7 @@ import { Present } from './features/teach/Present.tsx';
 import { LoginCards } from './features/teach/LoginCards.tsx';
 import { JuniorSignIn } from './features/junior/JuniorSignIn.tsx';
 import { JuniorHome, JuniorWorld } from './features/junior/JuniorHome.tsx';
+import { IcanPage } from './features/junior/Ican.tsx';
 import { Player } from './features/junior/Player.tsx';
 import { FamilyHome } from './features/family/FamilyHome.tsx';
 import { ChildOverview } from './features/family/ChildOverview.tsx';
@@ -63,6 +64,7 @@ const PARENT_ROUTES: RouteDef[] = [
 const JUNIOR_ROUTES: RouteDef[] = [
   { pattern: '/play', render: () => <JuniorHome /> },
   { pattern: '/play/go/:id', render: (p) => <Player key={p.id} id={p.id as string} /> },
+  { pattern: '/play/ican', render: () => <IcanPage /> },
   { pattern: '/play/:subject', render: (p) => <JuniorWorld key={p.subject} subject={p.subject as string} /> },
 ];
 

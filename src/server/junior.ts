@@ -10,6 +10,7 @@
  * - Picture codes are encrypted at rest (AES-256-GCM) so the adults who manage the child can see the code
  *   and help them; nobody else can.
  */
+import { listIcan } from './ican.ts';
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import type { Db } from './db.ts';
 import { all, one, run, newId, tx, appSecret } from './db.ts';
@@ -97,7 +98,8 @@ function lastActive(db: Db, id: string): string | null {
 }
 
 export function childSummary(db: Db, id: string): ChildSummaryDto {
-  const c = requireChild(db, id);
+  const moved = one<ChildRow & { email: string; moved_up_at: string | null }>(db, "SELECT id, display_name, created_at, created_by, picture_code, picture_fails, picture_locked_until, guardian_email, email, moved_up_at FROM users WHERE id = ? AND login_kind = 'email' AND moved_up_at IS NOT NULL", id);
+  const c = moved ?? requireChild(db, id);
   const p = getProfile(db, id);
   const weekAgo = new Date(now().getTime() - 7 * 86_400_000).toISOString();
   const w = one<{ n: number; ms: number }>(db, 'SELECT COUNT(*) AS n, COALESCE(SUM(time_ms), 0) AS ms FROM responses WHERE user_id = ? AND graded_at >= ?', id, weekAgo) ?? { n: 0, ms: 0 };
@@ -105,13 +107,14 @@ export function childSummary(db: Db, id: string): ChildSummaryDto {
   return {
     id,
     name: c.display_name,
-    grade: p?.grade ?? 1,
+    grade: p?.grade ?? (moved ? 4 : 1),
     homeLanguage: p?.homeLanguage ?? 'en',
     colour: colourFor(id),
     lastActiveAt: lastActive(db, id),
     minutes7d: Math.round(w.ms / 60000),
     answers7d: w.n,
     skillsStarted: started,
+    movedUp: moved?.moved_up_at ? { at: moved.moved_up_at, email: moved.email } : null,
   };
 }
 
@@ -360,7 +363,7 @@ export function childOverview(db: Db, viewer: UserDto, childId: string): ChildOv
   const states = getStates(db, childId);
   const manage = canManageChild(db, viewer, childId);
   const weekAgo = new Date(at.getTime() - 7 * 86_400_000).toISOString();
-  const week = all<{ graded_at: string; time_ms: number; is_correct: number | null }>(db, 'SELECT graded_at, time_ms, is_correct FROM responses WHERE user_id = ? AND graded_at >= ? AND skipped = 0', childId, weekAgo);
+  const week = all<{ graded_at: string; time_ms: number; is_correct: number | null }>(db, 'SELECT graded_at, time_ms, is_correct FROM responses WHERE user_id = ? AND graded_at >= ? AND skipped = 0 AND question_id NOT IN (SELECT id FROM question_instances WHERE retry_of IS NOT NULL)', childId, weekAgo);
   const correct = week.filter((r) => r.is_correct === 1).length;
 
   const subjects = p.subjects.map((sid) => {
@@ -384,7 +387,7 @@ export function childOverview(db: Db, viewer: UserDto, childId: string): ChildOv
   }
   const recent = all<{ title: string; completed_at: string | null; started_at: string; id: string }>(db, "SELECT id, title, completed_at, started_at FROM activities WHERE user_id = ? AND kind = 'practice' ORDER BY started_at DESC LIMIT 6", childId)
     .map((a) => {
-      const rs = all<{ is_correct: number | null }>(db, 'SELECT is_correct FROM responses WHERE activity_id = ? AND skipped = 0', a.id);
+      const rs = all<{ is_correct: number | null }>(db, 'SELECT is_correct FROM responses WHERE activity_id = ? AND skipped = 0 AND question_id NOT IN (SELECT id FROM question_instances WHERE retry_of IS NOT NULL)', a.id);
       return { title: a.title.replace(/^Practice: /, ''), completedAt: a.completed_at ?? a.started_at, firstTry: rs.filter((r) => r.is_correct === 1).length, total: rs.length };
     })
     .filter((r) => r.total > 0);
@@ -417,6 +420,7 @@ export function childOverview(db: Db, viewer: UserDto, childId: string): ChildOv
       .slice(0, 6),
     recent,
     cardsDone: cards.map((r) => ({ cardId: r.card_id, title: getCard(r.card_id)?.title ?? r.card_id, doneAt: r.done_at })),
+    ican: listIcan(db, childId),
   };
 }
 

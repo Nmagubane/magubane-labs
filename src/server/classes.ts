@@ -114,7 +114,7 @@ const isOverdue = (a: { due_at: string }, at: Date) => a.due_at < localDay(at);
 
 function learnerRow(db: Db, m: ReturnType<typeof members>[number], skillIds: string[], assigns: AssignmentRow[], at: Date): ClassLearnerDto {
   const weekAgo = new Date(at.getTime() - 7 * 86_400_000).toISOString();
-  const wk = one<{ n: number; c: number | null; ms: number | null }>(db, 'SELECT COUNT(*) AS n, SUM(is_correct) AS c, SUM(time_ms) AS ms FROM responses WHERE user_id = ? AND graded_at >= ? AND skipped = 0', m.id, weekAgo) ?? { n: 0, c: 0, ms: 0 };
+  const wk = one<{ n: number; c: number | null; ms: number | null }>(db, 'SELECT COUNT(*) AS n, SUM(is_correct) AS c, SUM(time_ms) AS ms FROM responses WHERE user_id = ? AND graded_at >= ? AND skipped = 0 AND question_id NOT IN (SELECT id FROM question_instances WHERE retry_of IS NOT NULL)', m.id, weekAgo) ?? { n: 0, c: 0, ms: 0 };
   const last = one<{ t: string | null }>(db, 'SELECT MAX(t) AS t FROM (SELECT MAX(graded_at) AS t FROM responses WHERE user_id = ? UNION ALL SELECT MAX(completed_at) FROM lesson_progress WHERE user_id = ?)', m.id, m.id)?.t ?? null;
   const states = getStates(db, m.id);
   const started = skillIds.map((id) => summarise(states.get(id), id, at)).filter((s) => s.evidence > 0);

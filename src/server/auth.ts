@@ -44,7 +44,7 @@ export function userForSession(db: Db, token: string | undefined): UserDto | nul
   if (!token || token.length > 100) return null;
   const row = one<UserRow & { expires_at: string }>(
     db,
-    `SELECT u.id, u.email, u.display_name, u.role, u.email_verified_at, u.school, s.expires_at
+    `SELECT u.id, u.email, u.display_name, u.role, u.email_verified_at, u.school, u.moved_up_at, s.expires_at
      FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`,
     sha256(token),
   );
@@ -63,15 +63,16 @@ export interface UserRow {
   role: UserDto['role'];
   email_verified_at: string | null;
   school: string | null;
+  moved_up_at?: string | null;
 }
-export const USER_COLS = 'id, email, display_name, role, email_verified_at, school';
+export const USER_COLS = 'id, email, display_name, role, email_verified_at, school, moved_up_at';
 /** Children created by an adult have a placeholder address in the reserved .invalid domain: never shown, never mailed. */
 export const CHILD_EMAIL_DOMAIN = 'child.invalid';
 export const isChildEmail = (email: string): boolean => email.toLowerCase().endsWith(`@${CHILD_EMAIL_DOMAIN}`);
 
 export function toUserDto(row: UserRow): UserDto {
   const child = isChildEmail(row.email);
-  return { id: row.id, email: child ? '' : row.email, displayName: row.display_name, role: row.role, emailVerified: !!row.email_verified_at, school: row.school, ...(child ? { junior: true } : {}) };
+  return { id: row.id, email: child ? '' : row.email, displayName: row.display_name, role: row.role, emailVerified: !!row.email_verified_at, school: row.school, ...(child ? { junior: true } : {}), ...(row.moved_up_at ? { movedUp: true } : {}) };
 }
 export function getUser(db: Db, id: string): UserDto | null {
   const row = one<UserRow>(db, `SELECT ${USER_COLS} FROM users WHERE id = ?`, id);
