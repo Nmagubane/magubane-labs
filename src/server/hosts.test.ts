@@ -46,7 +46,9 @@ test('the site address serves the company site', async () => {
   assert.match(home.headers['content-type'] ?? '', /text\/html/);
   assert.match(home.body, /<title>Magubane Labs/);
   assert.match(String(home.headers['content-security-policy'] ?? ''), /script-src 'self'/, 'same security headers as the app');
-  assert.equal((await get(SITE, '/site.js')).status, 200);
+  const js = await get(SITE, '/site.js');
+  assert.equal(js.status, 200);
+  assert.equal(js.headers['cache-control'], 'no-cache', 'scripts revalidate, so new pages never run an old script');
   const font = await get(SITE, '/fonts/InstrumentSans-Regular.woff');
   assert.equal(font.status, 200);
   assert.equal(font.headers['content-type'], 'font/woff');

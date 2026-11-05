@@ -114,7 +114,9 @@ export function handleSiteRequest(req: IncomingMessage, res: ServerResponse, url
     const ext = extname(file);
     res.writeHead(200, {
       'content-type': SITE_MIME[ext] ?? 'application/octet-stream',
-      'cache-control': ext === '.html' ? 'no-cache' : ext === '.woff' || ext === '.woff2' ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
+      // Pages, scripts and styles revalidate on every visit, so a site update never pairs new HTML with an old script.
+      // Fonts never change name-for-content, so they can be cached for a year; images for an hour.
+      'cache-control': ['.html', '.js', '.css'].includes(ext) ? 'no-cache' : ext === '.woff' || ext === '.woff2' ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
     });
     if (req.method === 'HEAD') res.end();
     else createReadStream(file).pipe(res);
