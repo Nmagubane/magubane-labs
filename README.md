@@ -1,8 +1,8 @@
-# Magubane Labs
+# Bonisa, by Magubane Labs
 
 **Build the minds that build the future.**
 
-An interactive mathematics and science learning platform for South African learners in Grades 4 to 12, a Junior experience for Grades 1 to 3 (maths, reading, English and life skills, read aloud), and an educator mode for teachers.
+Bonisa is an interactive mathematics and science learning platform for South African learners in Grades 4 to 12, a Junior experience for Grades 1 to 3 (maths, reading, English and life skills, read aloud), and an educator mode for teachers.
 
 > sign up → email code → onboarding → baseline check → Home ("do this next") → lesson with labs → adaptive practice with hints, feedback and mistake diagnosis → timed test (tutor locked) → results with biggest opportunity → progress and exam readiness → AI tutor
 

@@ -1,4 +1,6 @@
-# Magubane Labs — architecture & decisions
+# Bonisa — architecture & decisions
+
+Bonisa is the learning product of Magubane Labs. The product is called Bonisa everywhere a learner, parent or teacher sees it. Magubane Labs stays as the company: it is named on the privacy notice as the party responsible for learner data, in the PDF producer field, and as the issuer of educator codes.
 
 Short, opinionated, and kept current. If the code and this file disagree, fix one of them.
 
@@ -52,6 +54,13 @@ src/client   React 19, tiny router, plain CSS with design tokens
 ```
 
 **Why TypeScript end to end:** the client, the server and the content all share one set of types. The grading logic exists once, on the server. **Why so few dependencies:** react, react-dom, katex and zod at runtime; esbuild, tsx and typescript for development. That's less to audit for a product children will use.
+
+### Two addresses, one server (`src/server/hosts.ts`)
+- `PUBLIC_URL` (learn.magubanelabs.co.za) serves Bonisa. `SITE_HOST` (magubanelabs.co.za) serves the company site from `site/`. Without `SITE_HOST`, every address serves Bonisa, as before.
+- A page path on the site address that isn't a site file is an old Bonisa link. It is redirected to the app address. If the browser still has Bonisa's session or Junior device cookie for the old address, they go through a one-time handoff (`/api/handoff`, token kept in memory for two minutes, cookies never in a URL), so no one is signed out and set-up Junior devices keep working.
+- The API answers on both addresses, so tabs already open on the old address and links in emails already sent keep working.
+- `www.` redirects to the bare site address. The site's "Sign in to Bonisa" link is `/learn`, which goes through the same handoff.
+- The handoff store is in memory, like the rate limiters. With more than one server instance it must move to the database.
 
 ### Integrity by construction
 - Questions come from **parametric generators** with server-side random seeds. Every learner sees different numbers.

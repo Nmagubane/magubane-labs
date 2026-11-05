@@ -203,7 +203,7 @@ function SignupForm({ teacher, parent = false, cfg }: { teacher: boolean; parent
       {teacher ? (
         <TextInput label="Educator code" hint="Teacher accounts need a code from Magubane Labs. This keeps learner data safe." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} />
       ) : parent ? (
-        needsAccess ? <TextInput label="Access code" hint="Magubane Labs is in a small pilot. Your access code comes from the person who invited you." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} /> : null
+        needsAccess ? <TextInput label="Access code" hint="Bonisa is in a small pilot. Your access code comes from the person who invited you." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} /> : null
       ) : (
         <>
           {showClass ? (
@@ -215,7 +215,7 @@ function SignupForm({ teacher, parent = false, cfg }: { teacher: boolean; parent
               </button>
             </p>
           )}
-          {needsAccess ? <TextInput label="Access code" hint="Magubane Labs is in a small pilot. Your access code comes from the person who invited you." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} /> : null}
+          {needsAccess ? <TextInput label="Access code" hint="Bonisa is in a small pilot. Your access code comes from the person who invited you." autoComplete="off" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={fieldErr.accessCode} required maxLength={40} /> : null}
         </>
       )}
       <TextInput label={teacher ? 'Your name, as learners know you' : parent ? 'Your name' : 'First name'} placeholder={teacher ? 'e.g. Ms Dlamini' : undefined} autoComplete={teacher ? 'name' : 'given-name'} value={name} onChange={(e) => setName(e.target.value)} error={fieldErr.displayName} required maxLength={40} />
@@ -257,7 +257,7 @@ function SignupForm({ teacher, parent = false, cfg }: { teacher: boolean; parent
                 <a href="/privacy" target="_blank" rel="noopener">
                   privacy notice
                 </a>{' '}
-                and I agree to my child using Magubane Labs.
+                and I agree to my child using Bonisa.
               </>
             ) : (
               <>

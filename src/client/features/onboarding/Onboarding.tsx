@@ -91,7 +91,7 @@ export function Onboarding() {
             {movedUp ? (
               <>
                 <h1>Welcome to Grade 4, {first}.</h1>
-                <p className="lead">Everything you learnt in Grades 1 to 3 is still here. This part of Magubane Labs has more to read, harder problems and labs to try. Check your grade, then choose your subjects.</p>
+                <p className="lead">Everything you learnt in Grades 1 to 3 is still here. This part of Bonisa has more to read, harder problems and labs to try. Check your grade, then choose your subjects.</p>
               </>
             ) : (
               <>

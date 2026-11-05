@@ -14,7 +14,7 @@ export interface PasswordRule {
 const COMMON = new Set([
   'password1!', 'password1', 'p@ssw0rd', 'p@ssword1', 'passw0rd!', 'welcome1!', 'welcome123!', 'qwerty123!', 'qwerty1!', 'abc123!@#', 'abcd1234!',
   'letmein1!', 'iloveyou1!', 'admin123!', 'changeme1!', 'test1234!', 'summer2026!', 'winter2026!', 'spring2026!', 'autumn2026!', 'football1!',
-  'monkey123!', 'sunshine1!', 'princess1!', 'dragon123!', 'master123!', 'magubane1!', 'south@frica1', 'mzansi123!', 'bafana123!', 'password123!',
+  'monkey123!', 'sunshine1!', 'princess1!', 'dragon123!', 'master123!', 'magubane1!', 'bonisa123!', 'south@frica1', 'mzansi123!', 'bafana123!', 'password123!',
   'password@123', 'pass@1234', 'aa123456!', 'q1w2e3r4!', '1qaz2wsx!', 'zaq12wsx!',
 ]);
 

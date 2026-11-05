@@ -103,7 +103,7 @@ export function VerifyEmail() {
         </form>
         <div className="verify-help">
           <p className="muted">The code works for 10 minutes. Can&apos;t find it? Check your spam or promotions folder.</p>
-          {cfg?.emailDelivery === 'log' ? <p className="note">Email isn&apos;t connected on this server yet, so the code is in the server log. Ask the person who runs Magubane Labs.</p> : null}
+          {cfg?.emailDelivery === 'log' ? <p className="note">Email isn&apos;t connected on this server yet, so the code is in the server log. Ask the person who runs Bonisa.</p> : null}
           <div className="widget-buttons">
             <Button variant="secondary" size="sm" onClick={() => void resend()} disabled={wait > 0}>
               {wait > 0 ? `Send a new code (${wait}s)` : 'Send a new code'}

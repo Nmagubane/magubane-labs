@@ -66,7 +66,7 @@ export function MoveUp({ childId, name, forTeacher, guardianEmail, backTo }: { c
   return (
     <section className="sheet moveup" aria-labelledby="mu">
       <h2 id="mu">Moving up to Grade 4</h2>
-      <p>From Grade 4, {name} uses the full Magubane Labs: Mathematics and Natural Sciences &amp; Technology with longer problems, worked solutions and labs. That part needs {name}’s own login, so do this when they start Grade 4.</p>
+      <p>From Grade 4, {name} uses the full Bonisa: Mathematics and Natural Sciences &amp; Technology with longer problems, worked solutions and labs. That part needs {name}’s own login, so do this when they start Grade 4.</p>
       <dl className="moveup-what">
         <div>
           <dt>Changes</dt>

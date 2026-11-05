@@ -40,13 +40,19 @@ export const config = {
     .map((c) => c.trim().toUpperCase())
     .filter(Boolean),
   /** Public address of the site, for links in emails. Render sets RENDER_EXTERNAL_URL automatically. */
+  /**
+   * The company site's address (e.g. magubanelabs.co.za), served from siteDir. Unset: no company site, and every
+   * address serves the app, as before. See hosts.ts.
+   */
+  siteHost: setting('SITE_HOST')?.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, ''),
+  siteDir: resolve(setting('SITE_DIR') ?? './site'),
   publicUrl: (setting('PUBLIC_URL') ?? setting('RENDER_EXTERNAL_URL') ?? `http://localhost:${setting('PORT') ?? 5174}`).replace(/\/$/, ''),
   /** Email delivery: 'brevo' or 'resend' with EMAIL_API_KEY; anything else logs emails to the console instead. */
   email: {
     provider: (['brevo', 'resend'].includes(env.EMAIL_PROVIDER?.trim().toLowerCase() ?? '') && env.EMAIL_API_KEY?.trim() ? env.EMAIL_PROVIDER!.trim().toLowerCase() : 'log') as 'brevo' | 'resend' | 'log',
     apiKey: env.EMAIL_API_KEY?.trim() || null,
     from: env.EMAIL_FROM?.trim() || 'no-reply@magubanelabs.local',
-    fromName: env.EMAIL_FROM_NAME?.trim() || 'Magubane Labs',
+    fromName: env.EMAIL_FROM_NAME?.trim() || 'Bonisa',
     /** Tests point this at a local fake. */
     apiBase: env.EMAIL_API_BASE?.replace(/\/$/, '') || null,
   },
