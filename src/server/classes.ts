@@ -355,16 +355,16 @@ async function notifyGuardianOfJoin(db: Db, learner: UserDto, c: ClassRow): Prom
   if (!g?.is_minor || !g.guardian_email) return;
   const t = one<{ display_name: string; school: string | null }>(db, 'SELECT display_name, school FROM users WHERE id = ?', c.teacher_id);
   const { html, text } = layout({
-    heading: `${learner.displayName} joined a class on Magubane Labs`,
+    heading: `${learner.displayName} joined a class on Bonisa`,
     paragraphs: [
       `Hello${g.guardian_name ? ` ${g.guardian_name}` : ''}. ${learner.displayName} has joined "${c.name}", taught by ${t?.display_name ?? 'their teacher'}${t?.school ? ` at ${t.school}` : ''}.`,
-      'Their teacher can now see their progress in Magubane Labs: mastery per skill, results and common mistakes. Tutor conversations stay private.',
+      'Their teacher can now see their progress in Bonisa: mastery per skill, results and common mistakes. Tutor conversations stay private.',
       g.guardian_reports_off ? 'You have turned off weekly reports.' : 'You will receive a short progress report (PDF) by email each week.',
       `If you don't recognise this, ${learner.displayName} can leave the class from "Your account", or reply to this email.`,
     ],
     footer: g.guardian_reports_off ? undefined : `To stop weekly reports: ${unsubscribeUrl(db, learner.id)}`,
   });
-  logged(db, learner.id, g.guardian_email, 'class-join', await sendMail({ to: { email: g.guardian_email, ...(g.guardian_name ? { name: g.guardian_name } : {}) }, subject: `${learner.displayName} joined ${c.name} on Magubane Labs`, html, text }), { classId: c.id });
+  logged(db, learner.id, g.guardian_email, 'class-join', await sendMail({ to: { email: g.guardian_email, ...(g.guardian_name ? { name: g.guardian_name } : {}) }, subject: `${learner.displayName} joined ${c.name} on Bonisa`, html, text }), { classId: c.id });
 }
 
 export function leaveClass(db: Db, learner: UserDto, classId: string): void {

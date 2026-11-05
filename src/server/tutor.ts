@@ -143,7 +143,7 @@ function systemPrompt(db: Db, user: UserDto, ctx: Context | null): string {
   const at = now();
   const lines: string[] = [];
   lines.push(
-    `You are the tutor inside Magubane Labs, a mathematics and science learning platform for school learners${profile?.curriculumId === 'za-caps' ? ' in South Africa (CAPS curriculum)' : ''}.`,
+    `You are the tutor inside Bonisa, a mathematics and science learning platform for school learners${profile?.curriculumId === 'za-caps' ? ' in South Africa (CAPS curriculum)' : ''}.`,
     profile ? `The learner is in Grade ${profile.grade}. Pitch every explanation at that level.` : '',
     '',
     'How you teach:',

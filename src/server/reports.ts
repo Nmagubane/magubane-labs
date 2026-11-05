@@ -40,7 +40,7 @@ function header(pdf: Pdf, title: string, subtitle: string, right: string): void 
   pdf.rect(0, 0, 595.28, 92, { fill: PAPER2 });
   pdf.rect(pdf.margin, 26, 22, 22, { stroke: INK, lineWidth: 1.6 });
   pdf.text(pdf.margin + 11, 33, 'Mg', { size: 10, bold: true, align: 'center' });
-  pdf.text(pdf.margin + 30, 33, 'Magubane Labs', { size: 11, bold: true });
+  pdf.text(pdf.margin + 30, 33, 'Bonisa', { size: 11, bold: true });
   pdf.text(595.28 - pdf.margin, 33, right, { size: 9, color: INK2, align: 'right' });
   pdf.text(pdf.margin, 58, title, { size: 18, bold: true });
   pdf.text(pdf.margin, 80, subtitle, { size: 9.5, color: INK2 });
@@ -170,7 +170,7 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
   const worked = all<{ skill_id: string; n: number; c: number }>(db, 'SELECT skill_id, COUNT(*) AS n, SUM(is_correct) AS c FROM responses WHERE user_id = ? AND graded_at >= ? AND skipped = 0 GROUP BY skill_id ORDER BY n DESC', learnerId, sinceIso);
   section(pdf, 'This period');
   if (!worked.length && !lessons) {
-    pdf.para(`${user.displayName} didn't practise on Magubane Labs during this period. ${junior ? 'Even 10 minutes on most days makes a real difference at this age.' : 'Even 15 to 20 minutes a few times a week makes a real difference: short, regular practice beats one long session.'}`, { size: 10, color: INK2 });
+    pdf.para(`${user.displayName} didn't practise on Bonisa during this period. ${junior ? 'Even 10 minutes on most days makes a real difference at this age.' : 'Even 15 to 20 minutes a few times a week makes a real difference: short, regular practice beats one long session.'}`, { size: 10, color: INK2 });
   } else {
     const snapBefore = (sid: string) => one<{ mastery: number }>(db, 'SELECT mastery FROM mastery_snapshots WHERE user_id = ? AND skill_id = ? AND day < ? ORDER BY day DESC LIMIT 1', learnerId, sid, localDay(since))?.mastery ?? null;
     for (const w of worked.slice(0, 10)) {
@@ -295,7 +295,7 @@ export function learnerReportPdf(db: Db, learnerId: string, opts: LearnerReportO
   pdf.para('Mastery is an estimate based on how the learner answers questions of different difficulty, and it drops slowly when a skill isn\'t practised. "Proficient" starts at 70%.', { size: 8, color: INK3 });
 
   const summaryText = `${minutes} minutes, ${wk.n} questions${accuracy !== null ? ` (${accuracy}% correct)` : ''}, ${activeDays} active day${activeDays === 1 ? '' : 's'}`;
-  return { pdf: pdf.build(`Magubane Labs progress report: ${user.displayName}, ${fmtDay(at)}. Private: for the learner, their guardian and teacher.`), name: `Magubane-Labs-${user.displayName.replace(/[^A-Za-z0-9]+/g, '-')}-${localDay(at)}.pdf`, summary: summaryText };
+  return { pdf: pdf.build(`Bonisa progress report: ${user.displayName}, ${fmtDay(at)}. Private: for the learner, their guardian and teacher.`), name: `Bonisa-${user.displayName.replace(/[^A-Za-z0-9]+/g, '-')}-${localDay(at)}.pdf`, summary: summaryText };
 }
 
 // ---------- class report ----------
@@ -347,7 +347,7 @@ export function classReportPdf(db: Db, teacher: UserDto, classId: string): { pdf
     );
   }
 
-  return { pdf: pdf.build(`Magubane Labs class report: ${d.class.name}, ${fmtDay(at)}. Confidential: contains learner data.`), name: `Magubane-Labs-${d.class.name.replace(/[^A-Za-z0-9]+/g, '-')}-${localDay(at)}.pdf` };
+  return { pdf: pdf.build(`Bonisa class report: ${d.class.name}, ${fmtDay(at)}. Confidential: contains learner data.`), name: `Bonisa-${d.class.name.replace(/[^A-Za-z0-9]+/g, '-')}-${localDay(at)}.pdf` };
 }
 
 // ---------- sending ----------
@@ -371,10 +371,10 @@ export async function sendLearnerReport(db: Db, learnerId: string, opts: { teach
   if (c.is_minor && c.guardian_email && !c.guardian_reports_off) {
     const { html, text } = layout({
       heading: `${c.display_name}'s progress this week`,
-      paragraphs: [`Hello${c.guardian_name ? ` ${c.guardian_name}` : ''}. Here is ${c.display_name}'s progress report from Magubane Labs: ${report.summary}.`, ...(opts.note && opts.teacher ? [`${opts.teacher.displayName} added a note: "${opts.note}"`] : []), 'The full report is attached as a PDF.'],
+      paragraphs: [`Hello${c.guardian_name ? ` ${c.guardian_name}` : ''}. Here is ${c.display_name}'s progress report from Bonisa: ${report.summary}.`, ...(opts.note && opts.teacher ? [`${opts.teacher.displayName} added a note: "${opts.note}"`] : []), 'The full report is attached as a PDF.'],
       footer: `You get this because ${c.display_name} is under 18 and gave your email address. To stop these reports: ${unsubscribeUrl(db, learnerId)}`,
     });
-    const r = logged(db, learnerId, c.guardian_email, kind, await sendMail({ to: { email: c.guardian_email, ...(c.guardian_name ? { name: c.guardian_name } : {}) }, subject: `${c.display_name}'s Magubane Labs progress report`, html, text, attachments: [{ filename: report.name, content: report.pdf }] }), { period: opts.period ?? null });
+    const r = logged(db, learnerId, c.guardian_email, kind, await sendMail({ to: { email: c.guardian_email, ...(c.guardian_name ? { name: c.guardian_name } : {}) }, subject: `${c.display_name}'s Bonisa progress report`, html, text, attachments: [{ filename: report.name, content: report.pdf }] }), { period: opts.period ?? null });
     sentTo.push({ role: 'guardian', email: c.guardian_email, status: r.status });
   }
   if (opts.teacher && opts.includeTeacher !== false) {

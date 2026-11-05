@@ -12,11 +12,11 @@ export function Privacy() {
   const contact = cfg?.contactEmail;
   return (
     <main id="main" className="doc">
-      <a href="/" className="doc-logo" aria-label="Magubane Labs home">
+      <a href="/" className="doc-logo" aria-label="Bonisa home">
         <Logo />
       </a>
       <h1>Privacy notice</h1>
-      <p className="lead">Magubane Labs is in an early, invite-only pilot. This page says, in plain words, what we collect, why, and what you can do about it.</p>
+      <p className="lead">Bonisa is a learning app made by Magubane Labs, in an early, invite-only pilot. Magubane Labs is responsible for the information you give Bonisa. This page says, in plain words, what we collect, why, and what you can do about it.</p>
       <p className="muted small">Version {cfg?.privacyVersion ?? PRIVACY_VERSION}</p>
 
       <h2>What we collect</h2>
@@ -89,7 +89,7 @@ export function Privacy() {
       </ul>
 
       <h2>Children</h2>
-      <p>Learners under 18 may only use Magubane Labs with a parent or guardian&apos;s agreement, which is given when the account is created. The tutor is instructed never to ask for personal details and to keep conversations on learning.</p>
+      <p>Learners under 18 may only use Bonisa with a parent or guardian&apos;s agreement, which is given when the account is created. The tutor is instructed never to ask for personal details and to keep conversations on learning.</p>
 
       <h2>Grade 1 to 3 children</h2>
       <p>A parent or guardian, or a teacher whose school has the parent&apos;s consent, creates the account. We collect less for these children:</p>

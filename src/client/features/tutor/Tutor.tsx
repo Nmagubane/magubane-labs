@@ -69,7 +69,7 @@ export function Tutor({ conversationId }: { conversationId: string | null }) {
           </Empty>
         ) : !st.configured ? (
           <Empty title="The tutor isn't connected yet">
-            Whoever runs this copy of Magubane Labs needs to add an <code>ANTHROPIC_API_KEY</code> to the <code>.env</code> file and restart the server. Lessons, practice hints, worked solutions and tests all work without it.
+            Whoever runs this copy of Bonisa needs to add an <code>ANTHROPIC_API_KEY</code> to the <code>.env</code> file and restart the server. Lessons, practice hints, worked solutions and tests all work without it.
           </Empty>
         ) : conversationId ? (
           <Conversation key={conversationId} id={conversationId} status={st} onChanged={() => (invalidate('/api/tutor/conversations', '/api/tutor/status'), void list.reload(), void status.reload())} />

@@ -109,7 +109,7 @@ function Shell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <aside className="rail" aria-label="Main">
-        <Link to={homePath} className="rail-brand" aria-label="Magubane Labs home">
+        <Link to={homePath} className="rail-brand" aria-label="Bonisa home">
           <Logo />
         </Link>
         <nav>
@@ -143,7 +143,7 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <header className="topbar">
-        <Link to={homePath} aria-label="Magubane Labs home">
+        <Link to={homePath} aria-label="Bonisa home">
           <Logo />
         </Link>
         <div className="topbar-actions">
@@ -215,7 +215,7 @@ function Routes() {
       );
     return (
       <main id="main" className="main main-bare">
-        <Loading label="Opening Magubane Labs" />
+        <Loading label="Opening Bonisa" />
       </main>
     );
   }

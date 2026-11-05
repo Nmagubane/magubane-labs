@@ -122,7 +122,7 @@ test('the complete learning loop', async () => {
   await neo.call('POST', '/api/auth/verify', { code: '000000' === lastCode('thandiwe@example.com') ? '111111' : '000000' }, 400);
   const verified = await neo.call('POST', '/api/auth/verify', { code: lastCode('thandiwe@example.com') });
   assert.equal(verified.user.emailVerified, true);
-  assert.ok(outbox.some((m) => m.to === 'nomsa@example.com' && /joined Magubane Labs/.test(m.subject)), 'guardian is told about the account');
+  assert.ok(outbox.some((m) => m.to === 'nomsa@example.com' && /joined Bonisa/.test(m.subject)), 'guardian is told about the account');
   await neo.call('POST', '/api/auth/signup', { displayName: 'X', email: 'thandiwe@example.com', password: 'Another-pass-7', ageGroup: 'adult', consent: true }, 409);
 
   // 2. Onboarding

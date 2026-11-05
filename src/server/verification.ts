@@ -53,22 +53,22 @@ export async function sendVerificationEmail(db: Db, user: { id: string; email: s
   const code = issueCode(db, user.id, 'verify');
   const { html, text } = layout({
     heading: `Your code is ${code}`,
-    paragraphs: [`Hi ${user.displayName}, enter this code in Magubane Labs to confirm your email address.`, 'It works for 10 minutes.'],
+    paragraphs: [`Hi ${user.displayName}, enter this code in Bonisa to confirm your email address.`, 'It works for 10 minutes.'],
     code,
-    footer: "If you didn't create a Magubane Labs account, you can ignore this email. Nobody can use the account without this code.",
+    footer: "If you didn't create a Bonisa account, you can ignore this email. Nobody can use the account without this code.",
   });
-  return logged(db, user.id, user.email, 'verify', await sendMail({ to: { email: user.email, name: user.displayName }, subject: `${code} is your Magubane Labs code`, html, text }));
+  return logged(db, user.id, user.email, 'verify', await sendMail({ to: { email: user.email, name: user.displayName }, subject: `${code} is your Bonisa code`, html, text }));
 }
 
 export async function sendResetEmail(db: Db, user: { id: string; email: string; displayName: string }): Promise<MailResult> {
   const code = issueCode(db, user.id, 'reset');
   const { html, text } = layout({
     heading: 'Reset your password',
-    paragraphs: [`Hi ${user.displayName}, someone asked to reset the password for this Magubane Labs account. Enter this code to choose a new password.`, 'It works for 10 minutes.'],
+    paragraphs: [`Hi ${user.displayName}, someone asked to reset the password for this Bonisa account. Enter this code to choose a new password.`, 'It works for 10 minutes.'],
     code,
     footer: "If this wasn't you, ignore this email. Your password stays the same.",
   });
-  return logged(db, user.id, user.email, 'reset', await sendMail({ to: { email: user.email, name: user.displayName }, subject: `${code} is your Magubane Labs reset code`, html, text }));
+  return logged(db, user.id, user.email, 'reset', await sendMail({ to: { email: user.email, name: user.displayName }, subject: `${code} is your Bonisa reset code`, html, text }));
 }
 
 export function logged(db: Db, learnerId: string | null, recipient: string, kind: string, r: MailResult, extra: { classId?: string | null; period?: string | null } = {}): MailResult {

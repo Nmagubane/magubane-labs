@@ -21,6 +21,7 @@ import { passwordProblem } from '../shared/password.ts';
 import { CURRICULA, subjectsForGrade } from '../shared/curriculum/catalogue.ts';
 import { CreateChildBody, UpdateChildBody, PictureCodeBody, DeviceBody, JuniorLoginBody, CardLogBody, DeleteChildBody, MoveUpBody } from '../shared/api-junior.ts';
 import { moveUpChild } from './moveup.ts';
+import { HANDOFF_PATH, handleSiteRequest, isSiteRequest, safeNext, takeHandoff } from './hosts.ts';
 import { DEVICE_COOKIE, DEVICE_DAYS, createChild, updateChild, resetPictureCode, canDeleteChild, listFamily, createDevice, listDevices, revokeDevice, revokeDeviceToken, deviceInfo, juniorLogin, juniorHome, juniorWorld, childOverview, logCard, classLoginCards, isJuniorLearner, childSummary } from './junior.ts';
 import { questionLanguage } from './activities.ts';
 
@@ -74,15 +75,15 @@ async function noticeToGuardian(db: Db, userId: string): Promise<void> {
   const g = one<{ display_name: string; is_minor: number; guardian_email: string | null; guardian_name: string | null; moved_up_at: string | null }>(db, 'SELECT display_name, is_minor, guardian_email, guardian_name, moved_up_at FROM users WHERE id = ?', userId);
   if (!g?.is_minor || !g.guardian_email || g.moved_up_at) return;
   const { html, text } = layout({
-    heading: `${g.display_name} created a Magubane Labs account`,
+    heading: `${g.display_name} created a Bonisa account`,
     paragraphs: [
-      `Hello${g.guardian_name ? ` ${g.guardian_name}` : ''}. ${g.display_name} has created an account on Magubane Labs, a maths and science learning app, and gave your email address as their parent or guardian. Consent was given when the account was created.`,
+      `Hello${g.guardian_name ? ` ${g.guardian_name}` : ''}. ${g.display_name} has created an account on Bonisa, a maths and science learning app, and gave your email address as their parent or guardian. Consent was given when the account was created.`,
       'You will receive a short progress report by email each week.',
       `If you did not agree to this, reply to this email${config.contactEmail ? ` or write to ${config.contactEmail}` : ''} and we will delete the account and all its data.`,
     ],
     button: { label: 'Read the privacy notice', url: `${config.publicUrl}/privacy` },
   });
-  logged(db, userId, g.guardian_email, 'guardian-welcome', await sendMail({ to: { email: g.guardian_email, ...(g.guardian_name ? { name: g.guardian_name } : {}) }, subject: `${g.display_name} joined Magubane Labs`, html, text }));
+  logged(db, userId, g.guardian_email, 'guardian-welcome', await sendMail({ to: { email: g.guardian_email, ...(g.guardian_name ? { name: g.guardian_name } : {}) }, subject: `${g.display_name} joined Bonisa`, html, text }));
 }
 
 function sendPdf(res: ServerResponse, file: { pdf: Buffer; name: string }, download: boolean): void {
@@ -335,7 +336,7 @@ export function buildRouter(db: Db): Router {
     const ok = unsubscribe(db, ctx.query.get('l') ?? '', ctx.query.get('t') ?? '');
     const msg = ok ? 'Done. You will no longer receive weekly progress reports for this learner.' : 'This link is not valid. Reply to any report email and we will stop them for you.';
     ctx.res.writeHead(ok ? 200 : 400, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
-    ctx.res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Magubane Labs</title><body style="font-family:system-ui,sans-serif;max-width:520px;margin:15vh auto;padding:0 20px;color:#1a1d21"><p style="font-weight:700">Magubane Labs</p><h1 style="font-size:22px">${ok ? 'Reports stopped' : 'Link not valid'}</h1><p>${msg}</p></body>`);
+    ctx.res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bonisa</title><body style="font-family:system-ui,sans-serif;max-width:520px;margin:15vh auto;padding:0 20px;color:#1a1d21"><p style="font-weight:700">Bonisa</p><h1 style="font-size:22px">${ok ? 'Reports stopped' : 'Link not valid'}</h1><p>${msg}</p></body>`);
     return STREAMED;
   });
 
@@ -357,6 +358,16 @@ export function buildRouter(db: Db): Router {
   r.post('/api/tutor/conversations/:id/regenerate', async (ctx) => {
     const user = requireTutorLearner(ctx, db);
     await streamReply(db, user, ctx.params.id as string, null, ctx.res, (fn) => ctx.res.on('close', fn));
+    return STREAMED;
+  });
+
+  // ---- moving from the old address (see hosts.ts) ----
+  /** Collect cookies handed over from the old address, then continue to the page that was asked for. */
+  r.get(HANDOFF_PATH, (ctx) => {
+    const carried = takeHandoff(ctx.query.get('t'));
+    if (carried?.session) setCookie(ctx.res, COOKIE, carried.session, { maxAge: config.sessionDays * 86400, secure: !config.dev });
+    if (carried?.device) setCookie(ctx.res, DEVICE_COOKIE, carried.device, { maxAge: DEVICE_DAYS * 86400, secure: !config.dev });
+    ctx.res.writeHead(302, { location: safeNext(ctx.query.get('next')), 'cache-control': 'no-store' }).end();
     return STREAMED;
   });
 
@@ -454,6 +465,11 @@ export function createApp(db: Db): Server {
     const url = new URL(req.url ?? '/', 'http://localhost');
     securityHeaders(res, config.dev);
     const isApi = url.pathname.startsWith('/api/');
+    // The company site's address: its own pages, or a redirect to Bonisa. The API is served on every address.
+    if (!isApi && isSiteRequest(req)) {
+      handleSiteRequest(req, res, url, parseCookies(req.headers.cookie), { session: COOKIE, device: DEVICE_COOKIE });
+      return;
+    }
     if (!isApi) {
       if ((req.method === 'GET' || req.method === 'HEAD') && serveStatic(req, res, config.clientDir, url.pathname)) return;
       res.writeHead(404, { 'content-type': 'text/plain' }).end('Not found');

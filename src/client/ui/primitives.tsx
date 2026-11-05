@@ -123,7 +123,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
           Mg
         </text>
       </svg>
-      {compact ? <span className="sr-only">Magubane Labs</span> : <span className="logo-word">Magubane Labs</span>}
+      {compact ? <span className="sr-only">Bonisa</span> : <span className="logo-word">Bonisa</span>}
     </span>
   );
 }

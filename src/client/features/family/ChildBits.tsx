@@ -149,9 +149,9 @@ export function AddChildForm({ endpoint, forTeacher, defaultGrade, onCreated }: 
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
         <span>
           {forTeacher ? (
-            <>The school has consent from this child’s parent or guardian for them to use Magubane Labs, as described in the <a href="/privacy" target="_blank" rel="noopener">privacy notice</a>.</>
+            <>The school has consent from this child’s parent or guardian for them to use Bonisa, as described in the <a href="/privacy" target="_blank" rel="noopener">privacy notice</a>.</>
           ) : (
-            <>I am this child’s parent or guardian. I have read the <a href="/privacy" target="_blank" rel="noopener">privacy notice</a> and agree to them using Magubane Labs.</>
+            <>I am this child’s parent or guardian. I have read the <a href="/privacy" target="_blank" rel="noopener">privacy notice</a> and agree to them using Bonisa.</>
           )}
         </span>
       </label>

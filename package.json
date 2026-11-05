@@ -2,7 +2,7 @@
   "name": "magubane-labs",
   "version": "0.1.0",
   "private": true,
-  "description": "Magubane Labs — interactive mathematics and science learning. Build the minds that build the future.",
+  "description": "Bonisa by Magubane Labs — interactive mathematics and science learning. Build the minds that build the future.",
   "type": "module",
   "engines": {
     "node": ">=22.13.0"

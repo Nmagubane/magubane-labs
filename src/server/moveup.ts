@@ -63,7 +63,7 @@ export async function moveUpChild(db: Db, adult: UserDto, childId: string, body:
   if (adult.role === 'teacher' && guardianEmail) {
     const name = child.display_name;
     const { html, text } = layout({
-      heading: `${name} has moved up to Grade 4 on Magubane Labs`,
+      heading: `${name} has moved up to Grade 4 on Bonisa`,
       paragraphs: [
         `Hello${child.guardian_name ? ` ${child.guardian_name}` : ''}. ${name}'s teacher, ${adult.displayName}, has moved ${name} from picture sign-in to their own login for Grade 4.`,
         `${name} now logs in with ${body.email} and a password. Everything ${name} learnt so far is kept, and you will still get the weekly progress report at this address.`,

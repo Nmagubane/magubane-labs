@@ -86,11 +86,11 @@ export function layout(opts: { heading: string; paragraphs: string[]; code?: str
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eceeea;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:12px;padding:28px">
 <tr><td>
-<p style="margin:0 0 20px;font-size:15px;font-weight:700;color:#1a1d21"><span style="display:inline-block;border:2px solid #1a1d21;border-radius:4px;padding:0 5px;margin-right:6px">Mg</span>Magubane Labs</p>
+<p style="margin:0 0 20px;font-size:15px;font-weight:700;color:#1a1d21"><span style="display:inline-block;border:2px solid #1a1d21;border-radius:4px;padding:0 5px;margin-right:6px">Mg</span>Bonisa</p>
 <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#1a1d21">${esc(opts.heading)}</h1>
 ${paras}${code}${button}${footer}
 </td></tr></table>
-<p style="margin:16px 0 0;font-size:12px;color:#6b737b">Magubane Labs: build the minds that build the future.</p>
+<p style="margin:16px 0 0;font-size:12px;color:#6b737b">Bonisa, by Magubane Labs: build the minds that build the future.</p>
 </td></tr></table></body></html>`;
   const text = [opts.heading, '', ...opts.paragraphs, ...(opts.code ? ['', opts.code, ''] : []), ...(opts.button ? ['', `${opts.button.label}: ${opts.button.url}`] : []), ...(opts.footer ? ['', opts.footer] : [])].join('\n');
   return { html, text };

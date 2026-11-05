@@ -26,6 +26,10 @@ services:
         value: invite
       - key: INVITE_CODES # comma-separated, e.g. FAMILY-2026,SOWETO-PILOT
         sync: false
+      - key: PUBLIC_URL # Bonisa's address, used in email links, e.g. https://learn.magubanelabs.co.za
+        sync: false
+      - key: SITE_HOST # the company site's address, e.g. magubanelabs.co.za. Leave unset until learn. works (see docs/DEPLOY.md)
+        sync: false
       - key: CONTACT_EMAIL # shown on the privacy page for data requests
         sync: false
       - key: ANTHROPIC_API_KEY # optional: type none to deploy without the tutor and add the key later
@@ -47,7 +51,7 @@ services:
       - key: EMAIL_FROM # a sender address you have verified with the provider
         sync: false
       - key: EMAIL_FROM_NAME
-        value: Magubane Labs
+        value: Bonisa
       - key: REPORT_DAY # weekly guardian/teacher reports: 0 = Sunday
         value: "0"
       - key: REPORT_HOUR # hour of the day, South African time

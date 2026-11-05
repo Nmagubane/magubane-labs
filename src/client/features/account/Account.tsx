@@ -250,7 +250,7 @@ function MyClasses() {
           ))}
         </ul>
       ) : (
-        <p className="muted">You&apos;re not in a class. If your teacher uses Magubane Labs, ask for the class code.</p>
+        <p className="muted">You&apos;re not in a class. If your teacher uses Bonisa, ask for the class code.</p>
       )}
       <p className="muted small">Your teacher sees your mastery, results and common mistakes. Your tutor conversations stay private.</p>
       <form onSubmit={join} className="form join-form" noValidate>
