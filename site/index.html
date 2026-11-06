@@ -4,200 +4,240 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Magubane Labs: software built in South Africa</title>
-<meta name="description" content="Magubane Labs is a South African software studio. We build our own products for South African learners, Bonisa for maths and science and Umzila for career routes and subject choices, and the software behind the companies we back.">
+<meta name="description" content="Magubane Labs is a South African software studio. We build our own products, Bonisa for maths and science and Umzila for career routes and subject choices, and the software behind the companies we back.">
 <meta property="og:title" content="Magubane Labs">
 <meta property="og:description" content="A South African software studio. Our own products, and the software behind the companies we back.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#1A1D21">
+<meta name="theme-color" content="#16181C">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script src="boot.js?v=2"></script>
+<noscript><style>.steps { display: grid !important; } .choices, .ask, .feedback { display: none; }</style></noscript>
+<link rel="preload" href="fonts/InstrumentSans-Bold.woff" as="font" type="font/woff" crossorigin>
 <style>
 /* Magubane Labs — company site.
-   One family (Instrument Sans, self-hosted, same as the learning product).
-   Palette shared with the product: desk, paper, ink, pen blue for things you click, highlighter for the one focus.
-   The one bold thing: the element tile. Mg is magnesium, element 12. Graph paper appears only where maths is worked. */
+   Idea: a lab's periodic table. Every element is something we built or someone we build for.
+   One family (Instrument Sans, self-hosted). Ink and desk carry the page; highlighter marks the one focus;
+   pen blue is for things you can press or move. Client tiles and panels wear the clients' own colours. */
 
 @font-face { font-family: 'Instrument Sans'; src: url('fonts/InstrumentSans-Regular.woff') format('woff'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'Instrument Sans'; src: url('fonts/InstrumentSans-Bold.woff') format('woff'); font-weight: 700; font-display: swap; }
 
 :root {
+  --night: #16181C;
+  --night-2: #202329;
+  --night-rule: #33373E;
   --desk: #ECEFEA;
   --paper: #FFFFFF;
   --ink: #1A1D21;
   --ink-2: #4A5159;
   --ink-3: #6B737B;
+  --mist: #C9CED3;
   --rule: #D8DCD5;
   --pen: #2347D6;
   --pen-strong: #1A36A8;
+  --pen-tint: #E7ECFD;
   --hl: #FFE14D;
+  --tick: #18804A;
+  --red: #C4302B;
   --grid: rgb(35 71 214 / 0.06);
   --grid-major: rgb(35 71 214 / 0.12);
+  /* client colours, used only on their own tiles and panels */
+  --n3-navy: #0B1F33;
+  --n3-orange: #F26A21;
+  --nk-teal: #11252C;
+  --nk-gold: #F3B23A;
 
   --font: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --math: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', 'Times New Roman', serif;
   --t-sm: 0.875rem;
-  --t-md: 1rem;
   --t-lg: 1.25rem;
   --t-xl: 1.5625rem;
-  --t-2xl: clamp(1.75rem, 1.3rem + 1.6vw, 2.441rem);
-  --t-3xl: clamp(2.4rem, 1.5rem + 3.6vw, 3.815rem);
-
-  --wrap: 1120px;
-  --gutter: clamp(16px, 4vw, 32px);
-  --sheet-r: 12px;
-  --ctl-r: 6px;
+  --t-2xl: clamp(1.9rem, 1.3rem + 2vw, 2.75rem);
+  --t-3xl: clamp(2.6rem, 1.4rem + 4.6vw, 4.6rem);
+  --wrap: 1180px;
+  --gutter: clamp(16px, 4vw, 36px);
+  --r: 12px;
 }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 72px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--font); font-size: var(--t-md); line-height: 1.55; font-variant-numeric: tabular-nums; }
-h1, h2, h3 { margin: 0; line-height: 1.1; font-weight: 700; letter-spacing: -0.015em; text-wrap: balance; }
+body { margin: 0; background: var(--desk); color: var(--ink); font: 400 1rem/1.55 var(--font); font-variant-numeric: tabular-nums; }
+h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.06; letter-spacing: -0.02em; text-wrap: balance; }
 p, ul, ol, dl, dd, figure { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 a { color: var(--pen); text-underline-offset: 3px; }
 a:hover { color: var(--pen-strong); }
+button { font: inherit; }
 :focus-visible { outline: 3px solid var(--pen); outline-offset: 3px; border-radius: 4px; }
+.dark :focus-visible, .dark:focus-visible { outline-color: var(--hl); }
 svg { display: block; }
 .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.skip { position: absolute; left: var(--gutter); top: -60px; background: var(--ink); color: #fff; padding: 10px 14px; border-radius: var(--ctl-r); z-index: 50; }
-.skip:focus { top: 10px; color: #fff; }
+.skip { position: absolute; left: var(--gutter); top: -60px; background: var(--hl); color: var(--ink); padding: 10px 14px; border-radius: 6px; z-index: 50; font-weight: 700; }
+.skip:focus { top: 10px; color: var(--ink); }
 
 .wrap { max-width: calc(var(--wrap) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
-.section { padding-block: clamp(56px, 8vw, 96px); }
-.section-head { display: grid; gap: 12px; max-width: 44rem; margin-bottom: clamp(28px, 4vw, 44px); }
-.section-head h2 { font-size: var(--t-2xl); }
-.section-head p { font-size: var(--t-lg); color: var(--ink-2); line-height: 1.45; }
+.section { padding-block: clamp(64px, 9vw, 120px); }
+.kicker { font-weight: 700; color: var(--ink-3); }
+.dark .kicker { color: var(--mist); }
 
-/* buttons */
-.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 20px; border-radius: var(--ctl-r); border: 1.5px solid var(--ink); font: 700 var(--t-md)/1.2 var(--font); text-decoration: none; cursor: pointer; text-align: center; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 22px; border-radius: 8px; border: 2px solid transparent; font: 700 1rem/1.2 var(--font); text-decoration: none; cursor: pointer; text-align: center; transition: background-color .15s, color .15s, border-color .15s; }
+.btn-hl { background: var(--hl); color: var(--ink); }
+.btn-hl:hover { background: #FFEB80; color: var(--ink); }
 .btn-ink { background: var(--ink); color: #fff; }
 .btn-ink:hover { background: #33383E; color: #fff; }
-.btn-line { background: transparent; color: var(--ink); }
+.btn-ghost { border-color: #4A5059; color: #fff; }
+.btn-ghost:hover { border-color: #fff; color: #fff; }
+.btn-line { border-color: var(--ink); color: var(--ink); background: transparent; }
 .btn-line:hover { background: var(--paper); color: var(--ink); }
-.btn-paper { background: var(--paper); color: var(--ink); border-color: var(--paper); }
-.btn-paper:hover { background: var(--hl); border-color: var(--hl); color: var(--ink); }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-@media (max-width: 560px) { .actions .btn { flex: 1 1 12rem; } }
+@media (max-width: 560px) { .actions .btn { flex: 1 1 11rem; } }
 
 /* ---------- header ---------- */
-.site-head { position: sticky; top: 0; z-index: 20; background: rgb(236 239 234 / 0.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); }
-.head-row { display: flex; align-items: center; gap: 24px; min-height: 64px; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 700; font-size: 1.0625rem; white-space: nowrap; }
-.brand:hover { color: var(--ink); }
-.brand img { width: 32px; height: 32px; }
-.nav { display: flex; gap: 24px; margin-left: auto; }
+.site-head { position: sticky; top: 0; z-index: 20; background: rgb(22 24 28 / 0.92); backdrop-filter: blur(10px); color: #fff; border-bottom: 1px solid var(--night-rule); }
+.head-row { display: flex; align-items: center; gap: 28px; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 700; font-size: 1.0625rem; white-space: nowrap; }
+.brand:hover { color: #fff; }
+.brand img { width: 30px; height: 30px; }
+.nav { display: flex; gap: 26px; margin-left: auto; }
+.nav a { color: var(--mist); text-decoration: none; font-size: var(--t-sm); font-weight: 700; padding-block: 8px; }
+.nav a:hover { color: #fff; }
 .head-cta { min-height: 40px; padding: 8px 14px; font-size: var(--t-sm); white-space: nowrap; }
-.nav a { color: var(--ink-2); text-decoration: none; font-size: var(--t-sm); font-weight: 700; padding-block: 8px; }
-.nav a:hover { color: var(--ink); text-decoration: underline; }
-@media (max-width: 860px) {
-  .nav { gap: 16px; }
-  .nav a[href="#how"], .nav a[href="#clients"], .nav a[href="#umzila"] { display: none; }
-}
-@media (max-width: 560px) {
-  .head-row { gap: 12px; }
-  .nav { display: none; }
-  .head-cta { margin-left: auto; }
-}
-@media (max-width: 360px) {
-  .brand span { font-size: 0.95rem; }
-  .head-cta { padding: 8px 10px; }
-}
+@media (max-width: 900px) { .nav { gap: 18px; } .nav a[href="#how"], .nav a[href="#clients"] { display: none; } }
+@media (max-width: 640px) { .nav { display: none; } .head-cta { margin-left: auto; } }
+@media (max-width: 360px) { .brand span { font-size: .95rem; } .head-cta { padding: 8px 10px; } }
 
-/* ---------- hero ---------- */
-.hero { padding-block: clamp(48px, 8vw, 104px) clamp(48px, 7vw, 88px); }
-.hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); gap: clamp(32px, 6vw, 80px); align-items: center; }
-.hero h1 { font-size: var(--t-3xl); letter-spacing: -0.025em; max-width: 13ch; }
-.hero .lead { margin-top: 24px; font-size: var(--t-lg); color: var(--ink-2); max-width: 36rem; line-height: 1.5; }
+/* ---------- hero: the table ---------- */
+.hero { background: var(--night); color: #fff; padding-block: clamp(48px, 7vw, 96px) clamp(56px, 8vw, 112px); overflow: hidden; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(36px, 6vw, 80px); align-items: center; }
+.hero h1 { font-size: var(--t-3xl); letter-spacing: -0.035em; max-width: 11ch; }
+.hero .lead { margin-top: 24px; font-size: var(--t-lg); color: var(--mist); max-width: 34rem; line-height: 1.5; }
 .hero .actions { margin-top: 32px; }
-@media (max-width: 820px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
 
-/* the element tile */
-.tile { position: relative; width: 100%; max-width: 340px; aspect-ratio: 1; justify-self: end; background: var(--ink); color: #fff; border-radius: 14px; padding: clamp(18px, 3vw, 28px); display: grid; grid-template-rows: auto 1fr auto auto; }
-.tile .z { color: var(--hl); font-weight: 700; font-size: clamp(1.4rem, 1rem + 1.4vw, 2rem); line-height: 1; }
-.tile .sym { align-self: center; font-weight: 700; font-size: clamp(5.5rem, 3rem + 9vw, 9.5rem); line-height: 0.9; letter-spacing: -0.04em; }
-.tile .name { font-weight: 700; font-size: clamp(1.05rem, 0.9rem + 0.5vw, 1.3rem); }
-.tile .mass { margin-top: 4px; color: #A9B0B7; font-size: var(--t-sm); }
-.tile-note { margin-top: 12px; max-width: 340px; justify-self: end; font-size: var(--t-sm); color: var(--ink-3); }
-.tile-wrap { display: grid; }
-@media (max-width: 820px) {
-  .tile, .tile-note { justify-self: start; }
-  .tile { max-width: 260px; }
+.table { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.2vw, 14px); }
+.el { position: relative; aspect-ratio: 1 / 1.08; border-radius: 10px; padding: clamp(10px, 1.4vw, 16px); display: grid; grid-template-rows: auto 1fr auto auto; text-decoration: none; color: inherit; min-width: 0; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+a.el:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgb(0 0 0 / .35); }
+.el .z { font-weight: 700; font-size: clamp(.8rem, .6rem + .6vw, 1.05rem); line-height: 1; }
+.el .sym { align-self: center; font-weight: 700; font-size: clamp(2.6rem, 1.4rem + 4.2vw, 4.6rem); line-height: .9; letter-spacing: -0.045em; }
+.el .sym sup { font-size: .5em; vertical-align: .9em; letter-spacing: 0; }
+.el .nm { font-weight: 700; font-size: clamp(.78rem, .62rem + .5vw, 1rem); line-height: 1.2; }
+.el .cat { margin-top: 2px; font-size: clamp(.68rem, .58rem + .3vw, .8rem); opacity: .75; line-height: 1.25; }
+
+.el-mg { background: var(--hl); color: var(--ink); }
+.el-bo { background-color: #FBFCFA; color: var(--ink);
+  background-image: linear-gradient(var(--grid-major) 1px, transparent 1px), linear-gradient(90deg, var(--grid-major) 1px, transparent 1px), linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px; }
+.el-bo .z { color: var(--pen); }
+.el-n3 { background: var(--n3-navy); color: #EEF2F4; box-shadow: inset 0 0 0 1px rgb(238 242 244 / .14); }
+.el-n3 .z { color: var(--n3-orange); }
+.el-n3 .dot { position: absolute; right: 14%; top: 34%; width: 18%; aspect-ratio: 1; border-radius: 50%; background: var(--n3-orange); }
+.el-nk { background: var(--nk-teal); color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .1); }
+.el-nk .z { color: var(--nk-gold); }
+.el-nk .stars { position: absolute; right: 9%; top: 12%; width: 34%; opacity: .9; }
+.el-empty { border: 2px dashed var(--night-rule); color: #6E757D; }
+.el-empty .sym { color: #4A5059; }
+.el-next { border: 2px dashed var(--hl); color: var(--hl); }
+.el-next .sym { color: var(--hl); }
+.el-next:hover { background: rgb(255 225 77 / .08); color: var(--hl); }
+@media (max-width: 480px) { .el .cat { display: none; } .el .nm { font-size: .78rem; } }
+.table-note { margin-top: 14px; font-size: var(--t-sm); color: #8D949B; max-width: 34rem; }
+.table-note b { color: var(--mist); }
+
+/* ---------- index strip ---------- */
+.strip { background: var(--hl); color: var(--ink); }
+.strip ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.strip li { padding: 20px 20px 22px 0; display: grid; gap: 2px; align-content: start; }
+.strip li + li { padding-left: 20px; border-left: 2px solid rgb(26 29 33 / .15); }
+.strip b { font-size: 1.0625rem; }
+.strip span { font-size: var(--t-sm); color: #3B3F45; }
+@media (max-width: 860px) {
+  .strip ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .strip li:nth-child(3) { padding-left: 0; border-left: 0; }
+  .strip li:nth-child(n+3) { border-top: 2px solid rgb(26 29 33 / .15); }
 }
 
-/* ---------- our work index ---------- */
-.work { border-top: 1px solid var(--rule); }
-.index { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--sheet-r); overflow: hidden; }
-.index th, .index td { text-align: left; vertical-align: top; padding: 18px 20px; border-bottom: 1px solid var(--rule); }
-.index tr:last-child td { border-bottom: 0; }
-.index thead th { font-size: var(--t-sm); color: var(--ink-3); font-weight: 700; padding-block: 12px; background: #F5F6F3; }
-.index td:first-child a { color: var(--ink); font-weight: 700; font-size: var(--t-lg); text-decoration: none; }
-.index td:first-child a:hover { text-decoration: underline; }
-.index td { color: var(--ink-2); }
-.index .who { color: var(--ink); }
-.status { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; color: var(--ink); }
-.status::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); flex: none; }
-.status.live::before { background: var(--pen); }
-.status.build::before { background: transparent; border: 2px solid var(--ink); width: 7px; height: 7px; }
-@media (max-width: 760px) {
-  .index thead { display: none; }
-  .index, .index tbody, .index tr, .index td { display: block; width: 100%; }
-  .index tr { padding: 18px 18px; border-bottom: 1px solid var(--rule); }
-  .index tr:last-child { border-bottom: 0; }
-  .index td { border: 0; padding: 2px 0; }
-  .index td:first-child { padding-bottom: 6px; }
-  .index td.st { padding-top: 10px; }
-}
-
-/* ---------- product ---------- */
-.product { background: var(--paper); border-block: 1px solid var(--rule); }
-.product-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 72px); align-items: start; }
-.p-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
-.p-name h2 { font-size: var(--t-3xl); letter-spacing: -0.03em; }
+/* ---------- Bonisa ---------- */
+.product { background: var(--paper); }
+.p-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(36px, 6vw, 80px); align-items: start; }
+.p-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 10px; }
+.p-name h2 { font-size: clamp(3.2rem, 2rem + 5vw, 6rem); letter-spacing: -0.045em; line-height: .95; }
 .p-name .by { color: var(--ink-3); font-weight: 700; }
-.p-meaning { margin-top: 10px; color: var(--ink-3); }
-.p-lead { margin-top: 24px; font-size: var(--t-lg); line-height: 1.5; max-width: 34rem; }
-.p-why { margin-top: 20px; color: var(--ink-2); max-width: 34rem; }
-.p-why a { white-space: nowrap; }
-.p-status { margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
-.p-status .status { font-weight: 700; }
+.p-meaning { margin-top: 14px; font-size: var(--t-lg); color: var(--ink-2); max-width: 30rem; }
+.p-meaning i { font-style: normal; background: var(--hl); padding-inline: 3px; }
+.p-lead { margin-top: 22px; color: var(--ink-2); max-width: 32rem; }
+.p-status { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: var(--t-sm); padding: 6px 12px; border-radius: 999px; background: var(--pen-tint); color: var(--pen-strong); }
+.pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--pen); }
+@media (max-width: 960px) { .p-top { grid-template-columns: minmax(0, 1fr); } }
 
-/* worked example on graph paper */
-.working { border: 1px solid var(--rule); border-radius: var(--sheet-r); background-color: #FBFCFA;
-  background-image:
-    linear-gradient(var(--grid-major) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-  background-position: -1px -1px;
-  padding: clamp(24px, 4vw, 40px); }
-.working .q { font-size: var(--t-sm); color: var(--ink-3); font-weight: 700; }
-.lines { margin-top: 16px; display: grid; gap: 14px; }
-.line { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 4px 20px; align-items: baseline; }
-.eq { font-family: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', 'Times New Roman', serif; font-size: clamp(1.45rem, 1.1rem + 1.4vw, 2.1rem); line-height: 1.2; white-space: nowrap; }
+/* the worked problem */
+.lab { border: 1px solid var(--rule); border-radius: var(--r); background-color: #FBFCFA;
+  background-image: linear-gradient(var(--grid-major) 1px, transparent 1px), linear-gradient(90deg, var(--grid-major) 1px, transparent 1px), linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px; background-position: -1px -1px;
+  padding: clamp(22px, 3.5vw, 36px); }
+.lab-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; font-size: var(--t-sm); font-weight: 700; color: var(--ink-3); }
+.eq { font-family: var(--math); line-height: 1.2; white-space: nowrap; }
 .eq var { font-style: italic; }
-.eq sup { font-size: 0.6em; line-height: 0; }
-.line:first-child .eq { font-size: clamp(1.9rem, 1.3rem + 2.4vw, 2.9rem); }
-.note { color: var(--pen); font-size: var(--t-sm); line-height: 1.35; max-width: 16rem; }
-.working figcaption { margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: var(--t-sm); color: var(--ink-2); }
-@media (max-width: 960px) { .product-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 520px) {
-  .line { grid-template-columns: minmax(0, 1fr); }
-  .note { max-width: none; }
-}
+.eq sup { font-size: .6em; line-height: 0; }
+.eq-big { margin-top: 14px; font-size: clamp(2rem, 1.3rem + 3vw, 3.2rem); }
+.ask { margin-top: 18px; font-weight: 700; }
+.choices { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px; }
+.choice { min-height: 48px; padding: 8px 18px; border-radius: 8px; border: 2px solid var(--pen); background: var(--paper); color: var(--pen-strong); font-weight: 700; cursor: pointer; font-family: var(--math); font-size: 1.15rem; }
+.choice:hover { background: var(--pen-tint); }
+.choice[aria-pressed="true"].wrong { border-color: var(--red); color: var(--red); background: #FBEAE9; }
+.choice[aria-pressed="true"].right { border-color: var(--tick); color: #fff; background: var(--tick); }
+.choice:disabled { cursor: default; }
+.feedback { margin-top: 14px; min-height: 1.6em; font-weight: 700; }
+.feedback.wrong { color: var(--red); }
+.feedback.right { color: var(--tick); }
+.steps { margin-top: 10px; display: grid; gap: 10px; }
+.step { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 4px 18px; align-items: baseline; }
+.step .eq { font-size: clamp(1.35rem, 1rem + 1.4vw, 2rem); }
+.note { color: var(--pen); font-size: var(--t-sm); line-height: 1.35; }
+.steps:not(.shown) { display: none; }
+.lab-foot { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: var(--t-sm); color: var(--ink-2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; }
+.reset { background: none; border: 0; padding: 0; color: var(--pen); font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 520px) { .step { grid-template-columns: minmax(0, 1fr); } }
 
-.features { margin-top: clamp(40px, 6vw, 64px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 clamp(24px, 4vw, 48px); }
-.features li { padding: 18px 0; border-top: 1px solid var(--rule); display: grid; gap: 4px; align-content: start; }
-.features b { font-size: 1.0625rem; }
-.features span { color: var(--ink-2); font-size: 0.95rem; }
+/* why it matters: 34 in 100 */
+.why { margin-top: clamp(56px, 8vw, 96px); display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 6vw, 72px); align-items: center; }
+.why h3 { font-size: var(--t-2xl); max-width: 16ch; }
+.why p { margin-top: 16px; color: var(--ink-2); max-width: 32rem; }
+.waffle { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 4px; }
+.waffle i { aspect-ratio: 1; border-radius: 3px; background: var(--rule); }
+.waffle i.on { background: var(--pen); }
+.waffle-key { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: var(--t-sm); color: var(--ink-2); }
+.waffle-key span { display: inline-flex; align-items: center; gap: 8px; }
+.waffle-key span::before { content: ""; width: 12px; height: 12px; border-radius: 3px; background: var(--rule); }
+.waffle-key span.on::before { background: var(--pen); }
+@media (max-width: 860px) { .why { grid-template-columns: minmax(0, 1fr); } .waffle { grid-template-columns: repeat(10, minmax(0, 1fr)); } }
+
+.features { margin-top: clamp(56px, 8vw, 96px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 clamp(24px, 4vw, 48px); }
+.features li { padding: 20px 0; border-top: 2px solid var(--ink); display: grid; gap: 6px; align-content: start; }
+.features b { font-size: 1.125rem; }
+.features span { color: var(--ink-2); }
 @media (max-width: 900px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .features { grid-template-columns: minmax(0, 1fr); } }
 
 
-/* ---------- Umzila: its own signature, the route line ---------- */
-.product-2 { border-bottom: 1px solid var(--rule); }
-.route-fig { border: 1px solid var(--rule); border-radius: var(--sheet-r); background: var(--paper); padding: clamp(24px, 4vw, 40px); }
-.route-fig .q { font-size: var(--t-sm); color: var(--ink-3); font-weight: 700; }
-.stops { margin-top: 18px; position: relative; }
+/* ---------- Umzila: the route line is its signature ---------- */
+.el-um { background: #EDF0F3; color: var(--ink); }
+.el-um .z { color: var(--ink-3); }
+.el-um .route { position: absolute; right: 10%; top: 12%; width: 36%; }
+a.el-um:hover { color: var(--ink); }
+.el-um::after { background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / .55), transparent 55%); }
+
+.umzila { background: var(--desk); }
+.umzila .p-meaning i { background: var(--hl); }
+.trip { border: 1px solid var(--rule); border-radius: var(--r); background: var(--paper); padding: clamp(22px, 3.5vw, 36px); }
+.trip-q { margin-top: 10px; font-size: clamp(1.4rem, 1.1rem + 1.2vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+.trip-toggle { margin-top: 16px; display: none; flex-wrap: wrap; gap: 10px; }
+.js .trip-toggle { display: flex; }
+.trip-toggle button { min-height: 44px; padding: 8px 16px; border-radius: 8px; border: 2px solid var(--pen); background: var(--paper); color: var(--pen-strong); font-weight: 700; cursor: pointer; }
+.trip-toggle button:hover { background: var(--pen-tint); }
+.trip-toggle button[aria-pressed="true"] { background: var(--pen); color: #fff; }
+.stops { margin-top: 20px; }
 .stops li { position: relative; padding: 0 0 18px 44px; }
 .stops li::before { content: ""; position: absolute; left: 12px; top: 0; bottom: 0; width: 6px; background: var(--ink); }
 .stops li:first-child::before { top: 12px; }
@@ -206,231 +246,390 @@ svg { display: block; }
 .stops li.here::after { left: 3px; top: 1px; width: 18px; height: 18px; background: var(--hl); border-width: 4px; }
 .stops li.end::after { left: 3px; top: 1px; width: 18px; height: 18px; background: var(--ink); box-shadow: inset 0 0 0 3px var(--paper); border-width: 4px; }
 .stops b { display: block; font-size: 1.0625rem; line-height: 1.3; }
-.stops span { display: block; color: var(--ink-2); font-size: 0.95rem; }
+.stops span { display: block; color: var(--ink-2); font-size: .95rem; }
 .stops .tag { display: inline-block; margin-left: 6px; background: var(--hl); color: var(--ink); font-size: var(--t-sm); font-weight: 700; padding: 0 6px; border-radius: 4px; vertical-align: 2px; }
-.route-fig figcaption { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: var(--t-sm); color: var(--ink-2); }
+.stops .closed { display: none; color: var(--red); font-weight: 700; }
+/* Maths Literacy: the route closes after Grade 9 */
+.trip.lit .stops li::before { background: repeating-linear-gradient(to bottom, #A9B0B7 0 7px, transparent 7px 13px); }
+.trip.lit .stops li:not(.here)::after { border-color: #A9B0B7; background: var(--paper); box-shadow: none; }
+.trip.lit .stops li:not(.here) b, .trip.lit .stops li:not(.here) span { color: #8D949B; }
+.trip.lit .stops .open-text { display: none; }
+.trip.lit .stops .closed { display: block; }
+.trip-foot { margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: var(--t-sm); color: var(--ink-2); }
+#clients { border-top: 1px solid var(--rule); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .el-um .route path { stroke-dasharray: 60; animation: draw 1.1s ease 1s backwards; }
+  @keyframes draw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+  .stops li::before, .stops li::after, .stops b, .stops span { transition: background-color .3s, border-color .3s, color .3s; }
+}
 
 /* ---------- clients ---------- */
+.clients-head { display: grid; gap: 12px; max-width: 44rem; margin-bottom: clamp(28px, 4vw, 44px); }
+.clients-head h2 { font-size: var(--t-2xl); }
+.clients-head p { font-size: var(--t-lg); color: var(--ink-2); }
 .clients { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.client { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--sheet-r); padding: clamp(20px, 3vw, 32px); display: grid; gap: 18px; align-content: start; }
-.c-head { display: flex; align-items: center; gap: 14px; }
-.c-head svg { width: 48px; height: 48px; flex: none; }
-.c-head h3 { font-size: var(--t-xl); }
-.c-head .sector { color: var(--ink-3); font-size: var(--t-sm); font-weight: 700; margin-top: 2px; }
-.client > p { color: var(--ink-2); }
-.client dl { display: grid; gap: 14px; padding-top: 18px; border-top: 1px solid var(--rule); }
-.client dt { font-size: var(--t-sm); font-weight: 700; color: var(--ink-3); }
-.client dd { margin-top: 2px; }
-.client .disclose { font-size: var(--t-sm); color: var(--ink-3); }
-@media (max-width: 820px) { .clients { grid-template-columns: minmax(0, 1fr); } }
+.client { border-radius: 16px; padding: clamp(24px, 3.5vw, 40px); display: grid; gap: 22px; align-content: start; position: relative; overflow: hidden; }
+.client-n3 { background: var(--n3-navy); color: #EEF2F4; }
+.client-nk { background: var(--nk-teal); color: #fff; }
+.c-head { display: flex; align-items: center; gap: 16px; position: relative; }
+.c-head svg { width: 56px; height: 56px; flex: none; }
+.c-head h3 { font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem); }
+.c-head .sector { font-weight: 700; font-size: var(--t-sm); margin-top: 4px; }
+.client-n3 .sector { color: var(--n3-orange); }
+.client-nk .sector { color: var(--nk-gold); }
+.client > p { color: rgb(255 255 255 / .78); font-size: 1.0625rem; max-width: 34rem; position: relative; }
+.client dl { display: grid; gap: 16px; padding-top: 20px; border-top: 1px solid rgb(255 255 255 / .16); position: relative; }
+.client dt { font-size: var(--t-sm); font-weight: 700; color: rgb(255 255 255 / .6); }
+.client dd { margin-top: 3px; }
+.status { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.status::before { content: ""; width: 9px; height: 9px; border-radius: 50%; border: 2px solid currentColor; }
+.disclose { font-size: var(--t-sm); color: rgb(255 255 255 / .55); position: relative; }
+.client-n3 { box-shadow: inset 0 6px 0 var(--n3-orange); }
+.client-nk { box-shadow: inset 0 6px 0 var(--nk-gold); }
+@media (max-width: 860px) { .clients { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- how we work ---------- */
-.how { border-top: 1px solid var(--rule); }
-.principles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 clamp(20px, 3vw, 36px); }
-.principles li { border-top: 3px solid var(--ink); padding-top: 16px; display: grid; gap: 8px; align-content: start; }
-.principles h3 { font-size: var(--t-lg); }
-.principles p { color: var(--ink-2); }
-@media (max-width: 960px) { .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px clamp(20px, 3vw, 36px); } }
-@media (max-width: 520px) { .principles { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.how { background: var(--night); color: #fff; }
+.how h2 { font-size: var(--t-2xl); }
+.principles { margin-top: clamp(32px, 5vw, 56px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(28px, 5vw, 72px); }
+.principles li { padding: 26px 0; border-top: 1px solid var(--night-rule); display: grid; gap: 8px; align-content: start; }
+.principles h3 { font-size: clamp(1.35rem, 1.1rem + 1vw, 1.8rem); }
+.principles h3::before { content: ""; display: inline-block; width: .55em; height: .55em; margin-right: .45em; border-radius: 3px; background: var(--hl); vertical-align: .05em; }
+.principles p { color: var(--mist); max-width: 30rem; }
+@media (max-width: 760px) { .principles { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- contact ---------- */
-.contact { background: var(--ink); color: #fff; }
-.contact-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 72px); align-items: start; }
-.contact h2 { font-size: var(--t-3xl); letter-spacing: -0.025em; max-width: 12ch; }
-.contact .lead { margin-top: 20px; color: #C9CED3; font-size: var(--t-lg); max-width: 32rem; line-height: 1.5; }
-.addresses { display: grid; gap: 0; }
-.addresses > div { padding: 20px 0; border-top: 1px solid #3A4047; display: grid; gap: 4px; }
-.addresses > div:last-of-type { border-bottom: 1px solid #3A4047; }
-.addresses dt { color: #A9B0B7; font-size: var(--t-sm); font-weight: 700; }
-.addresses dd a { color: #fff; font-size: clamp(1.15rem, 1rem + 0.6vw, 1.4rem); font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
-.addresses dd a:hover { text-decoration: underline; color: var(--hl); }
-.addresses dd span { color: #C9CED3; font-size: var(--t-sm); }
-.copy-row { margin-top: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
-.copy-state { color: #C9CED3; font-size: var(--t-sm); min-height: 1.4em; }
-.contact :focus-visible { outline-color: var(--hl); }
-@media (max-width: 820px) { .contact-grid { grid-template-columns: minmax(0, 1fr); } }
+.contact { background: var(--hl); color: var(--ink); }
+.contact-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(32px, 6vw, 72px); align-items: start; }
+.contact h2 { font-size: var(--t-3xl); letter-spacing: -0.035em; max-width: 11ch; }
+.contact .lead { margin-top: 20px; font-size: var(--t-lg); max-width: 32rem; line-height: 1.5; color: #2F3338; }
+.addresses > div { padding: 20px 0; border-top: 2px solid var(--ink); display: grid; gap: 4px; }
+.addresses dt { font-size: var(--t-sm); font-weight: 700; color: #3B3F45; }
+.addresses dd a { color: var(--ink); font-size: clamp(1.15rem, 1rem + .7vw, 1.5rem); font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
+.addresses dd a:hover { text-decoration: underline; }
+.copy-row { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.copy-state { font-size: var(--t-sm); min-height: 1.4em; color: #2F3338; }
+@media (max-width: 860px) { .contact-grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- footer ---------- */
-.site-foot { background: var(--ink); color: #A9B0B7; font-size: var(--t-sm); }
-.foot-row { display: flex; flex-wrap: wrap; gap: 8px 32px; justify-content: space-between; padding-block: 24px 32px; border-top: 1px solid #3A4047; }
-.site-foot a { color: #C9CED3; }
+.site-foot { background: var(--night); color: #8D949B; font-size: var(--t-sm); }
+.foot-row { display: flex; flex-wrap: wrap; gap: 8px 32px; justify-content: space-between; padding-block: 28px 34px; }
+.site-foot a { color: var(--mist); }
 .site-foot a:hover { color: #fff; }
+
+/* ===================== Motion =====================
+   Rules: motion explains or answers. One load sequence (copy, then the table filling in),
+   reveals that show something happening (rules drawing, squares filling), and small living details
+   tied to what each thing is (a lab bubbles, a sensor pings, stars twinkle).
+   Everything below is skipped for people who ask for reduced motion, and nothing is hidden without JavaScript. */
+
+/* static parts the motion relies on */
+.el-n3 .dot .ping { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--n3-orange); opacity: 0; }
+.el-empty .bubbles { position: absolute; inset: 0; pointer-events: none; }
+.el-empty .bubbles i { position: absolute; bottom: -12px; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #5A616A; opacity: 0; }
+.el-empty .bubbles i:nth-child(1) { left: 22%; }
+.el-empty .bubbles i:nth-child(2) { left: 48%; width: 6px; height: 6px; }
+.el-empty .bubbles i:nth-child(3) { left: 66%; width: 10px; height: 10px; }
+.el-empty .bubbles i:nth-child(4) { left: 36%; width: 5px; height: 5px; }
+.el-next { border-color: transparent; }
+.el-next .ants { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.el-next .ants rect { width: calc(100% - 2px); height: calc(100% - 2px); fill: none; stroke: var(--hl); stroke-width: 2; stroke-dasharray: 7 6; }
+.el { transform-style: preserve-3d; will-change: transform; }
+.el::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / .28), transparent 55%); }
+.el-mg::after, .el-bo::after { background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / .55), transparent 55%); }
+.table.tilting .el:hover::after { opacity: 1; }
+a.el-mg:hover, a.el-bo:hover { color: var(--ink); }
+a.el-n3:hover { color: #EEF2F4; }
+a.el-nk:hover { color: #fff; }
+.features li { border-top: 0; position: relative; }
+.features li::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--ink); transform-origin: left; }
+.waffle i.on { background: var(--pen); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 1. page load: copy first, then the table fills in, element by element */
+  .js .intro { animation: rise .7s cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: var(--d, 0ms); }
+  .js .el { animation: drop .6s cubic-bezier(.2, .9, .25, 1.15) backwards; }
+  .js .el:nth-child(1) { animation-delay: .30s; }
+  .js .el:nth-child(2) { animation-delay: .40s; }
+  .js .el:nth-child(3) { animation-delay: .50s; }
+  .js .el:nth-child(4) { animation-delay: .60s; }
+  .js .el:nth-child(5) { animation-delay: .70s; }
+  .js .el:nth-child(6) { animation-delay: .80s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  @keyframes drop { 0% { opacity: 0; transform: translateY(-28px) rotate(-3deg) scale(.94); } 100% { opacity: 1; transform: none; } }
+  .js .el-mg .sym { animation: glint 1.1s ease 1.2s backwards; }
+  @keyframes glint { 0% { transform: scale(.85); } 55% { transform: scale(1.06); } 100% { transform: none; } }
+
+  /* 2. the tiles tilt toward the pointer (desktop only; set by site.js) */
+  .el { transition: transform .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s; }
+  .table.tilting .el { transition: transform .08s linear, box-shadow .35s; }
+
+  /* 3. living details */
+  .el-n3 .dot .ping, .client-n3 .ring { animation: ping 2.6s cubic-bezier(.2, .6, .3, 1) infinite 1.6s; transform-origin: center; transform-box: fill-box; }
+  @keyframes ping { 0% { opacity: .9; transform: scale(1); } 80%, 100% { opacity: 0; transform: scale(2.4); } }
+  .el-empty .bubbles i { animation: bubble 4.2s ease-in infinite; }
+  .el-empty .bubbles i:nth-child(2) { animation-delay: 1.1s; animation-duration: 3.6s; }
+  .el-empty .bubbles i:nth-child(3) { animation-delay: 2.2s; animation-duration: 4.8s; }
+  .el-empty .bubbles i:nth-child(4) { animation-delay: 3.0s; animation-duration: 3.2s; }
+  @keyframes bubble { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: .9; } 50% { transform: translate(4px, -60px); } 90% { opacity: .5; } 100% { opacity: 0; transform: translate(-3px, -130px); } }
+  .el-empty .sym { animation: wonder 4.2s ease-in-out infinite; }
+  @keyframes wonder { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-7deg); } }
+  .el-next .ants rect { animation: march 1.4s linear infinite; }
+  .el-next:hover .ants rect { animation-duration: .5s; }
+  @keyframes march { to { stroke-dashoffset: -26; } }
+  .el-next .sym { transition: transform .4s cubic-bezier(.2, .9, .25, 1.3); }
+  .el-next:hover .sym { transform: rotate(90deg) scale(1.1); }
+  .el-nk .stars circle, .twinkle circle { animation: twinkle 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .el-nk .stars circle:nth-child(2), .twinkle circle:nth-child(2) { animation-delay: .6s; }
+  .el-nk .stars circle:nth-child(3), .twinkle circle:nth-child(3) { animation-delay: 1.2s; }
+  .el-nk .stars circle:nth-child(4), .twinkle circle:nth-child(4) { animation-delay: 1.8s; }
+  .el-nk .stars circle:nth-child(5), .twinkle circle:nth-child(5) { animation-delay: 2.4s; }
+  @keyframes twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+
+  /* 4. reveals that show something happening */
+  .js [data-reveal] { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .8s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0ms); }
+  .js [data-reveal].in { opacity: 1; transform: none; }
+  .js .features li::before { transform: scaleX(0); transition: transform .9s cubic-bezier(.6, 0, .2, 1); transition-delay: var(--d, 0ms); }
+  .js .features li.in::before { transform: scaleX(1); }
+  .js .strip li[data-reveal] { transform: translateY(12px); }
+  .js .client[data-reveal] { transform: translateY(40px) scale(.98); }
+  .js .client[data-reveal].in { transform: none; }
+  .js .client-n3, .js .client-nk { transition-property: opacity, transform, box-shadow; }
+  .js .client-n3:not(.in) { box-shadow: inset 0 0 0 var(--n3-orange); }
+  .js .client-nk:not(.in) { box-shadow: inset 0 0 0 var(--nk-gold); }
+  .js .principles li[data-reveal] h3::before { transform: scale(0) rotate(-90deg); transition: transform .5s cubic-bezier(.2, .9, .25, 1.4) .35s; }
+  .js .principles li[data-reveal].in h3::before { transform: none; }
+  /* the 34-in-100 chart fills in square by square */
+  .js .waffle i.on { background: var(--rule); transition: background-color .25s ease, transform .35s cubic-bezier(.2, .9, .25, 1.4); transition-delay: calc(var(--i) * 22ms + 200ms); }
+  .js .why.in .waffle i.on { background: var(--pen); transform: scale(1.12); }
+  .js .why.in .waffle i.on.settled { transform: none; }
+
+  /* 5. the puzzle answers you */
+  .choice { transition: background-color .15s, color .15s, border-color .15s, transform .15s; }
+  .choice:active { transform: scale(.96); }
+  .choice.wrong { animation: shake .4s cubic-bezier(.36, .07, .19, .97); }
+  @keyframes shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
+  .choice.right { animation: pop .45s cubic-bezier(.2, .9, .25, 1.4); }
+  @keyframes pop { 0% { transform: scale(1); } 45% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  .feedback.right, .feedback.wrong { animation: rise .35s ease; }
+  .steps.shown .step { animation: write .5s ease both; }
+  .steps.shown .step:nth-child(2) { animation-delay: .45s; }
+  .steps.shown .step .note { animation: rise .4s ease backwards; animation-delay: .25s; }
+  .steps.shown .step:nth-child(2) .note { animation-delay: .7s; }
+  @keyframes write { from { opacity: 0; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+
+  /* 6. small affordances */
+  .btn { transition: background-color .15s, color .15s, border-color .15s, transform .15s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0) scale(.98); }
+  .site-head { transition: box-shadow .3s; }
+  .site-head.scrolled { box-shadow: 0 8px 24px rgb(0 0 0 / .25); }
+}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<header class="site-head">
+<header class="site-head dark">
   <div class="wrap head-row">
-    <a class="brand" href="#top" aria-label="Magubane Labs, back to top"><img src="favicon.svg" alt="" width="32" height="32"><span>Magubane Labs</span></a>
+    <a class="brand" href="#top" aria-label="Magubane Labs, back to top"><img src="favicon.svg" alt="" width="30" height="30"><span>Magubane Labs</span></a>
     <nav class="nav" aria-label="Main">
-      <a href="#work">Our work</a>
+      <a href="#product">Bonisa</a>
       <a href="#umzila">Umzila</a>
       <a href="#clients">Clients</a>
       <a href="#how">How we work</a>
       <a href="#contact">Contact</a>
     </nav>
-    <a class="btn btn-ink head-cta" href="/learn">Sign in to Bonisa</a>
+    <a class="btn btn-hl head-cta" href="/learn">Sign in to Bonisa</a>
   </div>
 </header>
 
 <main id="main">
   <span id="top"></span>
 
-  <!-- Hero -->
-  <section class="hero" aria-labelledby="hero-title">
+  <!-- Hero: the table -->
+  <section class="hero dark" aria-labelledby="hero-title">
     <div class="wrap hero-grid">
       <div>
-        <h1 id="hero-title">Software that does real work.</h1>
-        <p class="lead">Magubane Labs is a South African software studio. We build our own products, and the software behind the companies we back. Today that means a maths and science platform for learners, a career and subject-choice planner for Grades 9 to 12, maintenance software for mines and a launch for a travel agency.</p>
-        <div class="actions">
-          <a class="btn btn-ink" href="#work">See our work</a>
-          <a class="btn btn-line" href="#contact">Talk to us</a>
+        <h1 id="hero-title" class="intro" style="--d:0ms">We build software that does real work.</h1>
+        <p class="lead intro" style="--d:120ms">Magubane Labs is a South African software studio. We build our own products, and the software behind the companies we back: maths and science learning, career routes for teenagers, maintenance intelligence for mines, a launch for a travel agency.</p>
+        <div class="actions intro" style="--d:240ms">
+          <a class="btn btn-hl" href="#product">Meet Bonisa</a>
+          <a class="btn btn-ghost" href="#contact">Build with us</a>
         </div>
       </div>
-      <div class="tile-wrap">
-        <div class="tile" role="img" aria-label="Element tile: 12, Mg, Magubane Labs, 24.305">
-          <span class="z" aria-hidden="true">12</span>
-          <span class="sym" aria-hidden="true">Mg</span>
-          <span class="name" aria-hidden="true">Magubane Labs</span>
-          <span class="mass" aria-hidden="true">24.305</span>
+
+      <div>
+        <div class="table" role="list" aria-label="The Magubane Labs table: our products and the companies we build for">
+          <a class="el el-mg" role="listitem" href="#how">
+            <span class="z">12</span>
+            <span class="sym" aria-hidden="true">Mg</span>
+            <span class="nm">Magubane Labs</span>
+            <span class="cat">The studio</span>
+          </a>
+          <a class="el el-bo" role="listitem" href="#product">
+            <span class="z">13</span>
+            <span class="sym" aria-hidden="true">Bo</span>
+            <span class="nm">Bonisa</span>
+            <span class="cat">Our product · Maths &amp; science</span>
+          </a>
+          <a class="el el-um" role="listitem" href="#umzila">
+            <span class="z">14</span>
+            <svg class="route" viewBox="0 0 40 24" aria-hidden="true"><path d="M3 18 H15 Q20 18 22 13 L24 9 Q26 5 31 5 H37" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><circle cx="31" cy="5" r="3.6" fill="#EDF0F3" stroke="currentColor" stroke-width="2.4"/><circle cx="9" cy="18" r="3.6" fill="#FFE14D" stroke="currentColor" stroke-width="2.4"/></svg>
+            <span class="sym" aria-hidden="true">Um</span>
+            <span class="nm">Umzila</span>
+            <span class="cat">Our product · Careers</span>
+          </a>
+          <a class="el el-n3" role="listitem" href="#n3">
+            <span class="z">15</span>
+            <span class="dot" aria-hidden="true"><span class="ping"></span></span>
+            <span class="sym" aria-hidden="true">N<sup>3</sup></span>
+            <span class="nm">N³ Innovations</span>
+            <span class="cat">Client · Mining</span>
+          </a>
+          <a class="el el-nk" role="listitem" href="#nkanyezi">
+            <span class="z">16</span>
+            <svg class="stars" viewBox="0 0 40 30" aria-hidden="true"><g fill="#F3B23A"><circle cx="20" cy="3.5" r="2.3"/><circle cx="18.6" cy="21" r="3"/><circle cx="10.8" cy="12.5" r="2.6"/><circle cx="28" cy="10" r="2"/><circle cx="23.4" cy="15.6" r="1.2"/></g></svg>
+            <span class="sym" aria-hidden="true">Nj</span>
+            <span class="nm">Nkanyezi Journeys</span>
+            <span class="cat">Client · Travel</span>
+          </a>
+          <a class="el el-next" role="listitem" href="#contact">
+            <svg class="ants" aria-hidden="true"><rect x="1" y="1" rx="9" ry="9"/></svg>
+            <span class="z">17</span>
+            <span class="sym" aria-hidden="true">+</span>
+            <span class="nm">Your company</span>
+            <span class="cat">The next element</span>
+          </a>
         </div>
-        <p class="tile-note">Mg is magnesium, element 12, the lightest metal used in engineering structures.</p>
+        <p class="table-note intro" style="--d:900ms"><b>Mg is magnesium, element 12</b>, the lightest metal used in engineering structures. Every element after it is something we build, or someone we build for.</p>
       </div>
     </div>
   </section>
 
-  <!-- Our work -->
-  <section class="section work" id="work" aria-labelledby="work-title">
+  <!-- Index strip -->
+  <section class="strip" aria-label="At a glance">
     <div class="wrap">
-      <div class="section-head">
-        <h2 id="work-title">Our work</h2>
-        <p>Two products of our own, and two companies we build for.</p>
-      </div>
-      <table class="index">
-        <caption class="sr">Magubane Labs products and clients</caption>
-        <thead>
-          <tr><th scope="col">Name</th><th scope="col">What it is</th><th scope="col">Our role</th><th scope="col">Status</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><a href="#product">Bonisa</a></td>
-            <td>Maths and science learning for Grade 1 to Grade 12</td>
-            <td class="who">Our product</td>
-            <td class="st"><span class="status live">Pilot, by invitation</span></td>
-          </tr>
-          <tr>
-            <td><a href="#umzila">Umzila</a></td>
-            <td>Career routes and subject choices for Grades 9 to 12</td>
-            <td class="who">Our product</td>
-            <td class="st"><span class="status live">Open to explore; school pilot by invitation</span></td>
-          </tr>
-          <tr>
-            <td><a href="#n3">N³ Innovations</a></td>
-            <td>Maintenance intelligence software for South African mines</td>
-            <td class="who">We build their software</td>
-            <td class="st"><span class="status build">In development</span></td>
-          </tr>
-          <tr>
-            <td><a href="#nkanyezi">Nkanyezi Journeys</a></td>
-            <td>A Johannesburg travel agency for holidays, flights and group trips</td>
-            <td class="who">We support their launch</td>
-            <td class="st"><span class="status build">Preparing to launch</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <ul>
+        <li data-reveal style="--d:0ms"><b>2 products</b><span>Bonisa and Umzila, both in school pilots</span></li>
+        <li data-reveal style="--d:90ms"><b>2 companies</b><span>we build software for</span></li>
+        <li data-reveal style="--d:180ms"><b>Grade 1 to 12</b><span>maths and science in Bonisa, careers in Umzila</span></li>
+        <li data-reveal style="--d:270ms"><b>Made in South Africa</b><span>for phones, data costs and POPIA</span></li>
+      </ul>
     </div>
   </section>
 
-  <!-- Product -->
+  <!-- Bonisa -->
   <section class="section product" id="product" aria-labelledby="product-title">
     <div class="wrap">
-      <div class="product-grid">
+      <div class="p-top">
         <div>
-          <div class="p-name">
+          <p class="kicker">Our product</p>
+          <div class="p-name" data-reveal>
             <h2 id="product-title">Bonisa</h2>
             <span class="by">by Magubane Labs</span>
           </div>
-          <p class="p-meaning">Bonisa means “show” in isiZulu. In maths you show your working. In science you show why.</p>
-          <p class="p-lead">A maths and science platform for South African learners from Grade 1 to Grade 12, organised by grade and topic, with a separate read-aloud experience for Grades 1 to 3 and a mode for teachers.</p>
-          <p class="p-why">In the 2025 matric exams, only 34% of candidates wrote Mathematics; most wrote Mathematical Literacy (<a href="https://www.education.gov.za/ArchivedDocuments/ArchivedArticles/HistoricNSCOutcomes.aspx" target="_blank" rel="noopener">Department of Basic Education</a>). Learners choose at the end of Grade 9, but the confidence behind that choice is built or lost from the early grades. Bonisa works on that confidence, one skill at a time.</p>
+          <p class="p-meaning">Bonisa means <i>show</i> in isiZulu. In maths you show your working. In science you show why.</p>
+          <p class="p-lead">Maths and science for South African learners from Grade 1 to Grade 12, organised by grade and topic, with a read-aloud experience for Grades 1 to 3 and a mode for teachers. Learners don’t just get marked: they find out what went wrong and how to fix it.</p>
           <div class="p-status">
-            <span class="status live">Pilot, by invitation</span>
+            <span class="pill">Pilot, by invitation</span>
             <a class="btn btn-ink" href="mailto:hello@magubanelabs.co.za?subject=Bonisa%20pilot">Ask about the pilot</a>
             <a class="btn btn-line" href="/learn">Sign in</a>
           </div>
         </div>
 
-        <figure class="working" aria-labelledby="working-cap">
-          <p class="q">Solve for <i>x</i></p>
-          <div class="lines">
-            <div class="line">
-              <span class="eq"><span class="sr">x squared plus 5x plus 6 equals 0</span><span aria-hidden="true"><var>x</var><sup>2</sup> + 5<var>x</var> + 6 = 0</span></span>
-              <span class="note">Find two numbers that multiply to 6 and add to 5.</span>
-            </div>
-            <div class="line">
+        <figure class="lab" aria-labelledby="lab-cap" data-reveal style="--d:150ms">
+          <div class="lab-head"><span>Try it: Grade 10 algebra</span><span>Factorise and solve</span></div>
+          <p class="eq eq-big"><span class="sr">x squared plus 5x plus 6 equals 0</span><span aria-hidden="true"><var>x</var><sup>2</sup> + 5<var>x</var> + 6 = 0</span></p>
+          <p class="ask" id="ask">Which two numbers multiply to 6 and add to 5?</p>
+          <div class="choices" role="group" aria-labelledby="ask">
+            <button class="choice" type="button" data-a="1" data-b="6">1 and 6</button>
+            <button class="choice" type="button" data-a="2" data-b="3">2 and 3</button>
+            <button class="choice" type="button" data-a="-2" data-b="-3">−2 and −3</button>
+          </div>
+          <p class="feedback" id="feedback" aria-live="polite"></p>
+          <div class="steps" id="steps">
+            <div class="step">
               <span class="eq"><span class="sr">open bracket x plus 2, close bracket, open bracket x plus 3, close bracket, equals 0</span><span aria-hidden="true">(<var>x</var> + 2)(<var>x</var> + 3) = 0</span></span>
-              <span class="note">2 and 3. If a product is 0, one factor is 0.</span>
+              <span class="note">If a product is 0, one of its factors must be 0.</span>
             </div>
-            <div class="line">
+            <div class="step">
               <span class="eq"><span class="sr">x equals minus 2 or x equals minus 3</span><span aria-hidden="true"><var>x</var> = −2 or <var>x</var> = −3</span></span>
               <span class="note">Check: (−2)<sup>2</sup> + 5(−2) + 6 = 0</span>
             </div>
           </div>
-          <figcaption id="working-cap">Every skill in Bonisa is taught through its working, not just its answer.</figcaption>
+          <figcaption class="lab-foot" id="lab-cap"><span>A taste of how Bonisa teaches: every mistake gets a reason.</span><button class="reset" type="button" id="reset" hidden>Try again</button></figcaption>
+        </figure>
+      </div>
+
+      <div class="why" data-reveal>
+        <div>
+          <h3>Only 34 in 100 matric candidates wrote Mathematics in 2025.</h3>
+          <p>Most wrote Mathematical Literacy instead (<a href="https://www.education.gov.za/ArchivedDocuments/ArchivedArticles/HistoricNSCOutcomes.aspx" target="_blank" rel="noopener">Department of Basic Education</a>). Learners choose at the end of Grade 9, but the confidence behind that choice is built or lost from the early grades. Bonisa works on that confidence, one skill at a time.</p>
+        </div>
+        <figure>
+          <div class="waffle" id="waffle" role="img" aria-label="100 squares, 34 of them filled: 34 in every 100 matric candidates wrote Mathematics in 2025."></div>
+          <figcaption class="waffle-key"><span class="on">Wrote Mathematics</span><span>Did not</span></figcaption>
         </figure>
       </div>
 
       <ul class="features" aria-label="What Bonisa does">
-        <li><b>Practice at the right level</b><span>Questions adjust to each learner, so the work stays hard enough to learn from and possible to get right.</span></li>
-        <li><b>Mistakes explained, not just marked</b><span>A wrong answer is matched to the misunderstanding behind it, with a tip to fix it.</span></li>
-        <li><b>A tutor that teaches</b><span>For Grades 4 to 12, the AI tutor asks and hints before it tells. It is switched off during tests.</span></li>
-        <li><b>Tests that measure</b><span>Timed, with no hints, and different numbers for every learner, so a result means something.</span></li>
-        <li><b>Built for teachers</b><span>Classes, assignments and a clear view of what each learner needs next.</span></li>
-        <li><b>Grades 1 to 3, read aloud</b><span>Children sign in with pictures on a device an adult has set up. No points, streaks or stars.</span></li>
+        <li data-reveal style="--d:0ms"><b>Practice at the right level</b><span>Questions adjust to each learner, so the work stays hard enough to learn from and possible to get right.</span></li>
+        <li data-reveal style="--d:90ms"><b>Mistakes explained, not just marked</b><span>A wrong answer is matched to the misunderstanding behind it, with a tip to fix it.</span></li>
+        <li data-reveal style="--d:180ms"><b>A tutor that teaches</b><span>For Grades 4 to 12, the AI tutor asks and hints before it tells. It is switched off during tests.</span></li>
+        <li data-reveal style="--d:0ms"><b>Tests that measure</b><span>Timed, with no hints, and different numbers for every learner, so a result means something.</span></li>
+        <li data-reveal style="--d:90ms"><b>Built for teachers</b><span>Classes, assignments and a clear view of what each learner needs next.</span></li>
+        <li data-reveal style="--d:180ms"><b>Grades 1 to 3, read aloud</b><span>Children sign in with pictures on a device an adult has set up. No points, streaks or stars.</span></li>
       </ul>
     </div>
   </section>
 
   <!-- Umzila -->
-  <section class="section product-2" id="umzila" aria-labelledby="umzila-title">
+  <section class="section umzila" id="umzila" aria-labelledby="umzila-title">
     <div class="wrap">
-      <div class="product-grid">
+      <div class="p-top">
         <div>
-          <div class="p-name">
+          <p class="kicker">Our product</p>
+          <div class="p-name" data-reveal>
             <h2 id="umzila-title">Umzila</h2>
             <span class="by">by Magubane Labs</span>
           </div>
-          <p class="p-meaning">Umzila means “path” in isiZulu.</p>
-          <p class="p-lead">Tell it what you want to become, and Umzila shows the route from your grade to that career: the subjects that keep it open, the marks to aim for, where to study, how to pay for it and what it takes to qualify.</p>
-          <p class="p-why">The most consequential choice comes at the end of Grade 9, when learners pick their subjects for Grades 10 to 12. Choose Mathematical Literacy, and most routes into engineering, the health sciences and accounting close. Umzila shows that before the choice is made, not in Grade 12. Every requirement links to the prospectus or government document it came from.</p>
+          <p class="p-meaning">Umzila means <i>path</i> in isiZulu. Tell it what you want to become, and it shows the route there.</p>
+          <p class="p-lead">For learners in Grades 9 to 12: the subjects that keep a career open, the marks to aim for, where to study and what they ask for, how to pay for it and how long it takes to qualify. If plan A doesn’t work out, every career shows the other ways in. Every requirement links to the prospectus or government document it came from.</p>
           <div class="p-status">
-            <span class="status live">Open to explore</span>
+            <span class="pill">Open to explore</span>
             <a class="btn btn-ink" href="https://umzila.magubanelabs.co.za">Open Umzila</a>
             <a class="btn btn-line" href="mailto:hello@magubanelabs.co.za?subject=Umzila%20school%20pilot">Ask about the school pilot</a>
           </div>
         </div>
 
-        <figure class="route-fig" aria-labelledby="route-cap">
-          <p class="q">I want to become a civil engineer</p>
-          <ol class="stops">
-            <li class="here"><b>Grade 9 <span class="tag">You are here</span></b><span>Choose Mathematics and Physical Sciences for Grade 10.</span></li>
+        <figure class="trip" id="trip" aria-labelledby="trip-cap" data-reveal style="--d:150ms">
+          <div class="lab-head"><span>Try it: a Grade 9 learner</span><span>Subject choice</span></div>
+          <p class="trip-q">“I want to become a civil engineer.”</p>
+          <div class="trip-toggle" role="group" aria-label="Which maths subject for Grade 10?">
+            <button type="button" data-maths="maths" aria-pressed="true">Mathematics</button>
+            <button type="button" data-maths="lit" aria-pressed="false">Maths Literacy</button>
+          </div>
+          <ol class="stops" aria-live="polite">
+            <li class="here"><b>Grade 9 <span class="tag">You are here</span></b><span class="open-text">Choose Mathematics and Physical Sciences for Grade 10.</span><span class="closed">✗ Route closed: every engineering degree needs Mathematics.</span></li>
             <li><b>Grade 10 to 12</b><span>Aim for 80% in Mathematics: the University of Pretoria asks for at least 70%.</span></li>
             <li><b>Grade 12</b><span>Apply early: some universities close engineering applications as early as June.</span></li>
             <li><b>BEng degree, 4 years</b><span>Or a 5-year programme with a foundation year.</span></li>
             <li class="end"><b>Professional engineer</b><span>About 3 years of training at work, then registration with ECSA.</span></li>
           </ol>
-          <figcaption id="route-cap">Every career in Umzila is a route like this, built from the learner’s own grade, subjects and marks.</figcaption>
+          <figcaption class="trip-foot" id="trip-cap">In Umzila, every career is a route like this, built from the learner’s own grade, subjects and marks.</figcaption>
         </figure>
       </div>
 
       <ul class="features" aria-label="What Umzila does">
-        <li><b>Start from the goal</b><span>Type “doctor”, “dokotela” or “build bridges”. Not sure yet? Start from what you enjoy.</span></li>
-        <li><b>Subjects that keep doors open</b><span>Switch Mathematics for Maths Literacy and see exactly which careers close.</span></li>
-        <li><b>Marks with a meaning</b><span>Enter a term report to see your APS, your likely pass and the subject to work on first.</span></li>
-        <li><b>Requirements you can check</b><span>Each one shows its source and the year it applies to. Anything unconfirmed is marked.</span></li>
-        <li><b>Another way in</b><span>If plan A doesn’t work out, every career lists the other routes, plus bursaries and NSFAS.</span></li>
-        <li><b>A report for teachers</b><span>See which learners have chosen subjects that close the career they want, while there’s still time.</span></li>
+        <li data-reveal style="--d:0ms"><b>Start from the goal</b><span>Type “doctor”, “dokotela” or “build bridges”. Not sure yet? Start from what you enjoy.</span></li>
+        <li data-reveal style="--d:90ms"><b>Subjects that keep doors open</b><span>Switch Mathematics for Maths Literacy and see exactly which careers close.</span></li>
+        <li data-reveal style="--d:180ms"><b>Marks with a meaning</b><span>Enter a term report to see your APS, your likely pass and the subject to work on first.</span></li>
+        <li data-reveal style="--d:0ms"><b>Requirements you can check</b><span>Each one shows its source and the year it applies to. Anything unconfirmed is marked.</span></li>
+        <li data-reveal style="--d:90ms"><b>Another way in</b><span>Every career lists the other routes if plan A doesn’t work out, plus bursaries and NSFAS.</span></li>
+        <li data-reveal style="--d:180ms"><b>A report for teachers</b><span>See which learners have chosen subjects that close the career they want, while there’s still time to change.</span></li>
       </ul>
     </div>
   </section>
@@ -438,33 +637,34 @@ svg { display: block; }
   <!-- Clients -->
   <section class="section" id="clients" aria-labelledby="clients-title">
     <div class="wrap">
-      <div class="section-head">
+      <div class="clients-head" data-reveal>
+        <p class="kicker">Clients</p>
         <h2 id="clients-title">Companies we build for</h2>
         <p>We back South African companies with the software and technical work they need to grow.</p>
       </div>
       <div class="clients">
-        <article class="client" id="n3" aria-labelledby="n3-title">
+        <article class="client client-n3" id="n3" aria-labelledby="n3-title" data-reveal style="--d:0ms">
           <div class="c-head">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#0B1F33"/><rect x="10" y="20" width="22" height="24" fill="#EEF2F4"/><circle cx="43" cy="32" r="12" fill="#F26A21"/></svg>
+            <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#EEF2F4" fill-opacity=".08"/><rect x="10" y="20" width="22" height="24" fill="#EEF2F4"/><circle cx="43" cy="32" r="12" fill="#F26A21"/><circle class="ring" cx="43" cy="32" r="12" fill="none" stroke="#F26A21" stroke-width="2"/></svg>
             <div><h3 id="n3-title">N³ Innovations</h3><p class="sector">Mining technology</p></div>
           </div>
           <p>A South African mining company that starts with technology: AI and sensor intelligence for operating mines, then mine rehabilitation and, in time, mining.</p>
           <dl>
             <div><dt>What we do</dt><dd>We build N³’s software, starting with the Action Ledger. It gathers a plant’s maintenance warnings into one list, ranks them by rand at risk and tracks each one until the work is done.</dd></div>
-            <div><dt>Status</dt><dd><span class="status build">In development</span></dd></div>
+            <div><dt>Status</dt><dd><span class="status">In development</span></dd></div>
           </dl>
           <p class="disclose">Neo Magubane, who founded Magubane Labs, is also a co-founder of N³ Innovations.</p>
         </article>
 
-        <article class="client" id="nkanyezi" aria-labelledby="nk-title">
+        <article class="client client-nk" id="nkanyezi" aria-labelledby="nk-title" data-reveal style="--d:140ms">
           <div class="c-head">
-            <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="#11252C"/><g fill="#F3B23A"><circle cx="20" cy="7.5" r="2.3"/><circle cx="18.6" cy="25" r="3"/><circle cx="10.8" cy="16.5" r="2.6"/><circle cx="28" cy="14" r="2"/><circle cx="23.4" cy="19.6" r="1.2"/></g><path d="M7 32.5h26" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+            <svg class="twinkle" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="#fff" fill-opacity=".08"/><g fill="#F3B23A"><circle cx="20" cy="7.5" r="2.3"/><circle cx="18.6" cy="25" r="3"/><circle cx="10.8" cy="16.5" r="2.6"/><circle cx="28" cy="14" r="2"/><circle cx="23.4" cy="19.6" r="1.2"/></g><path d="M7 32.5h26" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
             <div><h3 id="nk-title">Nkanyezi Journeys</h3><p class="sector">Travel</p></div>
           </div>
-          <p>A Johannesburg travel agency for holiday packages, flights, group and stokvel trips, and visa help, run by a qualified travel agent.</p>
+          <p>A Johannesburg travel agency for holiday packages, flights, group and stokvel trips, and visa help, run by a qualified travel agent. Nkanyezi is isiZulu for “star”.</p>
           <dl>
             <div><dt>What we do</dt><dd>We designed and built their website, with quotes on WhatsApp and a monthly payment-plan calculator, and we are supporting their launch.</dd></div>
-            <div><dt>Status</dt><dd><span class="status build">Preparing to launch</span></dd></div>
+            <div><dt>Status</dt><dd><span class="status">Preparing to launch</span></dd></div>
           </dl>
         </article>
       </div>
@@ -472,16 +672,15 @@ svg { display: block; }
   </section>
 
   <!-- How we work -->
-  <section class="section how" id="how" aria-labelledby="how-title">
+  <section class="section how dark" id="how" aria-labelledby="how-title">
     <div class="wrap">
-      <div class="section-head">
-        <h2 id="how-title">How we work</h2>
-      </div>
+      <p class="kicker">How we work</p>
+      <h2 id="how-title" data-reveal>Four rules we don’t bend.</h2>
       <ul class="principles">
-        <li><h3>Start with a real problem</h3><p>We measure the problem before we build, and judge our work by whether it moved.</p></li>
-        <li><h3>Fewer things, done well</h3><p>One feature that works beats ten that half work.</p></li>
-        <li><h3>Built for South Africa</h3><p>Phones from 320 pixels wide, data that costs money, and POPIA from the first line of code.</p></li>
-        <li><h3>Nothing pretends</h3><p>If something isn’t built yet, we say so. No screen shows a feature that doesn’t work.</p></li>
+        <li data-reveal style="--d:0ms"><h3>Start with a real problem</h3><p>We measure the problem before we build, and judge our work by whether it moved.</p></li>
+        <li data-reveal style="--d:120ms"><h3>Fewer things, done well</h3><p>One feature that works beats ten that half work.</p></li>
+        <li data-reveal style="--d:0ms"><h3>Built for South Africa</h3><p>Phones from 320 pixels wide, data that costs money, and POPIA from the first line of code.</p></li>
+        <li data-reveal style="--d:120ms"><h3>Nothing pretends</h3><p>If something isn’t built yet, we say so. No screen shows a feature that doesn’t work.</p></li>
       </ul>
     </div>
   </section>
@@ -490,7 +689,7 @@ svg { display: block; }
   <section class="section contact" id="contact" aria-labelledby="contact-title">
     <div class="wrap contact-grid">
       <div>
-        <h2 id="contact-title">Build something with us.</h2>
+        <h2 id="contact-title" data-reveal>Be the next element.</h2>
         <p class="lead">Schools and sponsors: ask about the Bonisa and Umzila pilots. Companies: tell us the problem you want solved, and we’ll tell you honestly whether software is the answer.</p>
       </div>
       <div>
@@ -499,7 +698,7 @@ svg { display: block; }
           <div><dt>Neo Magubane, founder</dt><dd><a href="mailto:neo@magubanelabs.co.za">neo@magubanelabs.co.za</a></dd></div>
         </dl>
         <div class="copy-row">
-          <button class="btn btn-paper" id="copy-email" type="button">Copy hello@ address</button>
+          <button class="btn btn-ink" id="copy-email" type="button">Copy hello@ address</button>
           <span class="copy-state" id="copy-state" aria-live="polite"></span>
         </div>
       </div>
@@ -508,14 +707,12 @@ svg { display: block; }
 </main>
 
 <footer class="site-foot">
-  <div class="wrap">
-    <div class="foot-row">
-      <span>© 2026 Magubane Labs. South Africa.</span>
-      <span>Privacy questions: <a href="mailto:privacy@magubanelabs.co.za">privacy@magubanelabs.co.za</a></span>
-    </div>
+  <div class="wrap foot-row">
+    <span>© 2026 Magubane Labs. South Africa.</span>
+    <span>Privacy questions: <a href="mailto:privacy@magubanelabs.co.za">privacy@magubanelabs.co.za</a></span>
   </div>
 </footer>
 
-<script src="site.js" defer></script>
+<script src="site.js?v=3" defer></script>
 </body>
 </html>
