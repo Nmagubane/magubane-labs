@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Magubane Labs: software built in South Africa</title>
-<meta name="description" content="Magubane Labs is a South African software studio. We build our own products, starting with a maths and science platform for learners, and the software behind the companies we back.">
+<meta name="description" content="Magubane Labs is a South African software studio. We build our own products for South African learners, Bonisa for maths and science and Umzila for career routes and subject choices, and the software behind the companies we back.">
 <meta property="og:title" content="Magubane Labs">
 <meta property="og:description" content="A South African software studio. Our own products, and the software behind the companies we back.">
 <meta property="og:type" content="website">
@@ -90,7 +90,7 @@ svg { display: block; }
 .nav a:hover { color: var(--ink); text-decoration: underline; }
 @media (max-width: 860px) {
   .nav { gap: 16px; }
-  .nav a[href="#how"], .nav a[href="#clients"] { display: none; }
+  .nav a[href="#how"], .nav a[href="#clients"], .nav a[href="#umzila"] { display: none; }
 }
 @media (max-width: 560px) {
   .head-row { gap: 12px; }
@@ -192,6 +192,24 @@ svg { display: block; }
 @media (max-width: 900px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .features { grid-template-columns: minmax(0, 1fr); } }
 
+
+/* ---------- Umzila: its own signature, the route line ---------- */
+.product-2 { border-bottom: 1px solid var(--rule); }
+.route-fig { border: 1px solid var(--rule); border-radius: var(--sheet-r); background: var(--paper); padding: clamp(24px, 4vw, 40px); }
+.route-fig .q { font-size: var(--t-sm); color: var(--ink-3); font-weight: 700; }
+.stops { margin-top: 18px; position: relative; }
+.stops li { position: relative; padding: 0 0 18px 44px; }
+.stops li::before { content: ""; position: absolute; left: 12px; top: 0; bottom: 0; width: 6px; background: var(--ink); }
+.stops li:first-child::before { top: 12px; }
+.stops li:last-child::before { bottom: auto; height: 12px; }
+.stops li::after { content: ""; position: absolute; left: 7px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); }
+.stops li.here::after { left: 3px; top: 1px; width: 18px; height: 18px; background: var(--hl); border-width: 4px; }
+.stops li.end::after { left: 3px; top: 1px; width: 18px; height: 18px; background: var(--ink); box-shadow: inset 0 0 0 3px var(--paper); border-width: 4px; }
+.stops b { display: block; font-size: 1.0625rem; line-height: 1.3; }
+.stops span { display: block; color: var(--ink-2); font-size: 0.95rem; }
+.stops .tag { display: inline-block; margin-left: 6px; background: var(--hl); color: var(--ink); font-size: var(--t-sm); font-weight: 700; padding: 0 6px; border-radius: 4px; vertical-align: 2px; }
+.route-fig figcaption { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: var(--t-sm); color: var(--ink-2); }
+
 /* ---------- clients ---------- */
 .clients { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .client { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--sheet-r); padding: clamp(20px, 3vw, 32px); display: grid; gap: 18px; align-content: start; }
@@ -247,6 +265,7 @@ svg { display: block; }
     <a class="brand" href="#top" aria-label="Magubane Labs, back to top"><img src="favicon.svg" alt="" width="32" height="32"><span>Magubane Labs</span></a>
     <nav class="nav" aria-label="Main">
       <a href="#work">Our work</a>
+      <a href="#umzila">Umzila</a>
       <a href="#clients">Clients</a>
       <a href="#how">How we work</a>
       <a href="#contact">Contact</a>
@@ -263,7 +282,7 @@ svg { display: block; }
     <div class="wrap hero-grid">
       <div>
         <h1 id="hero-title">Software that does real work.</h1>
-        <p class="lead">Magubane Labs is a South African software studio. We build our own products, and the software behind the companies we back. Today that means a maths and science platform for learners, maintenance software for mines and a launch for a travel agency.</p>
+        <p class="lead">Magubane Labs is a South African software studio. We build our own products, and the software behind the companies we back. Today that means a maths and science platform for learners, a career and subject-choice planner for Grades 9 to 12, maintenance software for mines and a launch for a travel agency.</p>
         <div class="actions">
           <a class="btn btn-ink" href="#work">See our work</a>
           <a class="btn btn-line" href="#contact">Talk to us</a>
@@ -286,7 +305,7 @@ svg { display: block; }
     <div class="wrap">
       <div class="section-head">
         <h2 id="work-title">Our work</h2>
-        <p>One product of our own, and two companies we build for.</p>
+        <p>Two products of our own, and two companies we build for.</p>
       </div>
       <table class="index">
         <caption class="sr">Magubane Labs products and clients</caption>
@@ -299,6 +318,12 @@ svg { display: block; }
             <td>Maths and science learning for Grade 1 to Grade 12</td>
             <td class="who">Our product</td>
             <td class="st"><span class="status live">Pilot, by invitation</span></td>
+          </tr>
+          <tr>
+            <td><a href="#umzila">Umzila</a></td>
+            <td>Career routes and subject choices for Grades 9 to 12</td>
+            <td class="who">Our product</td>
+            <td class="st"><span class="status live">Open to explore; school pilot by invitation</span></td>
           </tr>
           <tr>
             <td><a href="#n3">N³ Innovations</a></td>
@@ -367,6 +392,49 @@ svg { display: block; }
     </div>
   </section>
 
+  <!-- Umzila -->
+  <section class="section product-2" id="umzila" aria-labelledby="umzila-title">
+    <div class="wrap">
+      <div class="product-grid">
+        <div>
+          <div class="p-name">
+            <h2 id="umzila-title">Umzila</h2>
+            <span class="by">by Magubane Labs</span>
+          </div>
+          <p class="p-meaning">Umzila means “path” in isiZulu.</p>
+          <p class="p-lead">Tell it what you want to become, and Umzila shows the route from your grade to that career: the subjects that keep it open, the marks to aim for, where to study, how to pay for it and what it takes to qualify.</p>
+          <p class="p-why">The most consequential choice comes at the end of Grade 9, when learners pick their subjects for Grades 10 to 12. Choose Mathematical Literacy, and most routes into engineering, the health sciences and accounting close. Umzila shows that before the choice is made, not in Grade 12. Every requirement links to the prospectus or government document it came from.</p>
+          <div class="p-status">
+            <span class="status live">Open to explore</span>
+            <a class="btn btn-ink" href="https://umzila.magubanelabs.co.za">Open Umzila</a>
+            <a class="btn btn-line" href="mailto:hello@magubanelabs.co.za?subject=Umzila%20school%20pilot">Ask about the school pilot</a>
+          </div>
+        </div>
+
+        <figure class="route-fig" aria-labelledby="route-cap">
+          <p class="q">I want to become a civil engineer</p>
+          <ol class="stops">
+            <li class="here"><b>Grade 9 <span class="tag">You are here</span></b><span>Choose Mathematics and Physical Sciences for Grade 10.</span></li>
+            <li><b>Grade 10 to 12</b><span>Aim for 80% in Mathematics: the University of Pretoria asks for at least 70%.</span></li>
+            <li><b>Grade 12</b><span>Apply early: some universities close engineering applications as early as June.</span></li>
+            <li><b>BEng degree, 4 years</b><span>Or a 5-year programme with a foundation year.</span></li>
+            <li class="end"><b>Professional engineer</b><span>About 3 years of training at work, then registration with ECSA.</span></li>
+          </ol>
+          <figcaption id="route-cap">Every career in Umzila is a route like this, built from the learner’s own grade, subjects and marks.</figcaption>
+        </figure>
+      </div>
+
+      <ul class="features" aria-label="What Umzila does">
+        <li><b>Start from the goal</b><span>Type “doctor”, “dokotela” or “build bridges”. Not sure yet? Start from what you enjoy.</span></li>
+        <li><b>Subjects that keep doors open</b><span>Switch Mathematics for Maths Literacy and see exactly which careers close.</span></li>
+        <li><b>Marks with a meaning</b><span>Enter a term report to see your APS, your likely pass and the subject to work on first.</span></li>
+        <li><b>Requirements you can check</b><span>Each one shows its source and the year it applies to. Anything unconfirmed is marked.</span></li>
+        <li><b>Another way in</b><span>If plan A doesn’t work out, every career lists the other routes, plus bursaries and NSFAS.</span></li>
+        <li><b>A report for teachers</b><span>See which learners have chosen subjects that close the career they want, while there’s still time.</span></li>
+      </ul>
+    </div>
+  </section>
+
   <!-- Clients -->
   <section class="section" id="clients" aria-labelledby="clients-title">
     <div class="wrap">
@@ -423,7 +491,7 @@ svg { display: block; }
     <div class="wrap contact-grid">
       <div>
         <h2 id="contact-title">Build something with us.</h2>
-        <p class="lead">Schools and sponsors: ask about the Bonisa pilot. Companies: tell us the problem you want solved, and we’ll tell you honestly whether software is the answer.</p>
+        <p class="lead">Schools and sponsors: ask about the Bonisa and Umzila pilots. Companies: tell us the problem you want solved, and we’ll tell you honestly whether software is the answer.</p>
       </div>
       <div>
         <dl class="addresses">
