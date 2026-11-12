@@ -174,7 +174,7 @@ export function Results({ id }: { id: string }) {
                 <div className="review-body">
                   {it.question.figure ? <Figure figure={it.question.figure} /> : null}
                   <p>
-                    Your answer: <strong>{it.skipped ? "I haven't learnt this" : it.response === null ? 'no answer' : responseText(it.response)}</strong>
+                    Your answer: <strong>{it.skipped ? "I haven't learnt this" : it.response === null ? 'no answer' : responseText(it.response, it.question.input)}</strong>
                     {it.confidence ? <span className="muted"> ({it.confidence === 'sure' ? 'sure' : it.confidence === 'unsure' ? 'not sure' : 'guessing'})</span> : null}
                   </p>
                   {!it.correct ? (

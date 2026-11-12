@@ -497,6 +497,8 @@ export const MISTAKES = {
   // ---- Equations with several solutions ----
   'missing-solutions': { label: 'Some solutions missing', kind: 'conceptual', tip: 'An equation can have more than one solution. A quadratic can have two; a trig equation can have one in each of several quadrants. Check every case before you stop.' },
   'extra-solutions': { label: 'A value that isn\'t a solution', kind: 'careless', tip: 'Substitute each answer back into the equation, and check it is inside the interval you were given.' },
+  // ---- Euclidean proofs ----
+  'proof-step': { label: 'A step in the proof', kind: 'conceptual', tip: 'Each statement must follow from the ones before it, and its reason must be the theorem that says exactly that. Read the statement first, then ask: which theorem is about this kind of thing?' },
   // ---- Functions and graphs (Grades 10–12) ----
   'graph-features': { label: 'Reading a graph from its equation', kind: 'conceptual', tip: 'In y = a(x + p)² + q, y = a/(x + p) + q and y = a·bˣ⁺ᵖ + q: q moves the graph up or down (and is the horizontal asymptote), p moves it left (p > 0) or right, and the sign of a flips it.' },
   'horizontal-shift': { label: 'Shifting left or right', kind: 'conceptual', tip: 'Replacing x with (x + p) moves the graph p units to the LEFT. So y = (x − 3)² has its turning point at x = 3, not −3.' },

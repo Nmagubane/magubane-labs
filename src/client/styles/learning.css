@@ -1713,3 +1713,27 @@
 .roots-add:disabled { color: var(--ink-3); cursor: default; }
 .roots-add:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; border-radius: 4px; }
 .key-remove { font-size: var(--t-lg); color: var(--ink-2); }
+
+/* Proofs: a statement–reason table, the way geometry is written and marked. Stacks on phones. */
+.proof-table { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); width: 100%; }
+.proof-head, .proof-row { display: grid; grid-template-columns: 2rem minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--s2); align-items: center; }
+.proof-head { font-size: var(--t-xs); font-weight: 700; color: var(--ink-2); }
+.proof-row { padding: var(--s2) 0; border-top: 1px solid var(--rule); }
+.proof-n { font-weight: 800; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.proof-text { font-size: var(--t-md, 1rem); }
+.proof-r .proof-text { color: var(--ink-2); font-style: italic; }
+.proof-select { width: 100%; min-width: 0; min-height: 44px; padding: var(--s1) var(--s2); font: inherit; border: 2px solid var(--pen); border-radius: 6px; background: var(--paper); color: var(--ink); }
+.proof-select.empty { border-style: dashed; color: var(--ink-3); }
+.proof-select:focus-visible { outline: 3px solid var(--pen-tint); outline-offset: 1px; }
+@media (max-width: 560px) {
+  .proof-head { display: none; }
+  .proof-row { grid-template-columns: 1.6rem minmax(0, 1fr); }
+  .proof-r { grid-column: 2; }
+}
+.proof-cell { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.proof-flag { flex: none; width: 1.5rem; height: 1.5rem; display: grid; place-items: center; border-radius: 50%; font-weight: 800; font-size: 0.85rem; color: var(--paper); }
+.proof-cell.is-right .proof-select { border-style: solid; border-color: var(--tick); }
+.proof-cell.is-right .proof-flag { background: var(--tick); }
+.proof-cell.is-wrong .proof-select { border-style: solid; border-color: var(--red); background: var(--red-tint); }
+.proof-cell.is-wrong .proof-flag { background: var(--red); }
+.proof-select:disabled { opacity: 1; color: var(--ink); }

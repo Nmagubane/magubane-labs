@@ -52,6 +52,8 @@ function wrongResponse(answer: AnswerSpec, misconceptions: { answer: AnswerSpec 
       return `${answer.expr}+1`;
     case 'equation':
       return `${answer.expr}+1`;
+    case 'proof':
+      return answer.ids.map((id, i) => (i === 0 ? `${id}x` : id));
     case 'point':
       return [String(answer.x.n / answer.x.d + 1), String(answer.y.n / answer.y.d)];
     case 'roots':

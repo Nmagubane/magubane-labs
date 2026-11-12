@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (84 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (86 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -251,7 +251,7 @@ The first Paper 2 topic: five skills in a new `euclidean` topic, following the C
 
 **Labs come before theorems.** `GeometryLabs.tsx`: a quadrilateral explorer (live property checklist as the shape changes), a midpoint lab, a circle lab (angle at the centre, same segment and diameter; cyclic quad and tangent–chord) and a parallel-line lab. Each lesson asks for a prediction, lets the learner find the pattern in the lab, then states the theorem.
 
-**Not built yet.** Writing a full multi-step proof in statement–reason form, and proving the theorems themselves. Both need a step-by-step proof input; current questions assess one step or one calculation at a time.
+**Proofs** are in §15.
 
 ## 11. Analytical geometry (Paper 2)
 
@@ -333,4 +333,23 @@ Four skills in the `functions` topic, after the existing `gradient` and `straigh
 **Checked against the function itself.** `graphs.test.ts` turns each question's equation into a function and checks the answer against it: intercepts make $y = 0$, turning points are where the graph is symmetric, asymptotes are where it is undefined or levels off, equations pass through every plotted point, average gradients, axes of symmetry through the asymptotes' crossing, maxima found by sampling, periods that repeat (and are the smallest that do), inverses that undo $f$, and log values.
 
 **A known limit.** Hyperbola equations can't yet be typed as answers (the equation checker handles polynomials, and $\dfrac{a}{x}$ isn't one), so hyperbola sketches ask for $a$ instead.
+
+## 15. Euclidean proofs (Paper 2)
+
+Two skills in the `euclidean` topic (`math-proofs.ts`, lessons in `lessons-geometry.ts`):
+
+| Skill | Grade | Levels 1–3 (riders) | Level 4 (harder riders) | Level 5 (theorem proofs) |
+|---|---|---|---|---|
+| `circle-proofs` | 11 | ∠OAB = 90° − x from the centre angle; ∠ACB = 90° − ½y from two tangents; AB = AC from a tangent parallel to a chord | PAOB is cyclic; a parallel from the centre bisects a chord | Perpendicular from the centre; angle at the centre; opposite angles of a cyclic quad; tan chord |
+| `similarity-proofs` | 12 | △ADE ∣∣∣ △ABC and the ratio; AB² = BD·BC; DE ∥ BC from given lengths (the converse) | Intersecting chords; tangent and secant | Proportionality (area proof); equiangular triangles; Pythagoras |
+
+**Complete the proof.** A new input, `proof`: a statement–reason table in which some cells are blanks, each a native select with four options. Level 1 blanks reasons, level 2 statements, levels 3–5 both, never a statement and its own reason together (each is the clue to the other), and never the final statement (it is in the prompt). The answer is the list of option ids; marking names the steps that are wrong without saying what goes there ("2 of 3 blanks are right. Look again at the reason in step 1"), and after marking each blank shows ✓ or ✗. Option ids are shuffled per question, so the id says nothing about the answer. On phones the table stacks: statement, then reason.
+
+**Why choose rather than write.** Marking free-text proofs reliably needs either a teacher or model-based marking, and a wrong mark on a proof teaches the wrong thing. Choosing from close alternatives still tests the two things exam markers look for (does this statement follow; is this the theorem that says so), and the distractors are the classic errors: the theorem instead of its converse, the theorem being proved used as its own reason, alternate for corresponding angles, triangles named in the wrong order, ratios upside down.
+
+**Different letters, same rider.** Each rider is relabelled with a random run of letters (O stays the centre; I and O are never used). Only whole capital-letter names made entirely of the rider's points are renamed, so RHS, SAS and TeX are untouched.
+
+**Every statement is measured.** `proofs.test.ts` (300 seeds × 5 levels × 2 skills; it also passed at 1 500 seeds) reads each statement as a claim about the diagram: angles, lengths, areas, ratios, parallel lines, cyclic quads, similar and congruent triangles, with x and y read from the marked angles. Every given statement and every right option must be true in the drawing; every wrong option must be false by more than 1%. Building it found five drawings where a wrong option happened to be true (for example an equilateral triangle, or chords crossing at right angles), now kept out by the generators' ranges. It also checks that every right reason is from `PROOF_REASONS`, that marking names the wrong step, and that an empty blank is refused rather than marked.
+
+**Not built.** Grade 10 proofs (quadrilateral properties, midpoint theorem), the converse "line from the centre to the midpoint of a chord is ⊥", and writing a proof from a blank page.
 

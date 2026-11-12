@@ -4,7 +4,7 @@
  * and a live "reads as" preview so learners see exactly how their algebra was understood.
  */
 import { useId, useMemo, useRef, type KeyboardEvent } from 'react';
-import type { InputSpec } from '../../../shared/questions/types.ts';
+import type { ProofCell, InputSpec } from '../../../shared/questions/types.ts';
 import type { ResponseValue } from '../../../shared/questions/answer.ts';
 import { parseExpression, toTex, ParseError, splitEquation } from '../../../shared/questions/expr.ts';
 import { Rich, Tex } from '../../ui/RichText.tsx';
@@ -19,6 +19,8 @@ interface Props {
   autoFocus?: boolean;
   /** Labels the input for screen readers (the question prompt id). */
   describedBy?: string;
+  /** After marking (proofs): the blanks that were wrong, as "row:part". Absent before marking. */
+  marks?: string[];
 }
 
 function toggleSign(v: string): string {
@@ -45,6 +47,8 @@ export function AnswerInput(props: Props) {
       return <ExpressionInput {...props} input={props.input} />;
     case 'point':
       return <PointInput {...props} input={props.input} />;
+    case 'proof':
+      return <ProofInput {...props} input={props.input} />;
     case 'roots':
       return <RootsInput {...props} input={props.input} />;
     case 'coefficients':
@@ -288,6 +292,52 @@ function PointInput({ input, value, onChange, onSubmit, disabled, autoFocus }: P
         <Tex tex=")" />
       </span>
     </div>
+  );
+}
+
+function ProofInput({ input, value, onChange, disabled, marks }: Props & { input: Extract<InputSpec, { kind: 'proof' }> }) {
+  const blanks = input.rows.reduce((n, r) => n + ('blank' in r.s ? 1 : 0) + ('blank' in r.r ? 1 : 0), 0);
+  const vals = Array.isArray(value) && value.length === blanks ? value : Array.from({ length: blanks }, () => '');
+  const set = (i: number, v: string) => onChange(vals.map((x, j) => (j === i ? v : x)));
+  const cell = (c: ProofCell, row: number, part: string) => {
+    if (!('blank' in c)) return <span className="proof-text">{c.text}</span>;
+    const wrong = marks?.includes(`${row}:${part}`);
+    const state = marks ? (wrong ? ' is-wrong' : ' is-right') : '';
+    return (
+      <span className={`proof-cell${state}`}>
+        <select className={`proof-select${vals[c.blank] ? '' : ' empty'}`} aria-label={`Step ${row + 1}, ${part}${marks ? (wrong ? ' (wrong)' : ' (right)') : ''}`} value={vals[c.blank]} disabled={disabled} onChange={(e) => set(c.blank, e.target.value)}>
+          <option value="">Choose the {part}…</option>
+          {c.options.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.text}
+            </option>
+          ))}
+        </select>
+        {marks ? (
+          <span className="proof-flag" aria-hidden>
+            {wrong ? '✗' : '✓'}
+          </span>
+        ) : null}
+      </span>
+    );
+  };
+  return (
+    <ol className="proof-table" aria-label="Proof: statements and reasons">
+      <li className="proof-head" aria-hidden>
+        <span />
+        <span>Statement</span>
+        <span>Reason</span>
+      </li>
+      {input.rows.map((r, i) => (
+        <li key={i} className="proof-row">
+          <span className="proof-n" aria-hidden>
+            {i + 1}
+          </span>
+          <span className="proof-s">{cell(r.s, i, 'statement')}</span>
+          <span className="proof-r">{cell(r.r, i, 'reason')}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
 

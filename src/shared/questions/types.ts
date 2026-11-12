@@ -17,6 +17,8 @@ export type InputSpec =
   | { kind: 'expression'; prefix?: string; variables: string[] }
   /** An equation the learner types with one = sign; any equivalent rearrangement is accepted. */
   | { kind: 'equation'; variables: string[]; placeholder?: string }
+  /** Complete a proof: a statement–reason table where some cells are blanks to fill from a list. Plain-text options (∠, ∥, △). */
+  | { kind: 'proof'; rows: { s: ProofCell; r: ProofCell }[] }
   /** A coordinate pair, typed as name(x; y). */
   | { kind: 'point'; name: string }
   /** Solutions of an equation. The learner adds as many boxes as they need: how many solutions there are is part of the question. */
@@ -40,6 +42,9 @@ export type InputSpec =
   | { kind: 'clock'; step: 60 | 30 | 15 | 5 }
   /** Build a word from letter tiles. Graded as text. */
   | { kind: 'spell'; tiles: string[]; length: number };
+
+/** One cell of a proof table: given text, or a blank with options (ids are unique within the question). */
+export type ProofCell = { text: string } | { blank: number; options: { id: string; text: string }[] };
 
 /** A tappable thing in a Junior activity: a word, a picture, or both. */
 export interface Tile {
@@ -65,6 +70,8 @@ export type AnswerSpec =
   | { kind: 'expression'; expr: string; form?: 'expanded' | 'factorised' }
   | { kind: 'equation'; expr: string }
   | { kind: 'point'; x: { n: number; d: number }; y: { n: number; d: number } }
+  /** The right option for each blank, in blank order, and where each blank sits (for feedback). */
+  | { kind: 'proof'; ids: string[]; at: { row: number; part: 'statement' | 'reason' }[] }
   | { kind: 'roots'; values: { n: number; d: number }[] }
   | { kind: 'coefficients'; values: number[] }
   | { kind: 'choice'; id: string }

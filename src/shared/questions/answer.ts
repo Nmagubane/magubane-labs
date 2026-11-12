@@ -63,6 +63,7 @@ type Parsed =
   | { kind: 'expression'; text: string }
   | { kind: 'equation'; text: string }
   | { kind: 'point'; x: Rational; y: Rational }
+  | { kind: 'proof'; ids: string[] }
   | { kind: 'roots'; values: Rational[] }
   | { kind: 'coefficients'; values: number[] }
   | { kind: 'choice'; id: string }
@@ -123,6 +124,10 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue)
       const [px, py] = parts.map((x) => parseNumber(x));
       if (!px?.exact || !py?.exact) return { error: 'Enter each coordinate as a number, like -3, 2,5 or 7/2.' };
       return { kind, x: px.exact, y: py.exact };
+    }
+    case 'proof': {
+      const ids = Array.isArray(response) ? response.map((r) => r.trim()) : response.split(',').map((r) => r.trim());
+      return ids.some((id) => !id) ? { error: 'Fill in every blank in the proof.' } : { kind, ids };
     }
     case 'roots': {
       const parts = (Array.isArray(response) ? response : response.split(/;|\bor\b|\band\b|,\s+/))
@@ -221,6 +226,8 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
       return parsed.kind === 'equation' && equationsEquivalent(parsed.text, spec.expr);
     case 'point':
       return parsed.kind === 'point' && req(parsed.x, rat(spec.x.n, spec.x.d)) && req(parsed.y, rat(spec.y.n, spec.y.d));
+    case 'proof':
+      return parsed.kind === 'proof' && parsed.ids.length === spec.ids.length && spec.ids.every((id, i) => parsed.ids[i] === id);
     case 'roots':
       return parsed.kind === 'roots' && sameMultiset(parsed.values, spec.values);
     case 'coefficients':
@@ -282,6 +289,14 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
     return { correct: false, wrongIds: answer.ids.filter((id, i) => parsed.ids[i] !== id) };
   }
 
+  if (answer.kind === 'proof' && parsed.kind === 'proof') {
+    // Say which cells to look at again, without saying what goes there.
+    const wrong = answer.ids.map((id, i) => (parsed.ids[i] === id ? null : answer.at[i]!)).filter((x): x is { row: number; part: 'statement' | 'reason' } => x !== null);
+    const list = wrong.map((w) => `the ${w.part} in step ${w.row + 1}`);
+    const text = list.length === 1 ? list[0]! : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`;
+    return { correct: false, mistake: 'proof-step', feedback: `${answer.ids.length - wrong.length} of ${answer.ids.length} blanks are right. Look again at ${text}.`, wrongIds: wrong.map((w) => `${w.row}:${w.part}`) };
+  }
+
   if (answer.kind === 'roots' && parsed.kind === 'roots') {
     // Right values, wrong count: say which, without giving away the missing ones.
     const want = answer.values.map((v) => rat(v.n, v.d));
@@ -313,6 +328,8 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
       return a.expr;
     case 'equation':
       return a.expr;
+    case 'proof':
+      return a.ids.slice();
     case 'point':
       return [a.x.d === 1 ? String(a.x.n) : `${a.x.n}/${a.x.d}`, a.y.d === 1 ? String(a.y.n) : `${a.y.n}/${a.y.d}`];
     case 'roots':
@@ -335,5 +352,10 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
 export function responseText(response: ResponseValue, input?: InputSpec): string {
   // A point is written (x; y): with decimal commas, "3,5, -4" would be ambiguous.
   if (input?.kind === 'point' && Array.isArray(response)) return `${input.name}(${response.map((r) => r.trim()).join('; ')})`;
+  // A proof answer is option ids: show the words the learner chose, in blank order.
+  if (input?.kind === 'proof' && Array.isArray(response)) {
+    const words = new Map(input.rows.flatMap((r) => [r.s, r.r]).flatMap((c) => ('blank' in c ? c.options : [])).map((o) => [o.id, o.text]));
+    return response.map((id) => words.get(id) ?? '(blank)').join(' · ');
+  }
   return Array.isArray(response) ? response.map((r) => r.trim() || '1').join(', ') : response;
 }

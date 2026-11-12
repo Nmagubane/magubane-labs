@@ -105,6 +105,8 @@ function correctResponse(answer: any): string | string[] {
       return answer.values.map(String);
     case 'choice':
       return answer.id;
+    case 'proof':
+      return answer.ids;
   }
   throw new Error('unknown');
 }

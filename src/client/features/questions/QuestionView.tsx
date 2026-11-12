@@ -19,6 +19,7 @@ export function QuestionView({
   autoFocus,
   number,
   showLevel = true,
+  marks,
 }: {
   question: QuestionPayload;
   value: ResponseValue | null;
@@ -28,6 +29,8 @@ export function QuestionView({
   autoFocus?: boolean;
   number?: ReactNode;
   showLevel?: boolean;
+  /** Proofs: wrong blanks after marking. */
+  marks?: string[];
 }) {
   const promptId = useId();
   return (
@@ -50,7 +53,7 @@ export function QuestionView({
       </div>
       {question.figure ? <Figure figure={question.figure} /> : null}
       <div className="question-answer">
-        <AnswerInput input={question.input} value={value} onChange={onChange} onSubmit={onSubmit} disabled={disabled} autoFocus={autoFocus} describedBy={promptId} />
+        <AnswerInput input={question.input} value={value} onChange={onChange} onSubmit={onSubmit} disabled={disabled} autoFocus={autoFocus} describedBy={promptId} marks={marks} />
       </div>
     </div>
   );
@@ -66,7 +69,7 @@ export function FeedbackPanel({ feedback, response, input, children, solutionOpe
         </span>
         <div>
           <h3>{feedback.correct ? 'Correct.' : feedback.skipped ? 'Skipped.' : feedback.mistake ? feedback.mistake.label : 'Not quite.'}</h3>
-          {!feedback.correct && response ? (
+          {!feedback.correct && response && input?.kind !== 'proof' ? (
             <p className="feedback-your">
               You answered <strong>{responseText(response, input)}</strong>.
             </p>

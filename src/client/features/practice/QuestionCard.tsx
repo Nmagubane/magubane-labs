@@ -12,6 +12,7 @@ import type { PracticeItem, AnswerResponse, ResponseValue, TutorConversationDeta
 export function defaultValue(item: PracticeItem): ResponseValue | null {
   if (item.question.input.kind === 'coefficients') return item.question.input.species.map(() => '');
   if (item.question.input.kind === 'roots') return [''];
+  if (item.question.input.kind === 'proof') return item.question.input.rows.flatMap((r) => [r.s, r.r]).filter((c) => 'blank' in c).map(() => '');
   return null;
 }
 
@@ -92,7 +93,7 @@ export function QuestionCard({
 
   return (
     <div className="qcard graph-paper">
-      <QuestionView question={item.question} value={value} onChange={setValue} onSubmit={() => void check()} disabled={!!feedback} autoFocus={autoFocus} number={number} />
+      <QuestionView question={item.question} value={value} onChange={setValue} onSubmit={() => void check()} disabled={!!feedback} autoFocus={autoFocus} number={number} marks={feedback ? (feedback.correct ? [] : feedback.wrongIds) : undefined} />
       {hints.length ? (
         <ol className="hints" aria-label="Hints">
           {hints.map((h, i) => (
