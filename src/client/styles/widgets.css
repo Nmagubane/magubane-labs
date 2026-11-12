@@ -1328,3 +1328,4 @@
 .stats-box { fill: var(--pen-tint); stroke: var(--ink); stroke-width: 2; }
 .stats-band { fill: var(--hl); fill-opacity: 0.35; }
 .stats-mean { stroke: var(--pen); stroke-width: 2.5; stroke-dasharray: 4 3; }
+.plot-curve { fill: none; stroke-linejoin: round; }

@@ -92,8 +92,12 @@ export type Figure =
       segments?: { x1: number; y1: number; x2: number; y2: number; dashed?: boolean }[];
       /** Circles force equal scales on both axes, so they stay round. */
       circles?: { cx: number; cy: number; r: number }[];
+      /** Curves sampled by the generator (parabolas, hyperbolas, exponentials, trig). One entry per unbroken branch. */
+      curves?: { pts: [number, number][]; label?: string }[];
       /** A number line only (box-and-whisker plots): no y-axis. */
       hideY?: boolean;
+      /** Fixed x tick step (90 for trig graphs in degrees). */
+      xStep?: number;
       /** Axis titles, e.g. "Mark (%)" and "Cumulative frequency". */
       xTitle?: string;
       yTitle?: string;

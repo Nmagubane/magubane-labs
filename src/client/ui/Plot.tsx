@@ -45,9 +45,9 @@ function ticks(a: number, b: number): number[] {
   return out;
 }
 
-export function Plot({ xRange, yRange, width = 360, height = 300, children, label, svgProps, hideY = false }: { xRange: [number, number]; yRange: [number, number]; width?: number; height?: number; children?: (s: Scale) => ReactNode; label: string; svgProps?: SVGProps<SVGSVGElement>; /** A number line: no y grid, axis or labels (box-and-whisker plots, dot plots). */ hideY?: boolean }) {
+export function Plot({ xRange, yRange, width = 360, height = 300, children, label, svgProps, hideY = false, xStep }: { xRange: [number, number]; yRange: [number, number]; width?: number; height?: number; children?: (s: Scale) => ReactNode; label: string; svgProps?: SVGProps<SVGSVGElement>; /** A number line: no y grid, axis or labels (box-and-whisker plots, dot plots). */ hideY?: boolean; /** Fixed x tick step, e.g. 90 for trig graphs in degrees. */ xStep?: number }) {
   const s = makeScale(xRange, yRange, width, height);
-  const xs = ticks(xRange[0], xRange[1]);
+  const xs = xStep ? Array.from({ length: Math.floor(xRange[1] / xStep) - Math.ceil(xRange[0] / xStep) + 1 }, (_, i) => (Math.ceil(xRange[0] / xStep) + i) * xStep) : ticks(xRange[0], xRange[1]);
   const ys = hideY ? [] : ticks(yRange[0], yRange[1]);
   return (
     <svg className="plot" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} {...svgProps}>

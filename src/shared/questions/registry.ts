@@ -20,6 +20,7 @@ import { coordinateGeometry, lineEquations, circleEquations } from './generators
 import { trigSpecial, trigReduction, trigEquations, triangleRules, compoundAngles } from './generators/math-trig.ts';
 import { trig2d3d } from './generators/math-trig-3d.ts';
 import { statsSummary, statsSpread, statsRegression } from './generators/math-stats.ts';
+import { graphsBasic, graphsShifted, trigGraphs, inverseLog } from './generators/math-graphs.ts';
 import { JUNIOR_TEMPLATES } from '../junior/templates.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
@@ -103,6 +104,10 @@ export const TEMPLATES: QuestionTemplate[] = [
   statsSummary,
   statsSpread,
   statsRegression,
+  graphsBasic,
+  graphsShifted,
+  trigGraphs,
+  inverseLog,
   ...JUNIOR_TEMPLATES,
 ];
 

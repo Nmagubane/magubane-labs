@@ -497,6 +497,13 @@ export const MISTAKES = {
   // ---- Equations with several solutions ----
   'missing-solutions': { label: 'Some solutions missing', kind: 'conceptual', tip: 'An equation can have more than one solution. A quadratic can have two; a trig equation can have one in each of several quadrants. Check every case before you stop.' },
   'extra-solutions': { label: 'A value that isn\'t a solution', kind: 'careless', tip: 'Substitute each answer back into the equation, and check it is inside the interval you were given.' },
+  // ---- Functions and graphs (Grades 10–12) ----
+  'graph-features': { label: 'Reading a graph from its equation', kind: 'conceptual', tip: 'In y = a(x + p)² + q, y = a/(x + p) + q and y = a·bˣ⁺ᵖ + q: q moves the graph up or down (and is the horizontal asymptote), p moves it left (p > 0) or right, and the sign of a flips it.' },
+  'horizontal-shift': { label: 'Shifting left or right', kind: 'conceptual', tip: 'Replacing x with (x + p) moves the graph p units to the LEFT. So y = (x − 3)² has its turning point at x = 3, not −3.' },
+  'average-gradient': { label: 'Average gradient', kind: 'procedural', tip: 'Average gradient between two points on a curve = (change in y) ÷ (change in x) = (f(b) − f(a)) ÷ (b − a).' },
+  'trig-graph': { label: 'Trig graphs', kind: 'conceptual', tip: 'In y = a sin kx + q: |a| is the amplitude, q moves the graph up or down, and the period is 360° ÷ k (180° ÷ k for tan). sin(x + p) moves the graph p to the LEFT.' },
+  'inverse-function': { label: 'Inverse functions', kind: 'procedural', tip: 'To find the inverse, swap x and y, then make y the subject. The inverse of y = bˣ is y = log_b x.' },
+  'log-laws': { label: 'Log laws', kind: 'procedural', tip: 'log a + log b = log ab; log a − log b = log(a ÷ b); n log a = log aⁿ. log_b b = 1 and log_b 1 = 0.' },
   // ---- Statistics (Grades 10–12) ----
   'mean-median': { label: 'Mean, median or mode', kind: 'conceptual', tip: 'Mean: add everything and divide by how many there are. Median: the middle value once the data is in order. Mode: the value that appears most often.' },
   'data-order': { label: 'Order the data first', kind: 'procedural', tip: 'The median and quartiles come from the data in order, from smallest to largest. Sort first, then count to the middle.' },

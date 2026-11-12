@@ -14,6 +14,7 @@ function GraphFigure({ f }: { f: Extract<FigureSpec, { kind: 'graph' }> }) {
     ...(f.lines ?? []).map(() => 'a straight line'),
     ...(f.segments ?? []).map((g) => `a line segment from (${g.x1}, ${g.y1}) to (${g.x2}, ${g.y2})`),
     ...(f.circles ?? []).map((c) => `a circle with centre (${c.cx}, ${c.cy})`),
+    ...(f.curves ?? []).filter((c) => c.label).map((c) => `the curve ${c.label}`),
   ].join(', ');
   // Circles must stay round: give both axes the same span and draw on a square.
   const round = (f.circles ?? []).length > 0;
@@ -32,12 +33,25 @@ function GraphFigure({ f }: { f: Extract<FigureSpec, { kind: 'graph' }> }) {
   return (
     <figure className="q-figure">
       {f.yTitle ? <p className="plot-title-y">{f.yTitle}</p> : null}
-      <Plot xRange={xRange} yRange={yRange} width={W} height={f.hideY ? 140 : H} hideY={f.hideY} label={`${f.xTitle ? `${f.xTitle}${f.yTitle ? ` against ${f.yTitle}` : ''}. ` : ''}Graph showing ${desc}`}>
+      <Plot xRange={xRange} yRange={yRange} width={W} height={f.hideY ? 140 : H} hideY={f.hideY} xStep={f.xStep} label={`${f.xTitle ? `${f.xTitle}${f.yTitle ? ` against ${f.yTitle}` : ''}. ` : ''}Graph showing ${desc}`}>
         {(s) => (
           <>
             {(f.circles ?? []).map((c, i) => (
               <ellipse key={`c${i}`} cx={s.x(c.cx)} cy={s.y(c.cy)} rx={Math.abs(s.x(c.cx + c.r) - s.x(c.cx))} ry={Math.abs(s.y(c.cy + c.r) - s.y(c.cy))} className="plot-circle" />
             ))}
+            {(f.curves ?? []).map((c, i) => (
+              <polyline key={`cv${i}`} points={c.pts.map(([x, y]) => `${s.x(x)},${s.y(y)}`).join(' ')} className="plot-line plot-curve" />
+            ))}
+            {(f.curves ?? [])
+              .filter((c) => c.label && c.pts.length > 0)
+              .map((c, i) => {
+                const [x, y] = c.pts[c.pts.length - 1]!;
+                return (
+                  <text key={`cl${i}`} x={s.x(x) - 4} y={s.y(y) - 8} textAnchor="end" className="plot-point-label">
+                    {c.label}
+                  </text>
+                );
+              })}
             {(f.lines ?? []).map((l, i) => {
               const [x1, y1, x2, y2] = lineSegment(l.m, l.c, s);
               return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} className="plot-line" />;

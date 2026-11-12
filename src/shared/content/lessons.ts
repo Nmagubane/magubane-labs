@@ -9,8 +9,9 @@ import { GEOMETRY_LESSONS } from './lessons-geometry.ts';
 import { ANALYTIC_LESSONS } from './lessons-analytic.ts';
 import { TRIG_LESSONS } from './lessons-trig.ts';
 import { STATS_LESSONS } from './lessons-stats.ts';
+import { GRAPH_LESSONS } from './lessons-graphs.ts';
 
-export const LESSONS: Lesson[] = [...MATHS_LESSONS, ...MATHS_LESSONS_2, ...GEOMETRY_LESSONS, ...ANALYTIC_LESSONS, ...TRIG_LESSONS, ...STATS_LESSONS, ...NST_LESSONS, ...NS_LESSONS, ...SCIENCE_LESSONS, ...SCIENCE_LESSONS_2];
+export const LESSONS: Lesson[] = [...MATHS_LESSONS, ...MATHS_LESSONS_2, ...GEOMETRY_LESSONS, ...ANALYTIC_LESSONS, ...TRIG_LESSONS, ...STATS_LESSONS, ...GRAPH_LESSONS, ...NST_LESSONS, ...NS_LESSONS, ...SCIENCE_LESSONS, ...SCIENCE_LESSONS_2];
 
 const byId = new Map(LESSONS.map((l) => [l.id, l]));
 export const getLesson = (id: string): Lesson | undefined => byId.get(id);

@@ -12,6 +12,7 @@ import { QuadLab, MidpointLab, CircleLab, ProportionLab } from './GeometryLabs.t
 import { CoordLab } from './AnalyticLabs.tsx';
 import { TrigLab } from './TrigLabs.tsx';
 import { StatsLab } from './StatsLabs.tsx';
+import { FunctionLab } from './FunctionLabs.tsx';
 import { ExponentLadder, DiscriminantLab, SequencePlotter, TriangleTrig, SavingsGrowth, TangentLab } from './MathLabs3.tsx';
 
 export function Widget({ spec }: { spec: WidgetSpec }) {
@@ -120,6 +121,8 @@ export function Widget({ spec }: { spec: WidgetSpec }) {
       return <TrigLab mode={spec.mode} />;
     case 'stats-lab':
       return <StatsLab mode={spec.mode} />;
+    case 'function-lab':
+      return <FunctionLab mode={spec.mode} />;
     case 'place-value-chart':
       return <PlaceValueChart start={spec.start} />;
     case 'array-model':

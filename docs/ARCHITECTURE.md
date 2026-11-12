@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (80 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (84 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -291,7 +291,7 @@ Six new skills in the `trigonometry` topic, after the existing Grade 10 `trig-ra
 
 **Equations don't reveal how many solutions they have.** The `roots` input starts with one box; the learner adds more ("+ Add another solution") or removes them. Grading tells a learner who found some but not all solutions `missing-solutions`, and one who added a wrong value `extra-solutions`, without giving the missing ones away. Answers may be typed as `x = 30°`.
 
-**Not built yet.** Trig graphs (counted under Functions).
+Trig graphs are in §14.
 
 ## 13. Statistics (Paper 2)
 
@@ -312,4 +312,25 @@ Three skills in the `statistics` topic (`math-stats.ts`, `lessons-stats.ts`, `St
 **Labs:** a dot plot you drag (mean, median, σ band and box plot update together: drag one value out and watch the mean move while the median stays), and a scatter plot you drag (regression line and $r$).
 
 **Figures.** The `graph` figure gained `hideY` (a number line for box plots) and axis titles. Axis ticks now pick a "nice" step (1, 2, 5, 10, 20, 25, 50…) for about eight labels, so graphs with large values (rand, marks out of 100) stay readable.
+
+## 14. Functions and graphs (Paper 1)
+
+Four skills in the `functions` topic, after the existing `gradient` and `straight-line` (`math-graphs.ts`, `lessons-graphs.ts`, `FunctionLabs.tsx`):
+
+| Skill | Grade | What it covers |
+|---|---|---|
+| `graphs-basic` | 10 | Parabola, hyperbola and exponential: intercepts, asymptotes, range, equation from a sketch, where a parabola meets a line |
+| `graphs-shifted` | 11 | Effect of p: turning points, asymptotes, $x = -\dfrac{b}{2a}$, equations from a turning point, average gradient, axes of symmetry of a hyperbola |
+| `trig-graphs` | 11 | Amplitude, maximum and minimum, period, equations from a graph (a, q in Grade 10; k, p in Grade 11), intersections |
+| `inverse-log` | 12 | Inverse of a linear function, $f^{-1}$ of $ax^2$, logs, log laws, exponential equations |
+
+`trig-graphs` sits at Grade 11 because its upper levels use k and p; Grade 10 learners see it in their band, with Grade 10 content (a and q) in its first levels.
+
+**One idea throughout.** The lessons and the lab teach a, p and q as doing the same job on every graph: q up or down (and the asymptote with it), p left for $+p$, the sign of a flips. The lab switches between parabola, hyperbola and exponential with the same three sliders, and has a trig mode with k.
+
+**Curves.** The `graph` figure gained `curves`: polylines sampled by the generator (`sample()` splits a curve into branches where it leaves the box or is undefined, so hyperbolas and tan graphs are drawn correctly), plus `xStep` for fixed ticks (90° on trig graphs). The lab uses the same `sample()`.
+
+**Checked against the function itself.** `graphs.test.ts` turns each question's equation into a function and checks the answer against it: intercepts make $y = 0$, turning points are where the graph is symmetric, asymptotes are where it is undefined or levels off, equations pass through every plotted point, average gradients, axes of symmetry through the asymptotes' crossing, maxima found by sampling, periods that repeat (and are the smallest that do), inverses that undo $f$, and log values.
+
+**A known limit.** Hyperbola equations can't yet be typed as answers (the equation checker handles polynomials, and $\dfrac{a}{x}$ isn't one), so hyperbola sketches ask for $a$ instead.
 

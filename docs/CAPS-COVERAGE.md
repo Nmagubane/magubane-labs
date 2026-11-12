@@ -71,7 +71,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Exponents and surds | ✓ laws of exponents | ✗ surds, surd equations | |
 | Number patterns, sequences and series | ✗ linear patterns | ✗ quadratic patterns | ✓ arithmetic and geometric sequences and series |
 | Equations and inequalities | ◐ quadratics by factorising (✗ simultaneous, literal, inequalities) | ◐ quadratic formula (✗ completing the square, quadratic inequalities, nature of roots, linear–quadratic systems) | |
-| Functions | ◐ straight lines (✗ parabola, hyperbola, exponential) | ✗ parameters, average gradient, trig graphs | ✗ inverses, logarithms ✗ polynomials (factor and remainder theorems) |
+| Functions | ✓ straight lines, parabola, hyperbola, exponential (effect of a and q), trig graphs with a and q | ✓ effect of p (turning points, asymptotes, axes of symmetry), equations from graphs, average gradient, trig graphs with k and p | ◐ inverses, logarithms and log laws, exponential equations (✗ cubic functions and the factor and remainder theorems, built with calculus) |
 | Finance, growth and decay | ✓ simple and compound interest | ✗ depreciation, nominal and effective rates | ✗ annuities, loans |
 | Trigonometry | ✓ ratios in right triangles and on the Cartesian plane, special angles, simple equations | ✓ identities, reduction formulas, general solution, sine, cosine and area rules, 2D problems (in the Grade 12 2D/3D skill, which Grade 11 learners see in their band) | ✓ compound and double angles, 2D and 3D problems |
 | Euclidean geometry | ◐ quadrilaterals, midpoint theorem and converse | ◐ all seven circle theorems and converses | ◐ proportionality, similarity, Pythagoras by similar triangles |
@@ -108,9 +108,10 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 ### Build order
 
 1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~ (built, proofs still to come), ~~analytical geometry~~ (built), ~~trigonometry~~ (built), ~~statistics~~ (built). Half the Grade 12 maths mark; only Euclidean proofs remain.
-2. **Paper 1 gaps, Grades 10–12:** functions and graphs, probability, equations and inequalities, finance, calculus.
-3. **Grades 7–9:** geometry (2D, straight lines, construction), exponents, Pythagoras, data handling and probability, patterns.
-4. **Grades 4–6:** measurement, 2D and 3D shapes, patterns, data handling.
+2. **Euclidean proofs:** a step-by-step statement–reason input, then proof riders and the theorem proofs CAPS requires.
+3. **Paper 1 gaps, Grades 10–12:** ~~functions and graphs~~ (built), calculus (with cubic functions and the factor theorem), probability, equations and inequalities, finance, surds and patterns.
+4. **Grades 7–9:** geometry (2D, straight lines, construction), exponents, Pythagoras, data handling and probability, patterns.
+5. **Grades 4–6:** measurement, 2D and 3D shapes, patterns, data handling.
 
 Every topic gets the core (generator with diagnosed mistakes, a short lesson, mastery and tests). Labs go where manipulating something teaches: graphs, geometry, probability.
 
