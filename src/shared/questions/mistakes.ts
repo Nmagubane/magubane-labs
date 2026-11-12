@@ -494,6 +494,18 @@ export const MISTAKES = {
   'radius-squared': { label: 'r or r²', kind: 'procedural', tip: 'The right-hand side is r², the radius squared. Square the radius when you write the equation; take the square root when you read the radius off.' },
   'complete-square': { label: 'Completing the square', kind: 'procedural', tip: 'Halve the coefficient of x (and of y), square it, and add it to both sides.' },
   'tangent-gradient': { label: 'Tangent gradient', kind: 'conceptual', tip: 'A tangent is perpendicular to the radius at the point of contact. Find the gradient of the radius, then use the negative reciprocal.' },
+  // ---- Trigonometry (Grades 10–12) ----
+  'special-angles': { label: 'Special angles', kind: 'procedural', tip: 'Learn the triangle values: sin 30° = cos 60° = ½, tan 45° = 1, sin 60° = cos 30° = √3⁄2, sin 45° = cos 45° = √2⁄2. sin²60° means (sin 60°)², which is ¾.' },
+  'cast-sign': { label: 'Sign in the quadrant', kind: 'conceptual', tip: 'Use the quadrant: All positive in I, Sin in II, Tan in III, Cos in IV (CAST). With x, y and r, the sign comes from x and y; r is always positive.' },
+  'reduction-formula': { label: 'Reduction formulas', kind: 'procedural', tip: 'For 180° ± x and 360° ± x the function stays the same; for 90° ± x it changes (sin ↔ cos). Then fix the sign with CAST, using the quadrant of the original angle.' },
+  'trig-identity': { label: 'Trig identities', kind: 'procedural', tip: 'Write everything in sin and cos: tan x = sin x ⁄ cos x and sin²x + cos²x = 1. Then cancel common factors.' },
+  'general-solution': { label: 'All the solutions', kind: 'conceptual', tip: 'Find the reference angle, then use CAST to place every solution: sin repeats every 360° with solutions x and 180° − x; cos with ±x; tan repeats every 180°.' },
+  'trig-equation': { label: 'Solving the equation', kind: 'procedural', tip: 'Get the trig function on its own first. If the angle is 2x or x + 20°, solve for that whole angle, then work back to x.' },
+  'sine-rule': { label: 'Sine rule', kind: 'procedural', tip: 'Pair each side with the sine of its opposite angle: a ⁄ sin A = b ⁄ sin B. Put the unknown on top.' },
+  'cosine-rule': { label: 'Cosine rule', kind: 'procedural', tip: 'a² = b² + c² − 2bc cos A, where A is the angle between b and c. Square root at the end for a side; for an angle, make cos A the subject.' },
+  'area-rule': { label: 'Area rule', kind: 'procedural', tip: 'Area = ½ ab sin C: two sides and the angle between them. Don\'t forget the ½.' },
+  'compound-formula': { label: 'Compound angles', kind: 'procedural', tip: 'sin(A ± B) = sin A cos B ± cos A sin B; cos(A ± B) = cos A cos B ∓ sin A sin B (the sign flips for cos).' },
+  'double-angle': { label: 'Double angles', kind: 'procedural', tip: 'sin 2A = 2 sin A cos A; cos 2A = cos²A − sin²A = 1 − 2sin²A = 2cos²A − 1. sin 2A is not 2 sin A.' },
   // ---- Natural Sciences: Planet Earth and Beyond, the Periodic Table, visible light ----
   'rock-layers': { label: 'Rocks, soil and fossils', kind: 'conceptual', tip: 'Sedimentary rock builds up in layers from the bottom, so deeper layers and their fossils are older. Body fossils are parts of a living thing; trace fossils are signs it left.' },
   'element-facts': { label: 'The Periodic Table', kind: 'conceptual', tip: 'The table is in order of atomic number (protons). Metals on the left and middle, non-metals on the right, semi-metals on the staircase. Some symbols come from Latin: Na, K, Fe, Au.' },

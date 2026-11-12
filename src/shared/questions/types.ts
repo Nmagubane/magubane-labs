@@ -106,7 +106,8 @@ export interface GeometryFigure {
   /** What a screen reader hears: the givens, never the answer. */
   alt: string;
   points: { id: string; x: number; y: number; label?: string; dot?: boolean }[];
-  segments?: { a: string; b: string; ticks?: 1 | 2; arrows?: 1 | 2; dashed?: boolean; extend?: number }[];
+  /** `text` labels the side (e.g. "7 cm" or "x"), drawn beside its midpoint, outside the figure. */
+  segments?: { a: string; b: string; ticks?: 1 | 2; arrows?: 1 | 2; dashed?: boolean; extend?: number; text?: string }[];
   circles?: { c: string; r: number }[];
   /** An angle at vertex `at`, between rays to `from` and `to`, marked with `text` (e.g. "64°" or "x"). */
   angles?: { at: string; from: string; to: string; text: string; right?: boolean }[];

@@ -1316,3 +1316,10 @@
 .ag-lab .plot { width: 100%; max-width: 440px; height: auto; display: block; margin: 0 auto; touch-action: none; }
 .ag-readout { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); align-items: baseline; }
 .ag-run { font-size: 12px; font-weight: 700; fill: var(--ink-2); }
+.geo-side { font-size: 12px; font-weight: 600; fill: var(--ink-2); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
+.trig-cast { font-size: 18px; font-weight: 800; fill: var(--ink-3); }
+.trig-cast.on { fill: var(--pen); }
+.trig-cast-tip { font-size: 11px; font-weight: 600; }
+.trig-ref { fill: none; stroke: var(--amber); stroke-width: 2.5; stroke-dasharray: 4 3; }
+.trig-unit { fill: none; stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 5 5; }
+.ag-full { flex-basis: 100%; }

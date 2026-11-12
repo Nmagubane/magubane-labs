@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (71 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (76 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -268,4 +268,24 @@ Three skills in the `analytical` topic, each with a lab mode (`AnalyticLabs.tsx`
 - `point`: two boxes, written `M( ; )`. Graded exactly, so `3,5`, `3.5` and `7/2` are the same.
 
 The `graph` figure gained `segments`, `circles` (always drawn round, on equal scales) and a `text` override for labels such as `B(k; 5)`. `analytic.test.ts` checks the equation and point grading, and checks the answers independently: every named point lies on the answer circle, the tangent is the line through P perpendicular to CP, and every line passes through its point.
+
+## 12. Trigonometry (Paper 2)
+
+Five new skills in the `trigonometry` topic, after the existing Grade 10 `trig-ratios` (right-angled triangles):
+
+| Skill | Grade | What it covers |
+|---|---|---|
+| `trig-special` | 10 | Special-angle values, ratios from x, y and r in any quadrant, simple equations (0°–90°) |
+| `trig-reduction` | 11 | CAST, reduction formulas (including 90° ± x and negative angles), "if sin 34° = p", identities |
+| `trig-equations` | 11 | All solutions in an interval, general solution, angles like 2x and x + 20°, quadratic-type equations |
+| `triangle-rules` | 11 | Sine, cosine and area rules, with triangles drawn to scale |
+| `compound-angles` | 12 | Compound and double angles: exact values, "given sin α in a quadrant", simplifying |
+
+**Exact answers by design.** Exam trigonometry is mostly done without a calculator, so most questions are built to have rational answers that can be graded exactly: combinations of special angles, reduction of rational-valued angles, compound angles that land on 30°, 60°, 90°…, and Pythagorean triples for "given $\sin\alpha$ in a quadrant". Only the triangle rules and calculator equations use rounded answers. Equations use the `roots` input.
+
+**Every answer is checked against the question it belongs to.** `trig.test.ts` turns each question's own TeX into JavaScript and evaluates it: expressions must equal the stored answer, every root must satisfy its equation, no exact root on a 0,5° grid may be missing, and triangle answers must match the triangle that is drawn (side lengths, angles, area). Exact values are checked against the calculator for every multiple of 15° from −720° to 720°.
+
+**Labs** (`TrigLabs.tsx`, `trig-lab`): a terminal arm you turn through 360° with x, y, r, CAST and the reference angle, and a triangle whose sides and angle you change while the three sine-rule ratios stay equal. Geometry figures gained side labels (`segments[].text`).
+
+**Not built yet.** 2D problems combining two triangles, 3D problems (Grade 12), and trig graphs (counted under Functions). The `roots` input shows one box per solution, which tells the learner how many solutions there are; asking for the count is a better test and is worth adding.
 

@@ -238,6 +238,22 @@ export function GeometryFigure({ f }: { f: Extract<FigureSpec, { kind: 'geometry
           return (
             <g key={i}>
               <line x1={a.sx} y1={a.sy} x2={bx} y2={by} className={`geo-line${s.dashed ? ' dashed' : ''}`} />
+              {s.text
+                ? (() => {
+                    // Push the side label away from the centre of the figure, perpendicular to the side.
+                    let nx = -uy;
+                    let ny = ux;
+                    if ((mx - cx) * nx + (my - cy) * ny < 0) {
+                      nx = -nx;
+                      ny = -ny;
+                    }
+                    return (
+                      <text x={mx + nx * 14} y={my + ny * 14 + 4} textAnchor="middle" className="geo-side">
+                        {s.text}
+                      </text>
+                    );
+                  })()
+                : null}
               {Array.from({ length: s.ticks ?? 0 }, (_, t) => {
                 const off = (t - ((s.ticks ?? 1) - 1) / 2) * 5;
                 const tx = mx + ux * off;

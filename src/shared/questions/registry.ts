@@ -17,6 +17,7 @@ import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './gen
 import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSolarSystem, earthSystems, atmosphere, starLife } from './generators/ns-senior.ts';
 import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, proportionality } from './generators/math-geometry.ts';
 import { coordinateGeometry, lineEquations, circleEquations } from './generators/math-analytic.ts';
+import { trigSpecial, trigReduction, trigEquations, triangleRules, compoundAngles } from './generators/math-trig.ts';
 import { JUNIOR_TEMPLATES } from '../junior/templates.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
@@ -91,6 +92,11 @@ export const TEMPLATES: QuestionTemplate[] = [
   coordinateGeometry,
   lineEquations,
   circleEquations,
+  trigSpecial,
+  trigReduction,
+  trigEquations,
+  triangleRules,
+  compoundAngles,
   ...JUNIOR_TEMPLATES,
 ];
 
