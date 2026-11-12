@@ -157,7 +157,7 @@ function makeClass(name: string, grade: number, subjectId: ClassSubjectId, code:
   return id;
 }
 const maths10 = makeClass('10A Mathematics', 10, 'mathematics', 'DEMO10');
-const science9 = makeClass('9B Natural Sciences', 9, 'physical-sciences', 'DEMO9B');
+const science9 = makeClass('9B Natural Sciences', 9, 'natural-sciences', 'DEMO9B');
 const join = (classId: string, u: UserDto, daysAgo: number) => run(db, 'INSERT INTO class_members (class_id, learner_id, joined_at) VALUES (?, ?, ?)', classId, u.id, dayAt(daysAgo, 9).toISOString());
 function assign(classId: string, kind: 'lesson' | 'practice' | 'test', skillId: string, title: string, dueDaysAhead: number, createdDaysAgo: number, count: number | null = null): string {
   const id = newId('asg');
@@ -237,7 +237,7 @@ classmates(maths10, 10, ['mathematics'], ['expand-brackets', 'factorise-trinomia
 
 const sciTask = assign(science9, 'practice', 'density', 'Practice: Density', 2, 5, 6);
 assign(science9, 'lesson', 'circuits', 'Lesson: Series and parallel circuits', 5, 1);
-classmates(science9, 9, ['physical-sciences', 'life-sciences'], ['states-of-matter', 'density', 'heat-transfer', 'acids-bases', 'circuits', 'speed-distance-time'], [
+classmates(science9, 9, ['natural-sciences'], ['states-of-matter', 'density', 'heat-transfer', 'acids-bases', 'circuits', 'speed-distance-time'], [
   { name: 'Karabo Mahlangu', minor: true, level: 0.8, activeDays: [20, 16, 13, 9, 6, 3, 1] },
   { name: 'Precious Sithole', minor: true, level: 0.2, activeDays: [19, 15, 8, 4] },
   { name: 'Lwazi Mthembu', minor: true, level: -0.4, activeDays: [18, 12] },

@@ -1639,6 +1639,9 @@
   border-bottom: 1px solid var(--rule);
   font-size: var(--t-lg);
 }
+.look-ahead-part + .look-ahead-part {
+  margin-top: var(--s4);
+}
 .look-ahead-renamed {
   margin: 0 0 var(--s2);
   font-size: var(--t-sm);

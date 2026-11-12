@@ -77,18 +77,18 @@ export const SUBJECTS: Subject[] = [
   },
   {
     id: 'natural-sciences',
-    name: 'Natural Sciences & Technology',
-    pitch: 'Living things, materials, energy, Earth and space, and how people design and build. Science for Grades 4 to 6.',
+    name: 'Natural Sciences',
+    pitch: 'Life and Living, Matter and Materials, Energy and Change, Planet Earth and Beyond. Science for Grades 4 to 9.',
   },
   {
     id: 'physical-sciences',
     name: 'Physical Sciences',
-    pitch: 'Physics and chemistry: how matter, energy and forces behave, and how to predict them.',
+    pitch: 'Physics and chemistry for Grades 10 to 12: how matter, energy and forces behave, and how to predict them.',
   },
   {
     id: 'life-sciences',
     name: 'Life Sciences',
-    pitch: 'How living things are built, inherit traits and stay alive. It is the road to medicine.',
+    pitch: 'Grades 10 to 12: how living things are built, inherit traits and stay alive. It is the road to medicine.',
   },
   {
     id: 'home-language',
@@ -108,32 +108,32 @@ export const SUBJECTS: Subject[] = [
 ];
 
 export const TOPICS: Topic[] = [
-  { id: 'number', subjectId: 'mathematics', name: 'Number' },
-  { id: 'fractions', subjectId: 'mathematics', name: 'Fractions and decimals' },
+  // Mathematics: one list across Grades 4–12, named after the CAPS topics.
+  { id: 'number', subjectId: 'mathematics', name: 'Whole numbers and integers' },
+  { id: 'fractions', subjectId: 'mathematics', name: 'Common and decimal fractions' },
   { id: 'measurement', subjectId: 'mathematics', name: 'Measurement' },
   { id: 'algebra', subjectId: 'mathematics', name: 'Algebraic expressions and exponents' },
-  { id: 'equations', subjectId: 'mathematics', name: 'Equations' },
+  { id: 'equations', subjectId: 'mathematics', name: 'Equations and inequalities' },
   { id: 'functions', subjectId: 'mathematics', name: 'Functions and graphs' },
-  { id: 'patterns', subjectId: 'mathematics', name: 'Number patterns and sequences' },
+  { id: 'patterns', subjectId: 'mathematics', name: 'Number patterns, sequences and series' },
   { id: 'trigonometry', subjectId: 'mathematics', name: 'Trigonometry' },
-  { id: 'finance', subjectId: 'mathematics', name: 'Financial mathematics' },
-  { id: 'calculus', subjectId: 'mathematics', name: 'Calculus' },
-  { id: 'nst-life', subjectId: 'natural-sciences', name: 'Life and living', strand: 'Life' },
-  { id: 'nst-matter', subjectId: 'natural-sciences', name: 'Matter and materials', strand: 'Matter' },
-  { id: 'nst-energy', subjectId: 'natural-sciences', name: 'Energy and change', strand: 'Energy' },
-  { id: 'nst-earth', subjectId: 'natural-sciences', name: 'Planet Earth and beyond', strand: 'Earth and space' },
-  { id: 'nst-tech', subjectId: 'natural-sciences', name: 'Technology: structures', strand: 'Technology' },
-  { id: 'matter', subjectId: 'physical-sciences', name: 'Matter and materials', strand: 'Chemistry' },
-  { id: 'energy', subjectId: 'physical-sciences', name: 'Energy and heat', strand: 'Physics' },
-  { id: 'electricity', subjectId: 'physical-sciences', name: 'Electric circuits', strand: 'Physics' },
-  { id: 'chemical-change', subjectId: 'physical-sciences', name: 'Chemical change', strand: 'Chemistry' },
+  { id: 'finance', subjectId: 'mathematics', name: 'Finance, growth and decay' },
+  { id: 'calculus', subjectId: 'mathematics', name: 'Differential calculus' },
+  // Natural Sciences, Grades 4–9 (Natural Sciences and Technology in 4–6): the four CAPS knowledge strands,
+  // plus the Technology strand that CAPS integrates into Grades 4–6.
+  { id: 'nst-life', subjectId: 'natural-sciences', name: 'Life and Living' },
+  { id: 'nst-matter', subjectId: 'natural-sciences', name: 'Matter and Materials' },
+  { id: 'nst-energy', subjectId: 'natural-sciences', name: 'Energy and Change' },
+  { id: 'nst-earth', subjectId: 'natural-sciences', name: 'Planet Earth and Beyond' },
+  { id: 'nst-tech', subjectId: 'natural-sciences', name: 'Technology: Structures' },
+  // Physical Sciences, Grades 10–12: CAPS knowledge areas (Paper 1 physics, Paper 2 chemistry).
   { id: 'mechanics', subjectId: 'physical-sciences', name: 'Mechanics', strand: 'Physics' },
-  { id: 'biodiversity', subjectId: 'life-sciences', name: 'Biodiversity and classification', strand: 'Biology' },
-  { id: 'ecology', subjectId: 'life-sciences', name: 'Ecosystems', strand: 'Biology' },
-  { id: 'plants', subjectId: 'life-sciences', name: 'Plants and energy', strand: 'Biology' },
-  { id: 'human-body', subjectId: 'life-sciences', name: 'The human body', strand: 'Biology' },
-  { id: 'cells', subjectId: 'life-sciences', name: 'Cells', strand: 'Biology' },
-  { id: 'genetics', subjectId: 'life-sciences', name: 'Genetics', strand: 'Biology' },
+  { id: 'electricity', subjectId: 'physical-sciences', name: 'Electricity and magnetism', strand: 'Physics' },
+  { id: 'matter', subjectId: 'physical-sciences', name: 'Matter and materials', strand: 'Chemistry' },
+  { id: 'chemical-change', subjectId: 'physical-sciences', name: 'Chemical change', strand: 'Chemistry' },
+  // Life Sciences, Grades 10–12: CAPS knowledge strands.
+  { id: 'cells', subjectId: 'life-sciences', name: 'Life at the molecular, cellular and tissue level' },
+  { id: 'genetics', subjectId: 'life-sciences', name: 'Genetics and inheritance' },
   ...FOUNDATION_TOPICS,
 ];
 
@@ -151,7 +151,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'place-value',
     lessonId: 'place-value',
-    mappings: caps(4, 'Numbers, operations and relationships'),
+    mappings: caps(4, 'Numbers, operations and relationships: Whole numbers'),
   },
   {
     id: 'multiplication',
@@ -163,7 +163,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['place-value'],
     templateId: 'multiplication',
     lessonId: 'multiplication',
-    mappings: caps(5, 'Numbers, operations and relationships'),
+    mappings: caps(4, 'Numbers, operations and relationships: Whole numbers (multiplication and division)'),
   },
   {
     id: 'integers',
@@ -175,7 +175,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'integers',
     lessonId: 'integers',
-    mappings: caps(7, 'Numbers, operations and relationships'),
+    mappings: caps(7, 'Numbers, operations and relationships: Integers'),
   },
   {
     id: 'order-of-operations',
@@ -187,7 +187,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['integers'],
     templateId: 'order-of-operations',
     lessonId: 'order-of-operations',
-    mappings: caps(7, 'Numbers, operations and relationships'),
+    mappings: caps(7, 'Numbers, operations and relationships: Whole numbers (calculation techniques)'),
   },
   {
     id: 'fractions-basic',
@@ -199,7 +199,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'fractions-basic',
     lessonId: 'fractions-basic',
-    mappings: caps(4, 'Common fractions'),
+    mappings: caps(4, 'Numbers, operations and relationships: Common fractions'),
   },
   {
     id: 'fraction-simplify',
@@ -211,7 +211,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'fraction-simplify',
     lessonId: 'fraction-simplify',
-    mappings: caps(6, 'Common fractions'),
+    mappings: caps(6, 'Numbers, operations and relationships: Common fractions'),
   },
   {
     id: 'fraction-add',
@@ -223,7 +223,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['fraction-simplify'],
     templateId: 'fraction-add',
     lessonId: 'fraction-add',
-    mappings: caps(7, 'Common fractions'),
+    mappings: caps(7, 'Numbers, operations and relationships: Common fractions'),
   },
   {
     id: 'fraction-multiply',
@@ -235,7 +235,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['fraction-simplify'],
     templateId: 'fraction-multiply',
     lessonId: 'fraction-multiply',
-    mappings: caps(7, 'Common fractions'),
+    mappings: caps(7, 'Numbers, operations and relationships: Common fractions'),
   },
   {
     id: 'decimals',
@@ -243,11 +243,11 @@ export const SKILLS: Skill[] = [
     name: 'Decimals',
     outcome: 'Read, compare, add and subtract decimals, and convert between fractions and decimals.',
     signature: '0{,}5 = \\tfrac{1}{2} = 50\\%',
-    grade: 5,
+    grade: 6,
     prerequisites: ['fractions-basic'],
     templateId: 'decimals',
     lessonId: 'decimals',
-    mappings: caps(6, 'Decimal fractions'),
+    mappings: caps(6, 'Numbers, operations and relationships: Decimal fractions'),
   },
   {
     id: 'perimeter-area',
@@ -259,7 +259,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['multiplication'],
     templateId: 'perimeter-area',
     lessonId: 'perimeter-area',
-    mappings: caps(5, 'Measurement: perimeter, area and volume'),
+    mappings: caps(5, 'Measurement: Perimeter, area and volume'),
   },
   {
     id: 'like-terms',
@@ -271,7 +271,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['integers'],
     templateId: 'like-terms',
     lessonId: 'like-terms',
-    mappings: caps(8, 'Algebraic expressions'),
+    mappings: caps(8, 'Patterns, functions and algebra: Algebraic expressions'),
   },
   {
     id: 'expand-brackets',
@@ -283,7 +283,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['like-terms'],
     templateId: 'expand-brackets',
     lessonId: 'expand-brackets',
-    mappings: caps(9, 'Algebraic expressions'),
+    mappings: caps(9, 'Patterns, functions and algebra: Algebraic expressions'),
   },
   {
     id: 'factorise-trinomial',
@@ -319,7 +319,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['integers'],
     templateId: 'linear-equations',
     lessonId: 'linear-equations',
-    mappings: caps(8, 'Algebraic equations'),
+    mappings: caps(8, 'Patterns, functions and algebra: Algebraic equations'),
   },
   {
     id: 'quadratic-equations',
@@ -343,7 +343,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['integers', 'fraction-simplify'],
     templateId: 'gradient',
     lessonId: 'gradient',
-    mappings: caps(9, 'Graphs'),
+    mappings: caps(9, 'Patterns, functions and algebra: Graphs'),
   },
   {
     id: 'straight-line',
@@ -375,7 +375,7 @@ export const SKILLS: Skill[] = [
     name: 'Arithmetic and geometric sequences',
     outcome: 'Find terms, general terms and sums of arithmetic and geometric sequences.',
     signature: 'T_n = a + (n-1)d',
-    grade: 10,
+    grade: 12,
     prerequisites: ['linear-equations'],
     templateId: 'sequences',
     lessonId: 'sequences',
@@ -417,7 +417,7 @@ export const SKILLS: Skill[] = [
     lessonId: 'derivatives',
     mappings: caps(12, 'Differential calculus'),
   },
-  // ---------- Natural Sciences & Technology (Grades 4–6) ----------
+  // ---------- Natural Sciences (Grades 4–9; Natural Sciences and Technology in Grades 4–6) ----------
   {
     id: 'living-nonliving',
     topicId: 'nst-life',
@@ -428,7 +428,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'living-nonliving',
     lessonId: 'living-nonliving',
-    mappings: caps(4, 'Life and living: living and non-living things'),
+    mappings: caps(4, 'Life and Living: Living and non-living things'),
   },
   {
     id: 'plant-needs',
@@ -440,7 +440,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'plant-needs',
     lessonId: 'plant-needs',
-    mappings: caps(4, 'Life and living: what plants need to grow'),
+    mappings: caps(4, 'Life and Living: What plants need to grow'),
   },
   {
     id: 'life-cycles',
@@ -452,7 +452,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['living-nonliving'],
     templateId: 'life-cycles',
     lessonId: 'life-cycles',
-    mappings: caps(5, 'Life and living: life cycles'),
+    mappings: caps(5, 'Life and Living: Life cycles'),
   },
   {
     id: 'matter-properties',
@@ -464,7 +464,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'matter-properties',
     lessonId: 'matter-properties',
-    mappings: caps(4, 'Matter and materials: solids, liquids and gases'),
+    mappings: caps(4, 'Matter and Materials: Solids, liquids and gases'),
   },
   {
     id: 'metals-nonmetals',
@@ -476,7 +476,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['matter-properties'],
     templateId: 'metals-nonmetals',
     lessonId: 'metals-nonmetals',
-    mappings: caps(5, 'Matter and materials: metals and non-metals'),
+    mappings: caps(5, 'Matter and Materials: Metals and non-metals'),
   },
   {
     id: 'mixtures',
@@ -488,7 +488,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['matter-properties'],
     templateId: 'mixtures',
     lessonId: 'mixtures',
-    mappings: caps(6, 'Matter and materials: mixtures and solutions'),
+    mappings: caps(6, 'Matter and Materials: Mixtures; Solutions as special mixtures'),
   },
   {
     id: 'sound',
@@ -500,7 +500,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'sound',
     lessonId: 'sound',
-    mappings: caps(4, 'Energy and change: energy and sound'),
+    mappings: caps(4, 'Energy and Change: Energy and sound'),
   },
   {
     id: 'simple-circuits',
@@ -512,7 +512,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'simple-circuits',
     lessonId: 'simple-circuits',
-    mappings: caps(6, 'Energy and change: electric circuits'),
+    mappings: caps(6, 'Energy and Change: Electric circuits'),
   },
   {
     id: 'earth-moon',
@@ -524,7 +524,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'earth-moon',
     lessonId: 'earth-moon',
-    mappings: caps(6, 'Planet Earth and beyond: the Sun, Earth and Moon'),
+    mappings: caps(4, 'Planet Earth and Beyond: The Earth and the Sun; The Moon'),
   },
   {
     id: 'solar-system',
@@ -536,7 +536,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['earth-moon'],
     templateId: 'solar-system',
     lessonId: 'solar-system',
-    mappings: caps(6, 'Planet Earth and beyond: the solar system'),
+    mappings: caps(6, 'Planet Earth and Beyond: The Solar System'),
   },
   {
     id: 'structures',
@@ -548,25 +548,135 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'structures',
     lessonId: 'structures',
-    mappings: caps(5, 'Technology: structures'),
+    mappings: caps(5, 'Technology: Structures (frame structures)'),
   },
+  // Planet Earth and Beyond across Grades 5–9, plus the Senior Phase topics that complete each strand.
+  {
+    id: 'rocks-fossils',
+    topicId: 'nst-earth',
+    name: 'Rocks, soil and fossils',
+    outcome: 'Tell soil types apart, explain how sedimentary rock forms, and use rock layers to tell which fossils are older.',
+    signature: '\\text{deeper layer} \\Rightarrow \\text{older fossil}',
+    grade: 5,
+    prerequisites: [],
+    templateId: 'rocks-fossils',
+    lessonId: 'rocks-fossils',
+    mappings: caps(5, 'Planet Earth and Beyond: Planet Earth (rocks and soil); Sedimentary rocks; Fossils'),
+  },
+  {
+    id: 'periodic-table',
+    topicId: 'nst-matter',
+    name: 'The Periodic Table',
+    outcome: 'Find elements by name, symbol and atomic number, and sort them into metals, non-metals and semi-metals.',
+    signature: '{}_{11}\\text{Na} \\quad {}_{8}\\text{O} \\quad {}_{14}\\text{Si}',
+    grade: 7,
+    prerequisites: ['metals-nonmetals'],
+    templateId: 'periodic-table',
+    lessonId: 'periodic-table',
+    mappings: caps(7, 'Matter and Materials: Introduction to the Periodic Table of Elements'),
+  },
+  {
+    id: 'seasons',
+    topicId: 'nst-earth',
+    name: 'The Sun and the seasons',
+    outcome: "Explain the seasons and day length from the tilt of the Earth, and how the Sun's energy keeps life going.",
+    signature: '23{,}5^\\circ \\text{ tilt} \\Rightarrow \\text{seasons}',
+    grade: 7,
+    prerequisites: ['earth-moon'],
+    templateId: 'seasons',
+    lessonId: 'seasons',
+    mappings: caps(7, 'Planet Earth and Beyond: Relationship of the Sun to the Earth'),
+  },
+  {
+    id: 'moon-tides',
+    topicId: 'nst-earth',
+    name: 'The Moon, gravity and tides',
+    outcome: "Explain how the Moon's gravity causes tides, and when spring and neap tides happen.",
+    signature: '\\text{Sun, Earth, Moon in line} \\Rightarrow \\text{spring tide}',
+    grade: 7,
+    prerequisites: ['earth-moon'],
+    templateId: 'moon-tides',
+    lessonId: 'moon-tides',
+    mappings: caps(7, 'Planet Earth and Beyond: Relationship of the Moon to the Earth'),
+  },
+  {
+    id: 'visible-light',
+    topicId: 'nst-energy',
+    name: 'Visible light',
+    outcome: 'Use the law of reflection, explain colour and refraction, and describe how white light splits into a spectrum.',
+    signature: '\\angle i = \\angle r',
+    grade: 8,
+    prerequisites: [],
+    templateId: 'visible-light',
+    lessonId: 'visible-light',
+    mappings: caps(8, 'Energy and Change: Visible light'),
+  },
+  {
+    id: 'beyond-solar-system',
+    topicId: 'nst-earth',
+    name: 'Beyond the Solar System',
+    outcome: 'Use light-years to compare distances to the planets, the nearest stars and other galaxies, and explain how we look into space.',
+    signature: '1 \\text{ light-year} \\approx 9{,}5 \\times 10^{12} \\text{ km}',
+    grade: 8,
+    prerequisites: ['solar-system'],
+    templateId: 'beyond-solar-system',
+    lessonId: 'beyond-solar-system',
+    mappings: caps(8, 'Planet Earth and Beyond: The Solar System; Beyond the Solar System; Looking into space'),
+  },
+  {
+    id: 'earth-systems',
+    topicId: 'nst-earth',
+    name: 'The Earth as a system and the rock cycle',
+    outcome: 'Name the four spheres of the Earth, follow rocks through the rock cycle, and explain how minerals are mined and refined.',
+    signature: '\\text{magma} \\to \\text{rock} \\to \\text{sediment}',
+    grade: 9,
+    prerequisites: ['rocks-fossils'],
+    templateId: 'earth-systems',
+    lessonId: 'earth-systems',
+    mappings: caps(9, 'Planet Earth and Beyond: The Earth as a system; Lithosphere; Mining of mineral resources'),
+  },
+  {
+    id: 'atmosphere',
+    topicId: 'nst-earth',
+    name: 'The atmosphere',
+    outcome: 'Name the layers of the atmosphere by how temperature changes with height, and explain the greenhouse effect.',
+    signature: 'T \\downarrow \\text{ as height} \\uparrow \\ (\\text{troposphere})',
+    grade: 9,
+    prerequisites: ['earth-systems'],
+    templateId: 'atmosphere',
+    lessonId: 'atmosphere',
+    mappings: caps(9, 'Planet Earth and Beyond: Atmosphere'),
+  },
+  {
+    id: 'star-life',
+    topicId: 'nst-earth',
+    name: 'Birth, life and death of stars',
+    outcome: "Describe how stars form, shine by fusion and die, and how a star's mass decides its fate.",
+    signature: '\\text{nebula} \\to \\text{star} \\to \\text{white dwarf}',
+    grade: 9,
+    prerequisites: ['beyond-solar-system'],
+    templateId: 'star-life',
+    lessonId: 'star-life',
+    mappings: caps(9, 'Planet Earth and Beyond: Birth, life and death of stars'),
+  },
+
   // ---------- Physical Sciences ----------
-  // Grades 7–9 come from CAPS Natural Sciences (Matter and Materials, Energy and Change); 10–12 from Physical Sciences.
+  // Grades 7–9 skills below are CAPS Natural Sciences (see their topicId); Physical Sciences itself is Grades 10–12.
   {
     id: 'states-of-matter',
-    topicId: 'matter',
+    topicId: 'nst-matter',
     name: 'States of matter and the particle model',
     outcome: 'Predict whether a substance is solid, liquid or gas, and explain it with particles.',
     signature: '\\text{solid} \\rightleftharpoons \\text{liquid} \\rightleftharpoons \\text{gas}',
-    grade: 7,
+    grade: 8,
     prerequisites: [],
     templateId: 'states-of-matter',
     lessonId: 'states-of-matter',
-    mappings: caps(8, 'Matter and materials: particle model of matter'),
+    mappings: caps(8, 'Matter and Materials: Particle model of matter'),
   },
   {
     id: 'density',
-    topicId: 'matter',
+    topicId: 'nst-matter',
     name: 'Density: will it float?',
     outcome: 'Calculate density, mass or volume, and predict floating and sinking.',
     signature: '\\rho = \\dfrac{m}{V}',
@@ -574,11 +684,11 @@ export const SKILLS: Skill[] = [
     prerequisites: ['states-of-matter'],
     templateId: 'density',
     lessonId: 'density',
-    mappings: caps(8, 'Matter and materials: particle model of matter'),
+    mappings: caps(8, 'Matter and Materials: Particle model of matter (density)'),
   },
   {
     id: 'heat-transfer',
-    topicId: 'energy',
+    topicId: 'nst-energy',
     name: 'Heat transfer',
     outcome: 'Explain conduction, convection and radiation, and choose conductors and insulators.',
     signature: '\\text{hot} \\xrightarrow{\\;Q\\;} \\text{cold}',
@@ -586,11 +696,11 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'heat-transfer',
     lessonId: 'heat-transfer',
-    mappings: caps(7, 'Energy and change: heat transfer'),
+    mappings: caps(7, 'Energy and Change: Heat transfer'),
   },
   {
     id: 'mechanical-energy',
-    topicId: 'energy',
+    topicId: 'mechanics',
     name: 'Potential and kinetic energy',
     outcome: 'Calculate gravitational potential and kinetic energy, and use conservation of energy.',
     signature: 'mgh = \\tfrac{1}{2}mv^2',
@@ -598,11 +708,11 @@ export const SKILLS: Skill[] = [
     prerequisites: ['speed-distance-time'],
     templateId: 'mechanical-energy',
     lessonId: 'mechanical-energy',
-    mappings: caps(10, 'Mechanics: energy'),
+    mappings: caps(10, 'Mechanics: Energy (gravitational potential and kinetic energy)'),
   },
   {
     id: 'circuits',
-    topicId: 'electricity',
+    topicId: 'nst-energy',
     name: 'Series and parallel circuits',
     outcome: 'Compare series and parallel circuits, and calculate resistance and current in parallel.',
     signature: '\\tfrac{1}{R_p} = \\tfrac{1}{R_1} + \\tfrac{1}{R_2}',
@@ -610,7 +720,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'circuits',
     lessonId: 'circuits',
-    mappings: caps(9, 'Energy and change: series and parallel circuits'),
+    mappings: caps(9, 'Energy and Change: Series and parallel circuits'),
   },
   {
     id: 'speed-distance-time',
@@ -618,11 +728,11 @@ export const SKILLS: Skill[] = [
     name: 'Speed, distance and time',
     outcome: 'Calculate speed, distance or time, converting units where needed.',
     signature: 'v = \\dfrac{\\Delta x}{\\Delta t}',
-    grade: 9,
+    grade: 10,
     prerequisites: [],
     templateId: 'speed-distance-time',
     lessonId: 'speed-distance-time',
-    mappings: caps(10, 'Mechanics: motion in one dimension'),
+    mappings: caps(10, 'Mechanics: Motion in one dimension'),
   },
   {
     id: 'newtons-second-law',
@@ -634,19 +744,19 @@ export const SKILLS: Skill[] = [
     prerequisites: ['speed-distance-time'],
     templateId: 'newtons-second-law',
     lessonId: 'newtons-second-law',
-    mappings: caps(11, "Mechanics: Newton's laws"),
+    mappings: caps(11, "Mechanics: Newton's laws and application of Newton's laws"),
   },
   {
     id: 'projectile-motion',
     topicId: 'mechanics',
-    name: 'Projectile motion',
+    name: 'Vertical projectile motion',
     outcome: 'Predict flight time, maximum height and range without air resistance.',
     signature: 'y = v_0 t - \\tfrac{1}{2} g t^2',
     grade: 12,
     prerequisites: ['newtons-second-law'],
     templateId: 'projectile-motion',
     lessonId: 'projectile-motion',
-    mappings: caps(12, 'Mechanics: vertical projectile motion'),
+    mappings: caps(12, 'Mechanics: Vertical projectile motion in one dimension'),
   },
   {
     id: 'ohms-law',
@@ -654,11 +764,11 @@ export const SKILLS: Skill[] = [
     name: "Ohm's law and series circuits",
     outcome: 'Use V = IR and add resistances in series.',
     signature: 'V = IR',
-    grade: 10,
+    grade: 11,
     prerequisites: [],
     templateId: 'ohms-law',
     lessonId: 'ohms-law',
-    mappings: caps(10, 'Electricity and magnetism: electric circuits'),
+    mappings: caps(11, "Electricity and magnetism: Electric circuits (Ohm's law)"),
   },
   {
     id: 'atomic-structure',
@@ -670,11 +780,11 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'atomic-structure',
     lessonId: 'atomic-structure',
-    mappings: caps(10, 'Matter and materials: the atom'),
+    mappings: caps(10, 'Matter and materials: The atom'),
   },
   {
     id: 'acids-bases',
-    topicId: 'chemical-change',
+    topicId: 'nst-matter',
     name: 'Acids, bases and pH',
     outcome: 'Use the pH scale and indicators, and predict the products of neutralisation.',
     signature: '\\text{acid} + \\text{base} \\rightarrow \\text{salt} + \\text{water}',
@@ -682,7 +792,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'acids-bases',
     lessonId: 'acids-bases',
-    mappings: caps(9, 'Matter and materials: acids, bases and pH'),
+    mappings: caps(9, 'Matter and Materials: Acids & bases, and pH value'),
   },
   {
     id: 'moles',
@@ -694,25 +804,25 @@ export const SKILLS: Skill[] = [
     prerequisites: ['atomic-structure'],
     templateId: 'moles',
     lessonId: 'moles',
-    mappings: caps(10, 'Chemical change: quantitative aspects'),
+    mappings: caps(10, 'Chemical change: Quantitative aspects of chemical change'),
   },
   {
     id: 'balancing-equations',
-    topicId: 'chemical-change',
+    topicId: 'nst-matter',
     name: 'Balancing chemical equations',
     outcome: 'Balance equations so that atoms are conserved.',
     signature: '2\\text{H}_2 + \\text{O}_2 \\rightarrow 2\\text{H}_2\\text{O}',
     grade: 9,
-    prerequisites: ['atomic-structure'],
+    prerequisites: ['states-of-matter'],
     templateId: 'balancing-equations',
     lessonId: 'balancing-equations',
-    mappings: caps(10, 'Chemical change: representing reactions'),
+    mappings: caps(9, 'Matter and Materials: Chemical reactions (balanced equations)'),
   },
   // ---------- Life Sciences ----------
-  // Grades 7–9 come from CAPS Natural Sciences (Life and Living); 10–12 from Life Sciences.
+  // Grades 7–9 skills below are CAPS Natural Sciences (Life and Living); Life Sciences itself is Grades 10–12.
   {
     id: 'classification',
-    topicId: 'biodiversity',
+    topicId: 'nst-life',
     name: 'Classifying animals',
     outcome: 'Sort animals into vertebrate classes and arthropod groups from their features.',
     signature: '\\text{backbone?} \\rightarrow \\text{vertebrate}',
@@ -720,11 +830,11 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'classification',
     lessonId: 'classification',
-    mappings: caps(7, 'Life and living: biodiversity'),
+    mappings: caps(7, 'Life and Living: Biodiversity'),
   },
   {
     id: 'food-chains',
-    topicId: 'ecology',
+    topicId: 'nst-life',
     name: 'Food chains and energy flow',
     outcome: 'Read food chains, follow energy through trophic levels, and predict knock-on effects.',
     signature: '\\text{grass} \\rightarrow \\text{impala} \\rightarrow \\text{lion}',
@@ -732,11 +842,11 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'food-chains',
     lessonId: 'food-chains',
-    mappings: caps(8, 'Life and living: interactions and interdependence'),
+    mappings: caps(8, 'Life and Living: Interactions and interdependence within the environment'),
   },
   {
     id: 'photosynthesis',
-    topicId: 'plants',
+    topicId: 'nst-life',
     name: 'Photosynthesis and respiration',
     outcome: 'Explain what plants take in and give out, what limits photosynthesis, and the net gas balance.',
     signature: '\\text{CO}_2 + \\text{H}_2\\text{O} \\xrightarrow{\\text{light}} \\text{glucose} + \\text{O}_2',
@@ -744,11 +854,11 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'photosynthesis',
     lessonId: 'photosynthesis',
-    mappings: caps(8, 'Life and living: photosynthesis and respiration'),
+    mappings: caps(8, 'Life and Living: Photosynthesis and respiration'),
   },
   {
     id: 'body-systems',
-    topicId: 'human-body',
+    topicId: 'nst-life',
     name: 'Circulation, breathing and digestion',
     outcome: 'Trace blood, air and food through the body, and say what each organ does.',
     signature: '\\text{RA} \\rightarrow \\text{RV} \\rightarrow \\text{lungs} \\rightarrow \\text{LA} \\rightarrow \\text{LV}',
@@ -756,7 +866,7 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'body-systems',
     lessonId: 'body-systems',
-    mappings: caps(9, 'Life and living: systems in the human body'),
+    mappings: caps(9, 'Life and Living: Systems in the human body; Circulatory and respiratory systems; Digestive system'),
   },
   {
     id: 'cell-structure',
@@ -768,19 +878,19 @@ export const SKILLS: Skill[] = [
     prerequisites: [],
     templateId: 'cell-structure',
     lessonId: 'cell-structure',
-    mappings: caps(10, 'Life at the molecular, cellular and tissue level'),
+    mappings: caps(10, 'Life at the molecular, cellular and tissue level: Cells, the basic units of life'),
   },
   {
     id: 'cell-division',
     topicId: 'cells',
-    name: 'Cell division: mitosis and meiosis',
-    outcome: 'Order the phases of mitosis and track chromosome numbers through mitosis and meiosis.',
+    name: 'Cell division: mitosis',
+    outcome: 'Order the phases of mitosis, track chromosomes and chromatids, and explain what mitosis is for.',
     signature: '2n \\xrightarrow{\\text{mitosis}} 2n,\\ 2n',
     grade: 10,
     prerequisites: ['cell-structure'],
     templateId: 'cell-division',
     lessonId: 'cell-division',
-    mappings: caps(10, 'Life at the molecular, cellular and tissue level: mitosis'),
+    mappings: caps(10, 'Life at the molecular, cellular and tissue level: Cell division (mitosis)'),
   },
   {
     id: 'monohybrid-crosses',
@@ -792,7 +902,7 @@ export const SKILLS: Skill[] = [
     prerequisites: ['fraction-simplify'],
     templateId: 'monohybrid-crosses',
     lessonId: 'monohybrid-crosses',
-    mappings: caps(12, 'Genetics and inheritance'),
+    mappings: caps(12, 'Life at the molecular, cellular and tissue level: Genetics and inheritance'),
   },
   ...FOUNDATION_SKILLS,
 ];
@@ -818,47 +928,54 @@ export const skillsInSubject = (subjectId: SubjectId): Skill[] => SKILLS.filter(
 export const isFoundationSkill = (s: Skill): boolean => s.phase === 'foundation';
 
 /**
- * Skills that are relevant for a learner: in their subjects, taught up to one grade ahead,
- * and no more than four grades behind (foundations still matter).
+ * Natural Sciences (Grades 4–9) leads into Physical Sciences and Life Sciences (Grades 10–12), strand by strand.
+ * A learner's band follows that path in both directions: a Grade 9 learner reaches Grade 10 physics and biology,
+ * and a Grade 10 Physical Sciences learner can catch up on Grade 6–9 Matter and Materials and Energy and Change.
+ */
+const FEEDS: Record<string, SubjectId> = { 'nst-matter': 'physical-sciences', 'nst-energy': 'physical-sciences', 'nst-life': 'life-sciences' };
+
+function onPath(s: Skill, subjects: SubjectId[]): boolean {
+  const sid = subjectOfSkill(s);
+  if (subjects.includes(sid)) return true;
+  if (sid === 'natural-sciences') return !!FEEDS[s.topicId] && subjects.includes(FEEDS[s.topicId] as SubjectId);
+  return (sid === 'physical-sciences' || sid === 'life-sciences') && subjects.includes('natural-sciences');
+}
+
+/**
+ * Skills that are relevant for a learner: in their subjects (or on the CAPS path into or out of them),
+ * taught up to one grade ahead, and no more than four grades behind (foundations still matter).
  * Grades 1–3 get the Foundation Phase skills of their own grade and the grade before (to catch up);
  * Grade 4 and up never get Foundation Phase skills here: they are played in the Junior experience.
  */
 export function skillsForLearner(subjects: SubjectId[], grade: number): Skill[] {
   if (grade <= 3) return SKILLS.filter((s) => isFoundationSkill(s) && subjects.includes(subjectOfSkill(s)) && s.grade <= grade && s.grade >= grade - 1);
-  return SKILLS.filter((s) => !isFoundationSkill(s) && subjects.includes(subjectOfSkill(s)) && s.grade <= grade + BAND_AHEAD && s.grade >= grade - 4);
+  return SKILLS.filter((s) => !isFoundationSkill(s) && onPath(s, subjects) && s.grade <= grade + BAND_AHEAD && s.grade >= grade - 4);
 }
 
 export const FOUNDATION_SUBJECTS: SubjectId[] = ['mathematics', 'home-language', 'english-fal', 'life-skills'];
 
 /**
- * Which subjects make sense at a grade, following CAPS.
- * Grades 4–6 take Natural Sciences & Technology; Physical and Life Sciences are not Intermediate
- * Phase subjects (they stay reachable through Look ahead). Grade 7 keeps NST for catch-up.
+ * Which subjects make sense at a grade, following CAPS. Bonisa teaches mathematics and the sciences:
+ * Grades 4–9 take Natural Sciences (Natural Sciences and Technology in Grades 4–6);
+ * Physical Sciences and Life Sciences start in Grade 10.
  */
 export function subjectsForGrade(grade: number): SubjectId[] {
   if (grade <= 3) return FOUNDATION_SUBJECTS;
-  if (grade <= 6) return ['mathematics', 'natural-sciences'];
-  return grade === 7 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences', 'life-sciences'];
+  if (grade <= 9) return ['mathematics', 'natural-sciences'];
+  return ['mathematics', 'physical-sciences', 'life-sciences'];
 }
 
-/**
- * A subject's name as a learner of this grade knows it. CAPS has no "Physical Sciences" or
- * "Life Sciences" before Grade 10: in Grades 4–9 they are strands of Natural Sciences.
- */
+/** A subject's CAPS name for a grade: Natural Sciences is "Natural Sciences and Technology" in Grades 4–6. */
 export function subjectName(id: SubjectId | string, grade: number): string {
-  const base = getSubject(id)?.name ?? id;
-  if (grade >= 4 && grade <= 9) {
-    if (id === 'physical-sciences') return 'Natural Sciences: Matter & Energy';
-    if (id === 'life-sciences') return 'Natural Sciences: Life & Living';
-  }
-  return base;
+  if (id === 'natural-sciences' && grade >= 4 && grade <= 6) return 'Natural Sciences and Technology';
+  return getSubject(id)?.name ?? id;
 }
 
 /** Why the subject matters, in the words of the learner's phase. */
 export function subjectPitch(id: SubjectId, grade: number): string {
-  if (grade >= 4 && grade <= 9) {
-    if (id === 'physical-sciences') return 'Matter and Materials, Energy and Change: the physics and chemistry inside Natural Sciences. It leads to Physical Sciences in Grade 10.';
-    if (id === 'life-sciences') return 'Life and Living: cells, systems and ecosystems inside Natural Sciences. It leads to Life Sciences in Grade 10.';
+  if (id === 'natural-sciences') {
+    if (grade >= 4 && grade <= 6) return 'Living things, materials, energy, Earth and space, and how people design and build structures.';
+    return 'Life and Living, Matter and Materials, Energy and Change, Planet Earth and Beyond. It leads to Physical Sciences and Life Sciences in Grade 10.';
   }
   return getSubject(id)?.pitch ?? '';
 }
@@ -866,5 +983,5 @@ export function subjectPitch(id: SubjectId, grade: number): string {
 /** What to tick by default for a new learner at a grade. */
 export function defaultSubjects(grade: number): SubjectId[] {
   if (grade <= 3) return FOUNDATION_SUBJECTS;
-  return grade <= 6 ? ['mathematics', 'natural-sciences'] : grade <= 9 ? ['mathematics', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences'];
+  return grade <= 9 ? ['mathematics', 'natural-sciences'] : ['mathematics', 'physical-sciences'];
 }

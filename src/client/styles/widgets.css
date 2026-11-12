@@ -1179,3 +1179,107 @@
 }
 .plot-line.pen { stroke: var(--pen); }
 .plot-point.pen { fill: var(--pen); }
+
+/* ---------- Natural Sciences: Planet Earth and Beyond, Periodic Table, light (EarthSpaceLabs.tsx) ---------- */
+.es-svg { width: 100%; height: auto; display: block; font-family: var(--font); }
+.es-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s3); align-items: start; }
+@media (max-width: 560px) { .es-two { grid-template-columns: minmax(0, 1fr); } }
+.es-small { font-size: 12px; fill: var(--ink-2); }
+.es-tiny { font-size: 10px; fill: var(--ink-3); }
+.muted-fill { fill: var(--ink-3); }
+.es-chips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); }
+.es-caption { margin: var(--s2) 0 0; font-size: var(--t-sm); color: var(--ink-3); }
+
+/* fossil layers */
+.es-bedrock { fill: var(--lab-soil); }
+.es-layer { stroke: var(--paper); stroke-width: 1; }
+.es-layer-a { fill: #d9c8a9; }
+.es-layer-b { fill: #e8d9b5; }
+.es-layer-c { fill: #c9b796; }
+.es-layer.on { stroke: var(--pen); stroke-width: 3; }
+
+/* periodic table */
+.es-pt-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; max-width: 480px; }
+.es-pt-cell { display: grid; place-items: center; gap: 0; min-height: 48px; padding: 4px 0; border: 1px solid var(--rule-strong); border-radius: var(--r-chip); background: var(--paper); color: var(--ink); cursor: pointer; font: inherit; }
+.es-pt-cell:hover { border-color: var(--ink); }
+.es-pt-cell.on { border-color: var(--pen); box-shadow: inset 0 0 0 1px var(--pen); }
+.es-pt-cell:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+.es-pt-z { font-size: 10px; color: var(--ink-3); line-height: 1; }
+.es-pt-sym { font-size: var(--t-lg); font-weight: 700; line-height: 1.1; }
+.by-kind .k-metal, .es-legend .k-metal::before { background: #dfe3ea; }
+.by-kind .k-nonmetal, .es-legend .k-nonmetal::before { background: var(--lab-sky); }
+.by-kind .k-semimetal, .es-legend .k-semimetal::before { background: var(--lab-wax); }
+.es-legend { display: flex; flex-wrap: wrap; gap: var(--s3); list-style: none; padding: 0; margin: var(--s2) 0 0; font-size: var(--t-sm); color: var(--ink-2); }
+.es-legend li::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 6px; border: 1px solid var(--rule-strong); border-radius: 2px; vertical-align: -1px; }
+
+/* seasons */
+.es-orbit { fill: none; stroke: var(--rule-strong); stroke-dasharray: 3 5; }
+.es-sun { fill: var(--lab-sun); }
+.es-earth { fill: var(--lab-sea); stroke: var(--ink); stroke-width: 1.5; }
+.es-axis { stroke: var(--ink); stroke-width: 2; }
+.es-ground { stroke: var(--lab-soil); stroke-width: 3; }
+.es-ray { stroke: var(--lab-sun); stroke-width: 2.5; }
+.es-foot { stroke: var(--pen); stroke-width: 3; }
+.es-arc { fill: none; stroke: var(--ink-3); stroke-width: 1.5; }
+.es-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr)); gap: var(--s2) var(--s4); margin: var(--s3) 0 0; }
+.es-stats div { min-width: 0; }
+.es-stats dt { font-size: var(--t-sm); color: var(--ink-3); }
+.es-stats dd { margin: 0; font-size: var(--t-xl); font-weight: 700; }
+
+/* tides */
+.es-sunray { stroke: var(--lab-sun); stroke-width: 2.5; }
+.es-water { fill: var(--lab-sky); stroke: var(--pen); stroke-width: 1; opacity: 0.9; }
+.es-moon { fill: var(--lab-moon); stroke: var(--ink); stroke-width: 1.5; }
+.es-sand { fill: #e8d9b5; }
+.es-hw { stroke: var(--pen); stroke-width: 2.5; }
+.es-lw { stroke: var(--pen); stroke-width: 2.5; stroke-dasharray: 6 4; }
+
+/* light */
+.es-mirror { fill: var(--rule-strong); }
+.es-pool { fill: var(--lab-sky); }
+.es-normal { stroke: var(--ink-3); stroke-dasharray: 4 4; }
+.es-beam { stroke: var(--lab-hot); stroke-width: 3; }
+.es-beam.faint { opacity: 0.3; }
+.es-beam-head { fill: var(--lab-hot); }
+
+/* light travel */
+.es-axisline { stroke: var(--rule-strong); stroke-width: 1.5; }
+.es-dot { fill: var(--ink-3); }
+.es-dot.on { fill: var(--pen); }
+
+/* rock cycle */
+.es-cycle-line { stroke: var(--rule-strong); stroke-width: 2; }
+.es-node rect { fill: var(--paper); stroke: var(--rule-strong); stroke-width: 1.5; }
+.es-node text { font-size: 11px; fill: var(--ink-2); }
+.es-node.on rect { fill: var(--pen-tint); stroke: var(--pen); stroke-width: 2.5; }
+.es-node.on text { fill: var(--ink); font-weight: 700; }
+
+/* atmosphere */
+.es-band { opacity: 0.55; }
+.es-tropo { fill: var(--lab-sky); }
+.es-strato { fill: var(--lab-clear); }
+.es-meso { fill: var(--lab-glycerine); }
+.es-thermo { fill: var(--paper-2); }
+.es-zero { stroke: var(--ink-3); stroke-dasharray: 2 4; }
+.es-profile { fill: none; stroke: var(--ink); stroke-width: 2; }
+.es-level { stroke: var(--pen); stroke-width: 1; stroke-dasharray: 3 3; }
+.es-marker { fill: var(--pen); stroke: var(--paper); stroke-width: 2; }
+
+/* stars */
+.es-space { border-radius: var(--r-ctl); max-width: 420px; margin: 0 auto; }
+.es-sky { fill: var(--lab-night); }
+.es-st-nebula { fill: #8a7fb8; opacity: 0.45; }
+.es-st-yellow { fill: #ffd86b; }
+.es-st-white { fill: #f4f6ff; }
+.es-st-blue { fill: #9cc0ff; }
+.es-st-red { fill: #e2643a; }
+.es-st-shell { fill: none; stroke: #8fd3c4; stroke-width: 10; opacity: 0.7; }
+.es-st-burst { fill: #fff2c4; stroke: #ffd86b; stroke-width: 8; stroke-dasharray: 4 10; }
+.es-st-hole { fill: #000; }
+.es-st-ring { fill: none; stroke: #ffb35c; stroke-width: 3; opacity: 0.8; }
+@media (prefers-reduced-motion: no-preference) { .es-st { transition: r 0.3s ease; } }
+/* Text drawn on fixed light fills (rock, sand, coloured cells) stays dark in dark mode. */
+.es-on-light { fill: #3a3f45; }
+.by-kind .es-pt-cell { color: #1a1d21; }
+.by-kind .es-pt-cell .es-pt-z { color: #4a5159; }
+.es-rock-svg, .es-fossil .es-svg, .es-light .es-svg, .es-atmo .es-svg { max-width: 560px; margin: 0 auto; }

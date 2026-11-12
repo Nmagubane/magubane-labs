@@ -478,6 +478,16 @@ export const MISTAKES = {
     kind: 'conceptual',
     tip: 'Triangles don\'t change shape when pushed, so frames use them. Folding, rolling or corrugating a material makes it much stiffer.',
   },
+  // ---- Natural Sciences: Planet Earth and Beyond, the Periodic Table, visible light ----
+  'rock-layers': { label: 'Rocks, soil and fossils', kind: 'conceptual', tip: 'Sedimentary rock builds up in layers from the bottom, so deeper layers and their fossils are older. Body fossils are parts of a living thing; trace fossils are signs it left.' },
+  'element-facts': { label: 'The Periodic Table', kind: 'conceptual', tip: 'The table is in order of atomic number (protons). Metals on the left and middle, non-metals on the right, semi-metals on the staircase. Some symbols come from Latin: Na, K, Fe, Au.' },
+  'season-cause': { label: 'What causes seasons', kind: 'conceptual', tip: "Seasons come from the tilt of the Earth's axis, not the distance from the Sun. The hemisphere tilted towards the Sun gets a higher Sun and longer days." },
+  'tide-cause': { label: 'Gravity and tides', kind: 'conceptual', tip: "The Moon's gravity pulls the oceans into two bulges. When the Sun and Moon line up (new and full moon) you get spring tides; at right angles (half moons), neap tides." },
+  'light-reflection': { label: 'Reflection and colour', kind: 'conceptual', tip: 'Measure angles from the normal: angle of incidence = angle of reflection. An object looks the colour of the light it reflects.' },
+  'light-years': { label: 'Distances in space', kind: 'conceptual', tip: 'A light-year is a distance, not a time: about 9,5 trillion km. Further away means light takes longer, so multiply.' },
+  'rock-cycle': { label: 'The rock cycle', kind: 'conceptual', tip: 'Cooling magma or lava → igneous. Weathered sediment, compacted and cemented → sedimentary. Heat and pressure without melting → metamorphic.' },
+  'atmosphere-layers': { label: 'The atmosphere', kind: 'conceptual', tip: 'Troposphere (weather, colder with height), stratosphere (ozone, warmer with height), mesosphere (coldest, meteors), thermosphere (auroras, very hot).' },
+  'star-life': { label: 'The life of stars', kind: 'conceptual', tip: 'Gravity forms a star from a nebula; fusion makes it shine. Sun-like stars become red giants then white dwarfs. Stars over about 8 Sun masses explode as supernovae.' },
   // ---- Foundation Phase (Grades 1–3). Tips are written for the adult helping the child. ----
   'fp-miscount': { label: 'Miscounted by one', kind: 'procedural', tip: 'Touch each object once and say one number for each touch. Move counted objects aside.' },
   'fp-operation': { label: 'Added instead of took away', kind: 'conceptual', tip: 'Act the story out with real things: joining makes more, taking away makes fewer.' },

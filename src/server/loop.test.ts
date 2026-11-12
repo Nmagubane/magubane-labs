@@ -443,7 +443,7 @@ test('educator mode: classes, assignments, access rules, PDF reports', async () 
     assert.equal(tch.user.role, 'teacher');
     await t.call('GET', '/api/home', undefined, 403); // teachers have no learner home
 
-    const cls = await t.call('POST', '/api/teach/classes', { name: '9B Natural Sciences', grade: 9, subjectId: 'physical-sciences' });
+    const cls = await t.call('POST', '/api/teach/classes', { name: '9B Natural Sciences', grade: 9, subjectId: 'natural-sciences' });
     assert.match(cls.joinCode, /^[A-Z2-9]{6}$/);
 
     // A class code works as an invite: a learner signs up with it and joins straight away
@@ -451,7 +451,7 @@ test('educator mode: classes, assignments, access rules, PDF reports', async () 
     const lr = await l.signup({ displayName: 'Kagiso', email: 'kagiso@example.com', password: 'Learn-hard-77', classCode: cls.joinCode.toLowerCase(), ageGroup: 'minor', guardianName: 'Mpho', guardianEmail: 'mpho@example.com', consent: true });
     assert.ok(outbox.some((m) => m.to === 'mpho@example.com' && /joined 9B Natural Sciences/.test(m.subject)), 'guardian told about the class');
     assert.equal((await l.call('GET', '/api/classes')).length, 1);
-    await l.call('PUT', '/api/profile', { grade: 9, curriculumId: 'za-caps', subjects: ['physical-sciences', 'life-sciences'], goals: [], dailyMinutes: 30 });
+    await l.call('PUT', '/api/profile', { grade: 9, curriculumId: 'za-caps', subjects: ['natural-sciences'], goals: [], dailyMinutes: 30 });
     await l.call('POST', '/api/teach/classes', { name: 'x', grade: 9, subjectId: 'mathematics' }, 403); // learners can't teach
 
     // A second learner, not in the class
@@ -536,18 +536,20 @@ test('educator mode: classes, assignments, access rules, PDF reports', async () 
   }
 });
 
-test('look ahead: phase-correct subjects, preview practice that never moves mastery, no tests', async () => {
+test('look ahead: CAPS subjects, preview practice that never moves mastery, no tests', async () => {
   const z = new Client();
   await z.signup({ displayName: 'Zinhle', email: 'zinhle@example.com', password: 'Look-ahead-8', ageGroup: 'adult', consent: true });
-  // Physical and Life Sciences are not Intermediate Phase subjects, so a Grade 5 learner can't take them.
+  // Physical and Life Sciences start in Grade 10, so a Grade 5 or Grade 8 learner can't take them.
   const g5 = await z.call('PUT', '/api/profile', { grade: 5, curriculumId: 'za-caps', subjects: ['mathematics', 'physical-sciences'], goals: [], dailyMinutes: 20 });
   assert.deepEqual(g5.subjects, ['mathematics']);
-  await z.call('PUT', '/api/profile', { grade: 8, curriculumId: 'za-caps', subjects: ['mathematics', 'physical-sciences', 'life-sciences'], goals: [], dailyMinutes: 20 });
+  await z.call('PUT', '/api/profile', { grade: 8, curriculumId: 'za-caps', subjects: ['mathematics', 'natural-sciences', 'physical-sciences'], goals: [], dailyMinutes: 20 });
 
-  // In Grades 4–9 CAPS calls them Natural Sciences.
+  // Natural Sciences is one subject with the four CAPS strands, including Planet Earth and Beyond.
   const cat = await z.call('GET', '/api/catalogue');
-  assert.equal(cat.subjects.find((s: { id: string }) => s.id === 'physical-sciences').name, 'Natural Sciences: Matter & Energy');
-  assert.equal(cat.subjects.find((s: { id: string }) => s.id === 'life-sciences').name, 'Natural Sciences: Life & Living');
+  const ns = cat.subjects.find((s: { id: string }) => s.id === 'natural-sciences');
+  assert.equal(ns.name, 'Natural Sciences');
+  assert.deepEqual(ns.topics.map((t: { name: string }) => t.name).slice(0, 4), ['Life and Living', 'Matter and Materials', 'Energy and Change', 'Planet Earth and Beyond']);
+  assert.ok(ns.topics.find((t: { name: string }) => t.name === 'Planet Earth and Beyond').skills.some((s: { skillId: string; inScope: boolean }) => s.skillId === 'beyond-solar-system' && s.inScope));
 
   // Grade 9 is inside a Grade 8 learner's band; Grade 12 is look ahead.
   assert.equal((await z.call('GET', '/api/skills/expand-brackets')).lookAhead, null);

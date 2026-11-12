@@ -8,9 +8,9 @@ Short, opinionated, and kept current. If the code and this file disagree, fix on
 
 **Grades 1–3 (Junior, Foundation Phase)** and **Grades 4–12**. Junior is the same app, server and engine with its own child-sized experience; see §8.
 
-**Grades 4–12, South Africa (CAPS) first.** The decision between Mathematics and Mathematical Literacy happens at the end of Grade 9, but the confidence that drives it is built (or lost) from Grade 4. Content runs from place value and Natural Sciences & Technology (Grades 4–6) through Grades 7–10 algebra and science to Grade 12 calculus and finance. Each learner works in a grade band (`skillsForLearner`: grade − 4 to grade + 1); Learn shows that band; higher grades sit behind a separate **Look ahead** door (§9).
+**Grades 4–12, South Africa (CAPS) first.** The decision between Mathematics and Mathematical Literacy happens at the end of Grade 9, but the confidence that drives it is built (or lost) from Grade 4. Content runs from place value and Natural Sciences and Technology (Grades 4–6) through Grade 7–9 algebra and Natural Sciences to Grade 10–12 calculus, finance, Physical Sciences and Life Sciences. Subjects follow CAPS (§9); `docs/CAPS-COVERAGE.md` lists what is covered and what is not. Each learner works in a grade band (`skillsForLearner`: grade − 4 to grade + 1); Learn shows that band; higher grades sit behind a separate **Look ahead** door (§9).
 
-Grade 4–6 science is mostly concept checks: its question generators draw on curated fact pools (the test suite accepts at least 3 distinct prompts per level for Natural Sciences & Technology, 10 for everything else). The labs carry the engagement: sorting, growing, building and testing, with feedback in words.
+Natural Sciences (Grades 4–9) is mostly concept checks: its question generators draw on curated fact pools (the test suite accepts at least 3 distinct prompts per level for Natural Sciences, 10 for everything else). The labs carry the engagement: sorting, growing, building and testing, with feedback in words.
 
 ## 2. The learning loop (the product)
 
@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, all 54 lessons and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, all 63 lessons and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -139,7 +139,7 @@ The audit checks every screen, all 54 lessons and every Junior question type. It
 - **POPIA:** under-18s need consent from a competent person (a parent). That means a parental consent flow, a privacy notice, a retention policy and a choice of hosting region.
 - Guardian and teacher email addresses go to the email provider (Brevo or Resend). Sign a data processing agreement with them too.
 - The tutor sends learner messages to the Anthropic API. It sends grade and skill context only, never names or emails. You need a data processing agreement and a policy for what gets logged.
-- Curriculum mappings in `src/shared/curriculum/catalogue.ts` are **provisional** (grade + strand only). Verify them against the CAPS documents before claiming alignment.
+- Curriculum mappings in `src/shared/curriculum/catalogue.ts` now use CAPS topic names and grades, and Grades 7–9 Natural Sciences is audited topic by topic (`docs/CAPS-COVERAGE.md`). The other subjects still need that audit and a teacher review before claiming alignment.
 - Move from SQLite to Postgres when you deploy more than one server instance.
 
 ## 8. Junior: Grades 1–3 (Foundation Phase)
@@ -221,7 +221,7 @@ Instruction strings still live inside the English generators. Moving them into p
 
 **Naming follows CAPS exactly** (`src/shared/curriculum/phases.ts`). "Senior Phase" means Grades 7–9, never Grades 10–12, because that is what every teacher and education official reads it as. The UI labels grades as "Grade 8 · Senior Phase".
 
-**Subjects follow CAPS too.** Physical Sciences and Life Sciences only exist from Grade 10. In Grades 4–9 the same skills are shown as strands of Natural Sciences (`subjectName(id, grade)`): "Natural Sciences: Matter & Energy" and "Natural Sciences: Life & Living". Grades 4–6 are offered Mathematics and Natural Sciences & Technology only. The subject ids stay the same, so mastery carries across the Grade 9 → 10 move. A real Senior Phase "Natural Sciences" subject with all four CAPS strands (including Planet Earth and Beyond) needs content and is not built yet.
+**Subjects follow CAPS too.** Natural Sciences is one subject for Grades 4–9 (named "Natural Sciences and Technology" in Grades 4–6 by `subjectName`), organised by the four CAPS strands as its topics: Life and Living, Matter and Materials, Energy and Change, Planet Earth and Beyond, plus Technology: Structures. Physical Sciences and Life Sciences hold only Grade 10–12 skills. `skillsForLearner` follows the CAPS path between them (`FEEDS` in `catalogue.ts`): Grade 9 Natural Sciences reaches Grade 10 physics and biology, shown in Learn as "Coming up in Grade 10", and Grade 10 learners can catch up on Grade 6–9 Matter, Energy or Life skills through Home and "Builds on" (Learn only shows tabs for the learner's own CAPS subjects). Migration v7 moved Grade 4–9 profiles and classes from Physical/Life Sciences to Natural Sciences. `phases.test.ts` checks that every skill sits at its CAPS grade, after its prerequisites, and that every Senior Phase grade has all four strands. Planet Earth and Beyond now has nine skills across Grades 4–9 (seven new), and the Periodic Table (Grade 7) and Visible light (Grade 8) complete the other strands. The nine new skills have their own labs (`EarthSpaceLabs.tsx`), generators (`ns-senior.ts`) and lessons (`lessons-ns.ts`).
 
 **Brand lockup.** `Logo` takes a `tier`: "Bonisa" in bold, then "Junior" or "Matric" in the same type at regular weight. The shell shows the learner's tier; onboarding switches the lockup as soon as a grade is picked and groups the grades by phase; Junior sign-in shows Bonisa Junior. Teachers and parents see plain Bonisa.
 

@@ -14,6 +14,7 @@ import { placeValue, multiplication, fractionsBasic, decimals, perimeterArea } f
 import { exponents, quadraticFormula, sequences, trigRatios, finance, derivatives } from './generators/math-upper.ts';
 import { livingNonliving, plantNeeds, lifeCycles, matterProperties, metalsNonmetals, mixtures } from './generators/nst-life-matter.ts';
 import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './generators/nst-energy-earth.ts';
+import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSolarSystem, earthSystems, atmosphere, starLife } from './generators/ns-senior.ts';
 import { JUNIOR_TEMPLATES } from '../junior/templates.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
@@ -71,6 +72,15 @@ export const TEMPLATES: QuestionTemplate[] = [
   earthMoon,
   solarSystem,
   structures,
+  rocksFossils,
+  periodicTable,
+  seasons,
+  moonTides,
+  visibleLight,
+  beyondSolarSystem,
+  earthSystems,
+  atmosphere,
+  starLife,
   ...JUNIOR_TEMPLATES,
 ];
 

@@ -289,6 +289,22 @@ const MIGRATIONS: string[] = [
   );
   CREATE INDEX junior_ican_child ON junior_ican(child_id, earned_at);
   `,
+  // v7: subjects follow CAPS. Natural Sciences is one subject for Grades 4–9 (NST in 4–6, NS in 7–9);
+  // Physical Sciences and Life Sciences exist only in Grades 10–12. Mastery is per skill, so nothing is lost.
+  `
+  UPDATE learner_profiles SET subjects = (
+    SELECT json_group_array(s) FROM (
+      SELECT CASE WHEN value IN ('physical-sciences', 'life-sciences') THEN 'natural-sciences' ELSE value END AS s, MIN(key) AS k
+      FROM json_each(learner_profiles.subjects) GROUP BY s ORDER BY k
+    )
+  ) WHERE grade BETWEEN 4 AND 9 AND (subjects LIKE '%physical-sciences%' OR subjects LIKE '%life-sciences%');
+  UPDATE learner_profiles SET subjects = (
+    SELECT json_group_array(value) FROM json_each(learner_profiles.subjects) WHERE value <> 'natural-sciences'
+  ) WHERE grade >= 10 AND subjects LIKE '%natural-sciences%';
+  UPDATE learner_profiles SET subjects = '["mathematics"]' WHERE subjects = '[]';
+  UPDATE classes SET subject_id = 'natural-sciences' WHERE grade BETWEEN 4 AND 9 AND subject_id IN ('physical-sciences', 'life-sciences');
+  UPDATE classes SET subject_id = 'physical-sciences' WHERE grade >= 10 AND subject_id = 'natural-sciences';
+  `,
 ];
 
 /** A per-installation secret (for signed links in emails), created on first use and kept in the database. */

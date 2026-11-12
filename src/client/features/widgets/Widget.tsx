@@ -7,6 +7,7 @@ import { KeyExplorer, EnergyPyramid, PondweedLab, HeartPath, MitosisLab } from '
 import { LivingSort, BeanLab, LifeCycleLab, StatesLab, MaterialBench, SeparationLab } from './NstLabs.tsx';
 import { SoundLab, CircuitBuilder, MoonLab, PlanetStrip, BridgeLab } from './NstLabs2.tsx';
 import { PlaceValueChart, ArrayModel, FractionOfSet, DecimalGrid, RectangleLab } from './MathLabs2.tsx';
+import { FossilLayers, ElementTable, SeasonsLab, TideLab, ReflectionLab, LightTravel, RockCycleLab, AtmosphereClimb, StarLab } from './EarthSpaceLabs.tsx';
 import { ExponentLadder, DiscriminantLab, SequencePlotter, TriangleTrig, SavingsGrowth, TangentLab } from './MathLabs3.tsx';
 
 export function Widget({ spec }: { spec: WidgetSpec }) {
@@ -83,6 +84,24 @@ export function Widget({ spec }: { spec: WidgetSpec }) {
       return <PlanetStrip />;
     case 'bridge-lab':
       return <BridgeLab />;
+    case 'fossil-layers':
+      return <FossilLayers />;
+    case 'element-table':
+      return <ElementTable />;
+    case 'seasons-lab':
+      return <SeasonsLab />;
+    case 'tide-lab':
+      return <TideLab />;
+    case 'reflection-lab':
+      return <ReflectionLab />;
+    case 'light-travel':
+      return <LightTravel />;
+    case 'rock-cycle-lab':
+      return <RockCycleLab />;
+    case 'atmosphere-climb':
+      return <AtmosphereClimb />;
+    case 'star-lab':
+      return <StarLab />;
     case 'place-value-chart':
       return <PlaceValueChart start={spec.start} />;
     case 'array-model':

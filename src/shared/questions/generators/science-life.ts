@@ -631,18 +631,19 @@ export const PHASES = [
   { id: 'telophase', name: 'Telophase', desc: ['A nuclear membrane forms around each set of chromosomes at the two ends of the cell.', 'The chromosomes uncoil at each pole and two new nuclei appear.'] },
   { id: 'interphase', name: 'Interphase', desc: ['The cell grows and copies its DNA, ready to divide.', 'The DNA replicates; chromosomes are long and thin and can\'t be seen as separate threads.'] },
 ] as const;
-const USES: { q: string; a: 'mitosis' | 'meiosis' }[] = [
-  { q: 'A broken bone heals as new bone cells are made.', a: 'mitosis' },
-  { q: 'A cut on your knee is repaired with new skin cells.', a: 'mitosis' },
-  { q: 'Sperm cells are made in the testes.', a: 'meiosis' },
-  { q: 'Egg cells are made in the ovaries.', a: 'meiosis' },
-  { q: 'Cells at the tip of a growing root divide to make the root longer.', a: 'mitosis' },
-  { q: 'Pollen grains are formed in the anthers of a flower.', a: 'meiosis' },
-  { q: 'A spekboom cutting grows into a new plant identical to its parent.', a: 'mitosis' },
-  { q: 'A baby grows from a few cells into trillions.', a: 'mitosis' },
-  { q: 'The process makes four cells, each with half the chromosome number.', a: 'meiosis' },
-  { q: 'The process makes two cells genetically identical to the parent cell.', a: 'mitosis' },
-  { q: 'Crossing over creates new combinations of genes in the cells produced.', a: 'meiosis' },
+/** What mitosis is for (CAPS Grade 10): growth, repair, replacing cells and asexual reproduction. */
+const ROLES = [
+  'A broken bone heals as new bone cells are made.',
+  'A cut on your knee is repaired with new skin cells.',
+  'Cells at the tip of a growing root divide to make the root longer.',
+  'A spekboom cutting grows into a new plant identical to its parent.',
+  'A baby grows from a few cells into trillions.',
+  'Red blood cells that wear out are replaced by new ones.',
+  'An amoeba splits in two to reproduce.',
+  'A lizard regrows the tail it lost.',
+  'The lining of your stomach is replaced every few days.',
+  'A potato sprouts a new plant identical to the parent plant.',
+  'Your hair grows longer.',
 ];
 
 export const cellDivision: QuestionTemplate = {
@@ -681,16 +682,27 @@ export const cellDivision: QuestionTemplate = {
       };
     }
     if (level === 3) {
-      const half = o.n2 / 2;
-      const gamete = o.plant ? 'pollen grain' : rng.pick(['sperm cell', 'egg cell']);
+      // Grade 10 CAPS teaches mitosis and the cell cycle; meiosis waits for Grade 12.
+      const t = rng.pick([6, 8, 10, 12, 20, 24]);
+      const k = rng.int(2, 6);
+      const hours = t * k;
+      const tumour = rng.chance(0.5);
       return {
-        prompt: `A body cell of ${o.name} has ${o.n2} chromosomes. How many chromosomes are there in a ${gamete} made by meiosis?`,
-        input: { kind: 'numeric', unit: 'chromosomes' },
-        answer: exact(half),
-        answerDisplay: `${half}`,
-        hints: ['Gametes are haploid ($n$): they have half the body-cell number.', 'At fertilisation two gametes join to restore $2n$.'],
-        solution: [`Meiosis halves the chromosome number: $2n = ${o.n2} \\Rightarrow n = ${half}$.`, `When two gametes fuse, $${half} + ${half} = ${o.n2}$ again.`],
-        misconceptions: keepNum([{ code: 'mitosis-meiosis', answer: exact(o.n2), feedback: 'That is what mitosis gives. Meiosis halves the number so that fertilisation restores it.' }], half),
+        prompt: tumour
+          ? `Cancer is mitosis that is out of control. A tumour cell completes one cell cycle every ${t} hours, and so does every cell it makes. Starting from one cell, how many tumour cells are there after ${hours} hours?`
+          : `A cell in a growing root tip completes one cell cycle every ${t} hours, and so does every cell it makes. Starting from one cell, how many cells are there after ${hours} hours?`,
+        input: { kind: 'numeric', unit: 'cells' },
+        answer: exact(2 ** k),
+        answerDisplay: `${2 ** k}`,
+        hints: [`How many complete cycles fit into ${hours} hours?`, 'Each cycle ends in mitosis, which doubles the number of cells.'],
+        solution: [`$${hours} \\div ${t} = ${k}$ cycles.`, `Each cycle doubles the cells: $2^{${k}} = ${2 ** k}$.`],
+        misconceptions: keepNum(
+          [
+            { code: 'mitosis-meiosis', answer: exact(2 * k), feedback: `There are ${k} cycles, and each one **doubles** the number of cells: 1 → 2 → 4 → … It doesn't go up by 2 each time.` },
+            { code: 'probable-slip', answer: exact(k), feedback: `${k} is the number of cycles. Now double 1 cell that many times.` },
+          ],
+          2 ** k,
+        ),
       };
     }
     if (level === 4) {
@@ -728,19 +740,32 @@ export const cellDivision: QuestionTemplate = {
         ),
       };
     }
-    const u = rng.pick(USES);
-    const opts: Opt[] = [
-      { id: 'mitosis', text: 'Mitosis' },
-      { id: 'meiosis', text: 'Meiosis' },
-    ];
+    const r = rng.pick(ROLES);
+    if (rng.chance(0.5)) {
+      return choice(rng, {
+        prompt: `${r} How do the new cells compare with the cells they came from?`,
+        correct: { id: 'same', text: 'They are identical, with the same number of chromosomes' },
+        distractors: [
+          { id: 'half', text: 'They have half the number of chromosomes', feedback: 'Halving only happens when sex cells are made (meiosis, Grade 12). Growth and repair need identical cells.' },
+          { id: 'double', text: 'They have twice the number of chromosomes', feedback: 'The DNA is copied in interphase, but then shared equally between the two new cells, so each has the original number.' },
+          { id: 'mixed', text: 'They have new combinations of genes', feedback: 'Mitosis makes exact copies. New combinations of genes come from sexual reproduction.' },
+        ],
+        code: 'mitosis-meiosis',
+        hints: ['Growth, repair and asexual reproduction all happen by mitosis.'],
+        solution: ['This happens by **mitosis**: each new cell is identical to the parent cell, with the full set of chromosomes ($2n$).'],
+      });
+    }
     return choice(rng, {
-      prompt: `Which type of cell division is this? "${u.q}"`,
-      correct: opts.find((x) => x.id === u.a)!,
-      distractors: [{ ...opts.find((x) => x.id !== u.a)!, feedback: u.a === 'mitosis' ? 'Growth, repair and asexual reproduction need identical cells with the full chromosome number: mitosis.' : 'Making gametes (sex cells) halves the chromosome number and creates variety: meiosis.' }],
-      keepOrder: opts,
+      prompt: `${r} Which process makes these new cells?`,
+      correct: { id: 'mitosis', text: 'Mitosis' },
+      distractors: [
+        { id: 'meiosis', text: 'Meiosis', feedback: 'Meiosis makes sex cells with half the chromosomes (Grade 12). Growth, repair and asexual reproduction use mitosis.' },
+        { id: 'fert', text: 'Fertilisation', feedback: 'Fertilisation joins an egg and a sperm. It makes one new cell; it does not make more body cells.' },
+        { id: 'diff', text: 'Diffusion', feedback: 'Diffusion moves substances in and out of cells. It does not make new cells.' },
+      ],
       code: 'mitosis-meiosis',
-      hints: ['Is the purpose growth/repair (identical cells), or making sex cells (half the chromosomes)?'],
-      solution: [u.a === 'mitosis' ? 'Growth, repair and asexual reproduction use **mitosis**: 2 identical cells with the full set of chromosomes.' : 'Gametes are made by **meiosis**: 4 genetically different cells with half the chromosomes.'],
+      hints: ['Which process makes two identical cells from one?'],
+      solution: ['Growth, repair, replacing worn-out cells and asexual reproduction all happen by **mitosis**.'],
     });
   },
 };

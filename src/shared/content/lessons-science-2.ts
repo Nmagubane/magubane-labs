@@ -256,7 +256,7 @@ export const SCIENCE_LESSONS_2: Lesson[] = [
   {
     id: 'cell-division',
     skillId: 'cell-division',
-    title: 'Mitosis and meiosis',
+    title: 'Cell division: mitosis',
     minutes: 11,
     blocks: [
       {
@@ -269,10 +269,10 @@ export const SCIENCE_LESSONS_2: Lesson[] = [
       {
         kind: 'widget',
         title: 'Cell division stepper',
-        task: 'Step through mitosis and count the chromosomes and chromatids at each stage. Then switch to meiosis and compare the daughter cells.',
+        task: 'Step through mitosis and count the chromosomes and chromatids at each stage. How do the two daughter cells compare with the parent cell?',
         widget: { type: 'mitosis-lab' },
       },
-      { kind: 'key-idea', body: '**Mitosis**: prophase, metaphase (chromosomes in the **m**iddle), anaphase (chromatids pulled **a**part), telophase, giving $2$ identical cells with $2n$, for growth and repair. **Meiosis**: $4$ genetically different gametes with $n$ chromosomes.' },
+      { kind: 'key-idea', body: 'The **cell cycle** is interphase (the DNA is copied) then **mitosis**: prophase, metaphase (chromosomes in the **m**iddle), anaphase (chromatids pulled **a**part), telophase. The result is $2$ identical cells with $2n$ chromosomes, for growth, repair and asexual reproduction. **Cancer** is mitosis out of control.' },
       { kind: 'example', level: 3 },
       { kind: 'trap', wrong: 'At metaphase a human cell has $46$ chromatids.', why: 'Each of the $46$ chromosomes has been copied into two chromatids, so there are $92$.' },
       { kind: 'check', level: 1 },

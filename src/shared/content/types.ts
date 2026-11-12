@@ -39,6 +39,16 @@ export type WidgetSpec =
   | { type: 'moon-lab' }
   | { type: 'planet-strip' }
   | { type: 'bridge-lab' }
+  // Natural Sciences: Planet Earth and Beyond, Periodic Table, visible light (Grades 5–9)
+  | { type: 'fossil-layers' }
+  | { type: 'element-table' }
+  | { type: 'seasons-lab' }
+  | { type: 'tide-lab' }
+  | { type: 'reflection-lab' }
+  | { type: 'light-travel' }
+  | { type: 'rock-cycle-lab' }
+  | { type: 'atmosphere-climb' }
+  | { type: 'star-lab' }
   // Mathematics, Grades 4–6
   | { type: 'place-value-chart'; start: number }
   | { type: 'array-model'; rows: number; cols: number }
