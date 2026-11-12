@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (77 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (80 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -292,4 +292,24 @@ Six new skills in the `trigonometry` topic, after the existing Grade 10 `trig-ra
 **Equations don't reveal how many solutions they have.** The `roots` input starts with one box; the learner adds more ("+ Add another solution") or removes them. Grading tells a learner who found some but not all solutions `missing-solutions`, and one who added a wrong value `extra-solutions`, without giving the missing ones away. Answers may be typed as `x = 30°`.
 
 **Not built yet.** Trig graphs (counted under Functions).
+
+## 13. Statistics (Paper 2)
+
+Three skills in the `statistics` topic (`math-stats.ts`, `lessons-stats.ts`, `StatsLabs.tsx`):
+
+| Skill | Grade | What it covers |
+|---|---|---|
+| `stats-summary` | 10 | Mean, median, quartiles and IQR, reading box-and-whisker plots, estimated mean of grouped data |
+| `stats-spread` | 11 | Standard deviation, values within one σ, reading ogives (counts and the median), outliers |
+| `stats-regression` | 12 | Describing correlation from a scatter plot, the regression line $\hat{y} = a + bx$, $r$, predicting |
+
+**No learner is marked wrong for their teacher's quartile method.** Quartile questions use n = 4k + 3 values, where the two methods taught in South African schools (median of each half, and position $(n + 1)/4$) give the same answer. `stats.test.ts` checks both methods on every quartile question.
+
+**CAPS conventions.** Standard deviation is the population σ (divide by n); the sample $s$ is a diagnosed mistake ("choose σx, not sx"). Data comes from South African contexts (taxi waiting times, Pietermaritzburg rainfall, car values in rand).
+
+**Checked independently.** `stats.test.ts` recomputes every answer from the data shown in the question: means, medians, quartiles, grouped means, σ, counts, ogive readings, the single outlier, and $a$, $b$ and $r$ by a different formula from the generator's. Correlation labels must match the plotted points' $r$ (strong: $|r| \ge 0{,}9$; weak: $0{,}35$–$0{,}6$; none: $|r| \le 0{,}15$), so a learner is never asked to judge a borderline plot.
+
+**Labs:** a dot plot you drag (mean, median, σ band and box plot update together: drag one value out and watch the mean move while the median stays), and a scatter plot you drag (regression line and $r$).
+
+**Figures.** The `graph` figure gained `hideY` (a number line for box plots) and axis titles. Axis ticks now pick a "nice" step (1, 2, 5, 10, 20, 25, 50…) for about eight labels, so graphs with large values (rand, marks out of 100) stay readable.
 

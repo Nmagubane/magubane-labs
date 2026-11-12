@@ -19,6 +19,7 @@ import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, propor
 import { coordinateGeometry, lineEquations, circleEquations } from './generators/math-analytic.ts';
 import { trigSpecial, trigReduction, trigEquations, triangleRules, compoundAngles } from './generators/math-trig.ts';
 import { trig2d3d } from './generators/math-trig-3d.ts';
+import { statsSummary, statsSpread, statsRegression } from './generators/math-stats.ts';
 import { JUNIOR_TEMPLATES } from '../junior/templates.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
@@ -99,6 +100,9 @@ export const TEMPLATES: QuestionTemplate[] = [
   triangleRules,
   compoundAngles,
   trig2d3d,
+  statsSummary,
+  statsSpread,
+  statsRegression,
   ...JUNIOR_TEMPLATES,
 ];
 

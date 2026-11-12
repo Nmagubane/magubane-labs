@@ -1325,3 +1325,6 @@
 .ag-full { flex-basis: 100%; }
 .plot-title-x, .plot-title-y { margin: 0; font-size: var(--t-xs); font-weight: 700; color: var(--ink-2); }
 .plot-title-x { text-align: center; }
+.stats-box { fill: var(--pen-tint); stroke: var(--ink); stroke-width: 2; }
+.stats-band { fill: var(--hl); fill-opacity: 0.35; }
+.stats-mean { stroke: var(--pen); stroke-width: 2.5; stroke-dasharray: 4 3; }

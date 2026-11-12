@@ -56,6 +56,7 @@ export type WidgetSpec =
   | { type: 'proportion-lab' }
   | { type: 'coord-lab'; mode: 'points' | 'lines' | 'circle' }
   | { type: 'trig-lab'; mode: 'circle' | 'triangle' }
+  | { type: 'stats-lab'; mode: 'dots' | 'scatter' }
   // Mathematics, Grades 4–6
   | { type: 'place-value-chart'; start: number }
   | { type: 'array-model'; rows: number; cols: number }

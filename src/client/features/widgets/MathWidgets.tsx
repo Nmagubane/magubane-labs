@@ -256,7 +256,7 @@ export function Draggable({ s, x, y, label, onMove }: { s: Scale; x: number; y: 
       className="drag-point"
       tabIndex={0}
       role="slider"
-      aria-label={`${label}: (${x}, ${y}). Use the arrow keys to move it.`}
+      aria-label={`${label || 'Point'}: (${x}, ${y}). Use the arrow keys to move it.`}
       aria-valuetext={`(${x}, ${y})`}
       onKeyDown={onKey}
       onPointerDown={(e) => {
@@ -273,9 +273,11 @@ export function Draggable({ s, x, y, label, onMove }: { s: Scale; x: number; y: 
     >
       <circle cx={s.x(x)} cy={s.y(y)} r={18} className="drag-hit" />
       <circle cx={s.x(x)} cy={s.y(y)} r={7} className="drag-dot" />
-      <text x={s.x(x) + 11} y={s.y(y) - 11} className="plot-point-label">
-        {label}({x}; {y})
-      </text>
+      {label ? (
+        <text x={s.x(x) + 11} y={s.y(y) - 11} className="plot-point-label">
+          {label}({x}; {y})
+        </text>
+      ) : null}
     </g>
   );
 }

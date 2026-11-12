@@ -32,7 +32,14 @@ export function makeScale(xRange: [number, number], yRange: [number, number], wi
 
 function ticks(a: number, b: number): number[] {
   const span = b - a;
-  const step = span > 24 ? 5 : span > 12 ? 2 : 1;
+  // Small ranges keep a tick on every whole number; larger ones get a "nice" step (2, 5, 10, 20, 25, 50, …) for about 8 labels.
+  let step = 1;
+  if (span > 12) {
+    const raw = span / 8;
+    const mag = 10 ** Math.floor(Math.log10(raw));
+    // 2,5 only from 25 upwards, so small graphs keep whole-number labels.
+    step = (mag >= 10 ? [1, 2, 2.5, 5, 10] : [1, 2, 5, 10]).map((k) => k * mag).find((k) => k >= raw) ?? 10 * mag;
+  }
   const out: number[] = [];
   for (let v = Math.ceil(a / step) * step; v <= b; v += step) out.push(v);
   return out;
