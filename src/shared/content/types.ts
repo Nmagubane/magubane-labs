@@ -49,6 +49,11 @@ export type WidgetSpec =
   | { type: 'rock-cycle-lab' }
   | { type: 'atmosphere-climb' }
   | { type: 'star-lab' }
+  // Euclidean geometry (Grades 10–12)
+  | { type: 'quad-lab' }
+  | { type: 'midpoint-lab' }
+  | { type: 'circle-lab'; mode: 'centre' | 'cyclic' }
+  | { type: 'proportion-lab' }
   // Mathematics, Grades 4–6
   | { type: 'place-value-chart'; start: number }
   | { type: 'array-model'; rows: number; cols: number }

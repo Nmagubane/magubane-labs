@@ -55,24 +55,84 @@ Topic names are from the CAPS Natural Sciences Grades 7–9 content overview. �
 
 **Summary:** 24 of the 56 Senior Phase topics are covered fully and 6 partly (30 of 56, about 54%). Planet Earth and Beyond went from 0 of 11 to 10 of 11 fully and 1 partly. Every Senior Phase grade now has at least one skill in each of the four strands (enforced by a test).
 
-## 4. Other subjects: what is covered (INFERENCE until audited the same way)
+## 4. Mathematics: topic-by-topic coverage (FACT for the topic lists)
+
+Topic names are from the DBE CAPS Mathematics documents for Grades 4–6, 7–9 and 10–12. ✓ = a Bonisa skill teaches it; ◐ = partly; ✗ = GAP.
+
+### Grade 12 final exam (FACT)
+
+Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra and equations 25, functions and graphs 35, finance 15, differential calculus 35, probability 15. Paper 2: Euclidean geometry and measurement 50, analytical geometry 40, trigonometry 40, statistics and regression 20 (each ± 3).
+
+### Grades 10–12
+
+| Topic | Gr 10 | Gr 11 | Gr 12 |
+|---|---|---|---|
+| Algebraic expressions | ✓ factorising trinomials (✗ surds, binomial × trinomial, sums and differences of cubes, algebraic fractions) | | |
+| Exponents and surds | ✓ laws of exponents | ✗ surds, surd equations | |
+| Number patterns, sequences and series | ✗ linear patterns | ✗ quadratic patterns | ✓ arithmetic and geometric sequences and series |
+| Equations and inequalities | ◐ quadratics by factorising (✗ simultaneous, literal, inequalities) | ◐ quadratic formula (✗ completing the square, quadratic inequalities, nature of roots, linear–quadratic systems) | |
+| Functions | ◐ straight lines (✗ parabola, hyperbola, exponential) | ✗ parameters, average gradient, trig graphs | ✗ inverses, logarithms ✗ polynomials (factor and remainder theorems) |
+| Finance, growth and decay | ✓ simple and compound interest | ✗ depreciation, nominal and effective rates | ✗ annuities, loans |
+| Trigonometry | ◐ ratios (✗ special angles, equations) | ✗ identities, reduction, general solution, sine, cosine and area rules | ✗ compound and double angles, 2D and 3D |
+| Euclidean geometry | ◐ quadrilaterals, midpoint theorem and converse | ◐ all seven circle theorems and converses | ◐ proportionality, similarity, Pythagoras by similar triangles |
+| Analytical geometry | ◐ gradient (✗ distance, midpoint, parallel and perpendicular) | ✗ equations of lines, inclination | ✗ circles and tangents |
+| Statistics | ✗ central tendency, quartiles, box-and-whisker | ✗ ogives, variance and standard deviation | ✗ regression and correlation |
+| Measurement | ✗ surface area and volume of solids | | |
+| Probability | ✗ Venn diagrams, mutually exclusive events | ✗ independent events, tree diagrams | ✗ counting principle |
+| Differential calculus | | | ◐ derivatives (✗ first principles, cubic graphs, optimisation) |
+
+### Grades 7–9 (every topic runs through all three grades)
+
+| Content area | Topics |
+|---|---|
+| Numbers, operations and relationships | Whole numbers ◐ (order of operations) · Exponents ✗ · Integers ✓ · Common fractions ✓ · Decimal fractions ✗ |
+| Patterns, functions and algebra | Numeric and geometric patterns ✗ · Functions and relationships ✗ · Algebraic expressions ✓ · Algebraic equations ✓ · Graphs ◐ (gradient) |
+| Space and shape (geometry) | Construction of geometric figures ✗ · Geometry of 2D shapes ✗ · Geometry of straight lines ✗ · Geometry of 3D objects ✗ · Transformation geometry ✗ |
+| Measurement | Area and perimeter of 2D shapes ◐ (Grade 5 skill) · Surface area and volume of 3D objects ✗ · Theorem of Pythagoras ✗ |
+| Data handling | Collect, organise and summarise ✗ · Represent ✗ · Interpret, analyse and report ✗ · Probability ✗ |
+
+### Grades 4–6
+
+| Content area | Topics |
+|---|---|
+| Numbers, operations and relationships | Whole numbers ✓ (place value, multiplication and division) · Common fractions ✓ · Decimal fractions ✓ (Grade 6) · Percentages ✗ |
+| Patterns, functions and algebra | Numeric patterns ✗ · Geometric patterns ✗ · Number sentences ✗ |
+| Space and shape | Properties of 2D shapes ✗ · Properties of 3D objects ✗ · Symmetry ✗ · Transformations ✗ · Viewing objects ✗ · Position and movement ✗ |
+| Measurement | Length ✗ · Mass ✗ · Capacity/volume ✗ · Time ✗ · Temperature ✗ · Perimeter, area and volume ✓ |
+| Data handling | Collecting and organising ✗ · Representing ✗ · Analysing and reporting ✗ · Probability ✗ |
+
+**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks) is now built; analytical geometry, most of trigonometry and all of statistics are not.
+
+**Euclidean geometry: what ◐ means.** Every theorem in the Grades 10–12 list is taught (lesson and lab) and practised: calculate angles and lengths from a diagram, give the reason for a step, and solve for x using a theorem. Not yet: writing a full multi-step proof in statement–reason form (the "riders" that carry most exam marks), and proving the theorems themselves (CAPS requires learners to prove some of them). Step-by-step proof input is the next piece of work on this topic.
+
+### Build order
+
+1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~ (built, proofs still to come), then analytical geometry, trigonometry, statistics. Half the Grade 12 maths mark.
+2. **Paper 1 gaps, Grades 10–12:** functions and graphs, probability, equations and inequalities, finance, calculus.
+3. **Grades 7–9:** geometry (2D, straight lines, construction), exponents, Pythagoras, data handling and probability, patterns.
+4. **Grades 4–6:** measurement, 2D and 3D shapes, patterns, data handling.
+
+Every topic gets the core (generator with diagnosed mistakes, a short lesson, mastery and tests). Labs go where manipulating something teaches: graphs, geometry, probability.
+
+## 5. Other subjects: what is covered (INFERENCE until audited the same way)
 
 | Subject | Skills per grade | Covered | Biggest known gaps (from the CAPS overviews) |
 |---|---|---|---|
-| Mathematics 4–6 | G4: 3, G5: 1, G6: 2 | Whole numbers, common and decimal fractions, perimeter and area | Number patterns, geometry (2D and 3D shapes, symmetry, transformations), time, mass and capacity, data handling |
-| Mathematics 7–9 | G7: 4, G8: 2, G9: 2 | Integers, order of operations, fractions, expressions, linear equations, gradient | Exponents, geometry of 2D shapes and lines, construction, Pythagoras, area and volume, data handling, probability |
-| Mathematics 10–12 | G10: 6, G11: 1, G12: 2 | Factorising, exponents, quadratic equations, straight lines, trig ratios, finance, quadratic formula, sequences and series, derivatives | Surds and inequalities, hyperbola and exponential graphs, analytical and Euclidean geometry, trig identities and graphs, statistics, probability, polynomials |
 | Natural Sciences and Technology 4–6 | G4: 5, G5: 4, G6: 3 | All four strands and Technology: Structures | Rocket systems; systems to explore the Moon and Mars; Processing and Systems and control (Technology); more Life and Living and Energy topics |
 | Physical Sciences 10–12 | G10: 4, G11: 2, G12: 1 | Motion, mechanical energy, Newton's second law, vertical projectile motion, Ohm's law, the atom, the mole | Waves, sound and light; electrostatics; momentum and impulse; work, energy and power; chemical bonding; rates and equilibrium; acids and bases (FET); organic chemistry; electrochemistry |
 | Life Sciences 10–12 | G10: 2, G12: 1 | Cells, mitosis, monohybrid crosses | Biodiversity and classification (FET), plant and animal tissues, support and transport systems, nutrition, meiosis and DNA, human reproduction, nervous and endocrine systems, evolution, human impact |
 
-## 5. What it would take to say "CAPS-aligned"
+## 6. What it would take to say "CAPS-aligned"
 
-1. Audit Mathematics, NS&T, Physical Sciences and Life Sciences topic by topic against the CAPS documents and the current Annual Teaching Plans, as section 3 does for Grades 7–9 Natural Sciences.
+1. Audit NS&T, Physical Sciences and Life Sciences topic by topic against the CAPS documents and the current Annual Teaching Plans, as sections 3 and 4 do for Natural Sciences and Mathematics.
 2. Have a practising teacher in each phase review the mappings in `src/shared/curriculum/catalogue.ts`.
 3. Until then, describe Bonisa as "organised by CAPS subjects, phases and strands", not as "fully CAPS-aligned".
 
 ## Sources
+
+- DBE, CAPS Mathematics Grades 10–12: https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf
+- DBE, CAPS Mathematics Grades 7–9: https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20SP%20%20MATHEMATICS%20GR%207-9.pdf
+- DBE, CAPS Mathematics Grades 4–6 (copy hosted by Graeme College): https://www.graemecollege.co.za/media/1249/caps-ip-mathematics-gr-4-6-web.pdf
 
 - DBE, Curriculum and Assessment Policy Statement, Natural Sciences Grades 7–9: https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20SP%20%20NATURAL%20SCIENCES%20GR%207-9%20%20WEB.pdf
 - DBE, 2023/24 Annual Teaching Plan, Natural Sciences and Technology Grade 4: https://www.education.gov.za/Portals/0/Documents/Recovery%20plan%20page/2023%20ATPs/GET%20Intermediate%20Phase%20Content%20Subjects/Grade%204/1.070%20ATP%202023-24%20Gr%204%20NS%20Tech%20final.pdf

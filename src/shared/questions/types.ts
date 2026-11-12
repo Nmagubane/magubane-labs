@@ -83,7 +83,24 @@ export type Figure =
       points?: { x: number; y: number; label?: string }[];
     }
   | { kind: 'circuit'; voltage: number | null; resistors: (number | null)[]; current: number | null }
-  | { kind: 'punnett'; parentA: string; parentB: string; reveal: boolean };
+  | { kind: 'punnett'; parentA: string; parentB: string; reveal: boolean }
+  | GeometryFigure;
+
+/**
+ * A Euclidean geometry diagram, drawn by the client. Coordinates are maths coordinates (y up) in any units;
+ * the client fits them to the box. Like a textbook sketch, it is "not drawn to scale" in spirit, but the
+ * generators draw it close to scale so it never misleads.
+ */
+export interface GeometryFigure {
+  kind: 'geometry';
+  /** What a screen reader hears: the givens, never the answer. */
+  alt: string;
+  points: { id: string; x: number; y: number; label?: string; dot?: boolean }[];
+  segments?: { a: string; b: string; ticks?: 1 | 2; arrows?: 1 | 2; dashed?: boolean; extend?: number }[];
+  circles?: { c: string; r: number }[];
+  /** An angle at vertex `at`, between rays to `from` and `to`, marked with `text` (e.g. "64°" or "x"). */
+  angles?: { at: string; from: string; to: string; text: string; right?: boolean }[];
+}
 
 /**
  * What a Junior learner looks at. Drawn by the client from data, never an image of the answer.

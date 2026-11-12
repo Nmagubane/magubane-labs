@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, all 63 lessons and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (68 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -230,4 +230,26 @@ Instruction strings still live inside the English generators. Moving them into p
 - Practice on a look-ahead skill is titled "Look ahead: …", gives full feedback, hints and worked solutions, and **never changes mastery** (`skill_states` is untouched; the response is stored with `rating_before = rating_after` and `FeedbackDto.preview`). So a Grade 7 who tries calculus and struggles starts Grade 12 with a clean slate, and no adult sees it as a weakness.
 - Tests refuse look-ahead skills (`422 look_ahead`). Recommendations, Home, weak areas, exam readiness and teacher views already use the band only.
 - Work a teacher assigns always counts, whatever its grade.
+
+## 10. Euclidean geometry (Paper 2)
+
+The first Paper 2 topic: five skills in a new `euclidean` topic, following the CAPS Grades 10–12 theorem list. `docs/CAPS-COVERAGE.md` §4 has the full Mathematics audit and the build order.
+
+| Skill | Grade | What it covers |
+|---|---|---|
+| `quadrilaterals` | 10 | Properties of the special quadrilaterals, used as reasons |
+| `midpoint-theorem` | 10 | Midpoint theorem and its converse |
+| `circle-theorems` | 11 | Perpendicular from the centre, angle at the centre, semicircle, same segment |
+| `cyclic-tangents` | 11 | Cyclic quadrilaterals (opposite and exterior angles), tangents from a point, tangent–chord |
+| `proportionality` | 12 | Proportionality theorem, similar triangles, Pythagoras by similar triangles |
+
+**Diagrams are data.** Questions carry a `GeometryFigure` (`kind: 'geometry'`): named points in maths coordinates, segments with equal-length ticks and parallel arrows, circles, and angle marks. `Figure.tsx` fits it into the box and places each label in the widest gap between the lines that meet at its point, so labels avoid lines and angle marks without hand placement. Every figure has alt text that states the givens.
+
+**Diagrams must be true.** `geometry.test.ts` generates 150 seeds × 5 levels × 5 skills and checks that every figure has alt text and valid segments, that every marked angle (including right-angle marks) matches the drawn angle to within 1.5°, and that the angle marked x is the answer. A learner who measures the diagram should get the right answer.
+
+**Reasons are taught as reasons.** `REASONS` in `math-geometry.ts` holds 22 reasons in the wording South African markers expect (e.g. "opp ∠s of cyclic quad", "tan ⊥ radius"). Reason questions show a diagram and a statement and offer the right reason with three plausible wrong ones; each wrong one explains what that reason actually says. New mistake codes: `geometry-reason`, `parallel-angles`, `midpoint-ratio`, `circle-theorem`, `proportion-ratio`.
+
+**Labs come before theorems.** `GeometryLabs.tsx`: a quadrilateral explorer (live property checklist as the shape changes), a midpoint lab, a circle lab (angle at the centre, same segment and diameter; cyclic quad and tangent–chord) and a parallel-line lab. Each lesson asks for a prediction, lets the learner find the pattern in the lab, then states the theorem.
+
+**Not built yet.** Writing a full multi-step proof in statement–reason form, and proving the theorems themselves. Both need a step-by-step proof input; current questions assess one step or one calculation at a time.
 

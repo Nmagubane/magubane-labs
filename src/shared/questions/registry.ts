@@ -15,6 +15,7 @@ import { exponents, quadraticFormula, sequences, trigRatios, finance, derivative
 import { livingNonliving, plantNeeds, lifeCycles, matterProperties, metalsNonmetals, mixtures } from './generators/nst-life-matter.ts';
 import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './generators/nst-energy-earth.ts';
 import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSolarSystem, earthSystems, atmosphere, starLife } from './generators/ns-senior.ts';
+import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, proportionality } from './generators/math-geometry.ts';
 import { JUNIOR_TEMPLATES } from '../junior/templates.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
@@ -81,6 +82,11 @@ export const TEMPLATES: QuestionTemplate[] = [
   earthSystems,
   atmosphere,
   starLife,
+  quadrilaterals,
+  midpointTheorem,
+  circleTheorems,
+  cyclicTangents,
+  proportionality,
   ...JUNIOR_TEMPLATES,
 ];
 
