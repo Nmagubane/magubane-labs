@@ -59,7 +59,7 @@ export function JuniorSignIn() {
   return (
     <main id="main" className="jsi">
       <header className="jsi-top">
-        <Logo />
+        <Logo tier="junior" />
         <Link to="/login?from=children" className="btn btn-quiet btn-sm">
           {UI.grownUps}
         </Link>

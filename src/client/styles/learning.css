@@ -1604,3 +1604,102 @@
 }
 
 .learn-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s4); }
+
+/* ---------- Look ahead: higher-grade skills, shown as a preview ---------- */
+/* Dashed rules mark "not yours yet" without colour: weakness is never red, and a preview is not a weakness. */
+.look-ahead {
+  margin: var(--s7) 0 var(--s4);
+  scroll-margin-top: calc(var(--s8) + var(--s4));
+  padding: var(--s5) var(--s4);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--r-sheet);
+  background: var(--paper-2);
+}
+.look-ahead-head h2 {
+  margin: 0 0 var(--s2);
+  font-size: var(--t-xl);
+  letter-spacing: -0.02em;
+}
+.look-ahead-head p {
+  margin: 0 0 var(--s5);
+  max-width: 62ch;
+  color: var(--ink-2);
+}
+.look-ahead-phase + .look-ahead-phase {
+  margin-top: var(--s6);
+}
+.look-ahead-phase-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s1) var(--s3);
+  margin: 0 0 var(--s3);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--t-lg);
+}
+.look-ahead-renamed {
+  margin: 0 0 var(--s2);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+.look-ahead:focus {
+  outline: none;
+}
+.look-ahead .skill-list {
+  border-style: dashed;
+}
+.skill-row.is-preview .skill-sig,
+.skill-row.is-preview .skill-name {
+  color: var(--ink);
+}
+.tier-tag,
+.preview-tag {
+  display: inline-block;
+  padding: 1px var(--s2);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-chip);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.preview-tag {
+  border-style: dashed;
+}
+.preview-strip {
+  display: grid;
+  gap: var(--s1);
+  margin: 0 0 var(--s5);
+  padding: var(--s3) var(--s4);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--r-ctl);
+  background: var(--paper-2);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+.preview-strip strong {
+  color: var(--ink);
+}
+
+/* Onboarding: grades grouped by CAPS phase */
+.grade-phases {
+  display: grid;
+  gap: var(--s4);
+  max-width: 640px;
+  margin-bottom: var(--s5);
+}
+.grade-phases .grade-grid {
+  margin-bottom: 0;
+}
+.grade-phase-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s2);
+  margin: 0 0 var(--s2);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--ink-2);
+}

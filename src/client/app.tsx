@@ -30,6 +30,7 @@ import { JuniorHome, JuniorWorld } from './features/junior/JuniorHome.tsx';
 import { IcanPage } from './features/junior/Ican.tsx';
 import { Player } from './features/junior/Player.tsx';
 import { FamilyHome } from './features/family/FamilyHome.tsx';
+import { tierOf, gradeLabel } from '../shared/curriculum/phases.ts';
 import { ChildOverview } from './features/family/ChildOverview.tsx';
 
 const NAV: { to: string; label: string; icon: IconName; match: string[] }[] = [
@@ -103,14 +104,18 @@ function Shell({ children }: { children: ReactNode }) {
   const parent = me?.user?.role === 'parent';
   const nav = teacher ? TEACH_NAV : parent ? PARENT_NAV : NAV;
   const homePath = teacher ? '/teach' : parent ? '/family' : '/home';
+  // Learners see their own experience: Bonisa (Grades 4–9) or Bonisa Matric (Grades 10–12).
+  const grade = !teacher && !parent ? me?.profile?.grade : undefined;
+  const tier = grade ? tierOf(grade) : null;
+  const brandLabel = `${tier?.name ?? 'Bonisa'} home`;
   return (
-    <div className="shell">
+    <div className="shell" data-tier={tier?.id}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
       <aside className="rail" aria-label="Main">
-        <Link to={homePath} className="rail-brand" aria-label="Bonisa home">
-          <Logo />
+        <Link to={homePath} className="rail-brand" aria-label={brandLabel}>
+          <Logo tier={tier?.id} />
         </Link>
         <nav>
           <ul>
@@ -130,7 +135,7 @@ function Shell({ children }: { children: ReactNode }) {
         <div className="rail-foot">
           <p className="rail-user">
             <span className="rail-name">{me?.user?.displayName}</span>
-            <span className="muted">{teacher ? (me?.user?.school ?? 'Teacher') : parent ? 'Parent' : `Grade ${me?.profile?.grade}`}</span>
+            <span className="muted">{teacher ? (me?.user?.school ?? 'Teacher') : parent ? 'Parent' : grade ? gradeLabel(grade) : ''}</span>
           </p>
           <div className="rail-links">
             <Link to="/account" className="btn btn-quiet btn-sm">
@@ -143,8 +148,8 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <header className="topbar">
-        <Link to={homePath} aria-label="Bonisa home">
-          <Logo />
+        <Link to={homePath} aria-label={brandLabel}>
+          <Logo tier={tier?.id} />
         </Link>
         <div className="topbar-actions">
           {teacher || parent ? null : (

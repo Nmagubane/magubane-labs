@@ -16,7 +16,7 @@ import { logged } from './verification.ts';
 import { unsubscribeUrl } from './links.ts';
 import type { UserDto, ResultsDto } from '../shared/api.ts';
 import type { ClassSubjectId, AssignmentDto, ClassDetailDto, ClassLearnerDto, ClassSummaryDto, MyAssignmentDto, MyClassDto, TeacherLearnerDto, LearnerFlag, HeatCell } from '../shared/api-teach.ts';
-import { getSkill, getTopic, getSubject, skillsForLearner, FOUNDATION_SUBJECTS, type SubjectId } from '../shared/curriculum/catalogue.ts';
+import { getSkill, getTopic, getSubject, subjectName, skillsForLearner, FOUNDATION_SUBJECTS, type SubjectId } from '../shared/curriculum/catalogue.ts';
 import { mistakeInfo } from '../shared/questions/mistakes.ts';
 
 interface ClassRow {
@@ -164,7 +164,7 @@ function summary(db: Db, c: ClassRow, at: Date): ClassSummaryDto {
     name: c.name,
     grade: c.grade,
     subjectId: c.subject_id,
-    subjectName: c.subject_id === 'all' ? 'All subjects' : (getSubject(c.subject_id)?.name ?? c.subject_id),
+    subjectName: c.subject_id === 'all' ? 'All subjects' : subjectName(c.subject_id, c.grade),
     joinCode: c.join_code,
     learnerCount: ms.length,
     activeThisWeek: active,

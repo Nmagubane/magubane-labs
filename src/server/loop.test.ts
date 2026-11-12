@@ -535,3 +535,46 @@ test('educator mode: classes, assignments, access rules, PDF reports', async () 
     config.signupMode = 'open';
   }
 });
+
+test('look ahead: phase-correct subjects, preview practice that never moves mastery, no tests', async () => {
+  const z = new Client();
+  await z.signup({ displayName: 'Zinhle', email: 'zinhle@example.com', password: 'Look-ahead-8', ageGroup: 'adult', consent: true });
+  // Physical and Life Sciences are not Intermediate Phase subjects, so a Grade 5 learner can't take them.
+  const g5 = await z.call('PUT', '/api/profile', { grade: 5, curriculumId: 'za-caps', subjects: ['mathematics', 'physical-sciences'], goals: [], dailyMinutes: 20 });
+  assert.deepEqual(g5.subjects, ['mathematics']);
+  await z.call('PUT', '/api/profile', { grade: 8, curriculumId: 'za-caps', subjects: ['mathematics', 'physical-sciences', 'life-sciences'], goals: [], dailyMinutes: 20 });
+
+  // In Grades 4–9 CAPS calls them Natural Sciences.
+  const cat = await z.call('GET', '/api/catalogue');
+  assert.equal(cat.subjects.find((s: { id: string }) => s.id === 'physical-sciences').name, 'Natural Sciences: Matter & Energy');
+  assert.equal(cat.subjects.find((s: { id: string }) => s.id === 'life-sciences').name, 'Natural Sciences: Life & Living');
+
+  // Grade 9 is inside a Grade 8 learner's band; Grade 12 is look ahead.
+  assert.equal((await z.call('GET', '/api/skills/expand-brackets')).lookAhead, null);
+  const ahead = await z.call('GET', '/api/skills/derivatives');
+  assert.deepEqual(ahead.lookAhead, { grade: 12, phase: 'FET Phase', tier: 'Bonisa Matric' });
+
+  // Tests stay on the learner's own grade.
+  const refused = await z.call('POST', '/api/activities', { kind: 'test', skillId: 'derivatives', count: 5 }, 422);
+  assert.equal(refused.error?.code ?? refused.code, 'look_ahead');
+
+  // Practice is a preview: full feedback, no change to mastery, even after a wrong answer.
+  const act = await z.call('POST', '/api/activities', { kind: 'practice', skillId: 'derivatives', count: 3 });
+  const q = await z.call('POST', `/api/activities/${act.id}/next`, {});
+  const input = q.question.input;
+  const wrong = input.kind === 'choice' ? input.options.find((o: { id: string }) => o.id !== secretOf(q.question.id).answer.id).id : '987654321';
+  const res = await z.call('POST', `/api/questions/${q.question.id}/answer`, { response: wrong, timeMs: 3000 });
+  assert.equal(res.feedback.correct, false);
+  assert.equal(res.feedback.preview, true);
+  assert.equal(res.feedback.masteryAfter, res.feedback.masteryBefore);
+  assert.equal(db.prepare('SELECT 1 FROM skill_states WHERE skill_id = ? AND user_id = (SELECT id FROM users WHERE email = ?)').get('derivatives', 'zinhle@example.com'), undefined);
+  const state = await z.call('GET', `/api/activities/${act.id}`);
+  assert.equal(state.items[0].feedback.preview, true, 'the preview flag survives a reload');
+
+  // In-band practice counts as usual.
+  const act2 = await z.call('POST', '/api/activities', { kind: 'practice', skillId: 'expand-brackets', count: 3 });
+  const q2 = await z.call('POST', `/api/activities/${act2.id}/next`, {});
+  const r2 = await z.call('POST', `/api/questions/${q2.question.id}/answer`, { response: correctResponse(secretOf(q2.question.id).answer), timeMs: 3000 });
+  assert.equal(r2.feedback.preview, undefined);
+  assert.ok(db.prepare('SELECT 1 FROM skill_states WHERE skill_id = ? AND user_id = (SELECT id FROM users WHERE email = ?)').get('expand-brackets', 'zinhle@example.com'));
+});

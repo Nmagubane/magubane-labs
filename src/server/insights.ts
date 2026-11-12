@@ -7,7 +7,8 @@ import { now } from './config.ts';
 import { getProfile, getStates, summarise, lessonsCompleted, recentMistakes, localDay, type Profile } from './learner.ts';
 import { activeAssessment } from './activities.ts';
 import type { UserDto, CatalogueResponse, SkillDetailResponse, HomeResponse, ProgressResponse, RecommendationDto, ExamDto, ExamDetailResponse, WorkedExample, ResultsDto } from '../shared/api.ts';
-import { SUBJECTS, SKILLS, isFoundationSkill, getSkill, getTopic, getSubject, topicsInSubject, skillsInTopic, skillsForLearner, skillsInSubject, type SubjectId } from '../shared/curriculum/catalogue.ts';
+import { SUBJECTS, SKILLS, isFoundationSkill, getSkill, getTopic, getSubject, subjectName, topicsInSubject, skillsInTopic, skillsForLearner, skillsInSubject, type SubjectId } from '../shared/curriculum/catalogue.ts';
+import { isLookAhead, phaseOf, tierOf } from '../shared/curriculum/phases.ts';
 import { getLesson } from '../shared/content/lessons.ts';
 import { mistakeInfo } from '../shared/questions/mistakes.ts';
 import { generateQuestion } from '../shared/questions/registry.ts';
@@ -38,7 +39,7 @@ export function catalogue(db: Db, user: UserDto): CatalogueResponse {
     grade: profile.grade,
     subjects: order.map((sid) => ({
       id: sid,
-      name: getSubject(sid)?.name ?? sid,
+      name: subjectName(sid, profile.grade),
       topics: topicsInSubject(sid).filter((t) => skillsInTopic(t.id).some((s) => !isFoundationSkill(s))).map((t) => ({
         id: t.id,
         name: t.name,
@@ -58,7 +59,7 @@ export function catalogue(db: Db, user: UserDto): CatalogueResponse {
 }
 
 export function skillDetail(db: Db, user: UserDto, skillId: string): SkillDetailResponse {
-  if (user.role !== 'teacher') requireProfile(db, user);
+  const learnerGrade = user.role === 'teacher' ? null : requireProfile(db, user).grade;
   const skill = getSkill(skillId);
   const lesson = skill ? getLesson(skill.lessonId) : undefined;
   if (!skill || !lesson) throw new HttpError(404, 'unknown_skill', 'That skill does not exist.');
@@ -81,7 +82,7 @@ export function skillDetail(db: Db, user: UserDto, skillId: string): SkillDetail
       signature: skill.signature,
       grade: skill.grade,
       topicName: topic.name,
-      subjectName: getSubject(topic.subjectId)?.name ?? '',
+      subjectName: subjectName(topic.subjectId, skill.grade),
       prerequisites: skill.prerequisites.map((p) => ({ id: p, name: getSkill(p)?.name ?? p, mastery: effectiveMastery(states.get(p), at) })),
     },
     state: summarise(states.get(skill.id), skill.id, at),
@@ -89,6 +90,7 @@ export function skillDetail(db: Db, user: UserDto, skillId: string): SkillDetail
     lessonCompleted: lessonsCompleted(db, user.id).has(lesson.id),
     recentMistakes: mistakes.map((m) => ({ code: m.mistake_code, label: mistakeInfo(m.mistake_code)?.label ?? m.mistake_code, tip: mistakeInfo(m.mistake_code)?.tip ?? '', count: m.n })),
     nextBand: correctAnswersToNextBand(states.get(skill.id), at),
+    lookAhead: learnerGrade !== null && isLookAhead(skill.grade, learnerGrade) ? { grade: skill.grade, phase: phaseOf(skill.grade).name, tier: tierOf(skill.grade).name } : null,
   };
 }
 
@@ -223,7 +225,7 @@ export function progress(db: Db, user: UserDto): ProgressResponse {
       .filter((t) => t.skills.length > 0);
     const all_ = topics.flatMap((t) => t.skills);
     const started = all_.filter((s) => s.evidence > 0);
-    return { id: sid, name: getSubject(sid)?.name ?? sid, mastery: avg(started.map((s) => s.mastery)), started: started.length, total: all_.length, topics };
+    return { id: sid, name: subjectName(sid, profile.grade), mastery: avg(started.map((s) => s.mastery)), started: started.length, total: all_.length, topics };
   });
 
   // 30-day trend: average snapshot mastery across skills that had started by that day.

@@ -4,7 +4,7 @@ import { useResource, invalidate } from '../../lib/useResource.ts';
 import { Link, useRouter } from '../../lib/router.tsx';
 import { useSession } from '../../lib/session.tsx';
 import { Button, Loading, ErrorState, PageHeader, TextInput } from '../../ui/primitives.tsx';
-import { SUBJECTS, subjectsForGrade, type SubjectId } from '../../../shared/curriculum/catalogue.ts';
+import { SUBJECTS, subjectsForGrade, subjectName, type SubjectId } from '../../../shared/curriculum/catalogue.ts';
 import type { ClassSummaryDto } from '../../../shared/api-teach.ts';
 
 export function TeachHome() {
@@ -159,7 +159,7 @@ function CreateClass({ onDone }: { onDone: () => void }) {
             {grade <= 3 ? <option value="all">All subjects (Foundation Phase)</option> : null}
             {SUBJECTS.filter((s) => subjectsForGrade(grade).includes(s.id)).map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name}
+                {subjectName(s.id, grade)}
               </option>
             ))}
           </select>

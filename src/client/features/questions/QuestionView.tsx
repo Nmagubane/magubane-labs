@@ -71,6 +71,12 @@ export function FeedbackPanel({ feedback, response, children, solutionOpen }: { 
             </p>
           ) : null}
         </div>
+        {feedback.preview ? (
+          <p className="feedback-mastery">
+            <span className="preview-tag">Preview</span>
+            <span className="muted">Doesn&apos;t change mastery</span>
+          </p>
+        ) : (
         <p className="feedback-mastery" title="Mastery for this skill">
           <span className="num">{feedback.masteryAfter}%</span>
           <span className={`delta ${gained >= 0 ? 'up' : 'down'}`}>
@@ -78,6 +84,7 @@ export function FeedbackPanel({ feedback, response, children, solutionOpen }: { 
           </span>
           <span className="muted">{BAND_LABEL[feedback.band]}</span>
         </p>
+        )}
       </header>
       {!feedback.correct ? (
         <div className="feedback-body">

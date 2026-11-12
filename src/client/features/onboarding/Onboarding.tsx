@@ -4,7 +4,8 @@ import { useSession } from '../../lib/session.tsx';
 import { useRouter } from '../../lib/router.tsx';
 import { Button, Logo } from '../../ui/primitives.tsx';
 import type { ActivityDto, ProfileDto, Goal } from '../../../shared/api.ts';
-import { SUBJECTS, subjectsForGrade, defaultSubjects, type SubjectId, type CurriculumId } from '../../../shared/curriculum/catalogue.ts';
+import { PHASES, tierOf } from '../../../shared/curriculum/phases.ts';
+import { SUBJECTS, subjectsForGrade, defaultSubjects, subjectName, subjectPitch, type SubjectId, type CurriculumId } from '../../../shared/curriculum/catalogue.ts';
 
 const GOALS: { id: Goal; label: string; detail: string }[] = [
   { id: 'pure-maths', label: 'Stay in pure Maths', detail: 'Keep Mathematics, not Maths Literacy, after Grade 9.' },
@@ -75,7 +76,7 @@ export function Onboarding() {
   return (
     <main id="main" className="onboard">
       <header className="onboard-head">
-        <Logo />
+        <Logo tier={grade !== null ? tierOf(grade).id : undefined} />
         <ol className="onboard-steps" aria-label="Setup steps">
           {STEPS.map((s, i) => (
             <li key={s} className={i === step ? 'now' : i < step ? 'done' : ''} aria-current={i === step ? 'step' : undefined}>
@@ -99,15 +100,26 @@ export function Onboarding() {
                 <p className="lead">We use this to pitch questions at the right level. You can change it later.</p>
               </>
             )}
-            <div className="grade-grid" role="radiogroup" aria-label="Grade">
-              {[4, 5, 6, 7, 8, 9, 10, 11, 12].map((g) => (
-                <button key={g} type="button" role="radio" aria-checked={grade === g} className={`grade-btn${grade === g ? ' on' : ''}`} onClick={() => chooseGrade(g)}>
-                  <span className="grade-num num">{g}</span>
-                  <span className="grade-word">Grade</span>
-                </button>
+            <div className="grade-phases" role="radiogroup" aria-label="Grade">
+              {PHASES.filter((p) => p.id !== 'foundation').map((p) => (
+                <div key={p.id} className="grade-phase" role="group" aria-labelledby={`ph-${p.id}`}>
+                  <p id={`ph-${p.id}`} className="grade-phase-name">
+                    {p.name}
+                    {p.id === 'fet' ? <span className="tier-tag">Bonisa Matric</span> : null}
+                  </p>
+                  <div className="grade-grid">
+                    {Array.from({ length: p.to - p.from + 1 }, (_, i) => p.from + i).map((g) => (
+                      <button key={g} type="button" role="radio" aria-checked={grade === g} className={`grade-btn${grade === g ? ' on' : ''}`} onClick={() => chooseGrade(g)}>
+                        <span className="grade-num num">{g}</span>
+                        <span className="grade-word">Grade</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             {grade !== null && grade <= 6 ? <p className="note">Grades 4 to 6 get Mathematics and Natural Sciences &amp; Technology, with hands-on labs for each topic.</p> : null}
+            {grade !== null && grade >= 10 ? <p className="note">Grades 10 to 12 use Bonisa Matric: the same tools, aimed at your final exams.</p> : null}
             <fieldset className="curric">
               <legend>Curriculum</legend>
               <label className={`radio-row${curriculum === 'za-caps' ? ' on' : ''}`}>
@@ -137,8 +149,8 @@ export function Onboarding() {
                 <label key={s.id} className={`subject-row${subjects.includes(s.id) ? ' on' : ''}`}>
                   <input type="checkbox" checked={subjects.includes(s.id)} onChange={() => setSubjects(toggle(subjects, s.id))} />
                   <span>
-                    <strong>{s.name}</strong>
-                    <span className="muted">{s.pitch}</span>
+                    <strong>{subjectName(s.id, grade ?? 12)}</strong>
+                    <span className="muted">{subjectPitch(s.id, grade ?? 12)}</span>
                   </span>
                 </label>
               ))}

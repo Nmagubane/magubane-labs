@@ -7,6 +7,7 @@
  */
 
 import { FOUNDATION_TOPICS, FOUNDATION_SKILLS } from './foundation.ts';
+import { BAND_AHEAD } from './phases.ts';
 
 export const SUBJECT_IDS = ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences', 'home-language', 'english-fal', 'life-skills'] as const;
 export type SubjectId = (typeof SUBJECT_IDS)[number];
@@ -824,15 +825,42 @@ export const isFoundationSkill = (s: Skill): boolean => s.phase === 'foundation'
  */
 export function skillsForLearner(subjects: SubjectId[], grade: number): Skill[] {
   if (grade <= 3) return SKILLS.filter((s) => isFoundationSkill(s) && subjects.includes(subjectOfSkill(s)) && s.grade <= grade && s.grade >= grade - 1);
-  return SKILLS.filter((s) => !isFoundationSkill(s) && subjects.includes(subjectOfSkill(s)) && s.grade <= grade + 1 && s.grade >= grade - 4);
+  return SKILLS.filter((s) => !isFoundationSkill(s) && subjects.includes(subjectOfSkill(s)) && s.grade <= grade + BAND_AHEAD && s.grade >= grade - 4);
 }
 
 export const FOUNDATION_SUBJECTS: SubjectId[] = ['mathematics', 'home-language', 'english-fal', 'life-skills'];
 
-/** Which subjects make sense at a grade. Natural Sciences & Technology stops after Grade 7. */
+/**
+ * Which subjects make sense at a grade, following CAPS.
+ * Grades 4–6 take Natural Sciences & Technology; Physical and Life Sciences are not Intermediate
+ * Phase subjects (they stay reachable through Look ahead). Grade 7 keeps NST for catch-up.
+ */
 export function subjectsForGrade(grade: number): SubjectId[] {
   if (grade <= 3) return FOUNDATION_SUBJECTS;
-  return grade <= 7 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences', 'life-sciences'];
+  if (grade <= 6) return ['mathematics', 'natural-sciences'];
+  return grade === 7 ? ['mathematics', 'natural-sciences', 'physical-sciences', 'life-sciences'] : ['mathematics', 'physical-sciences', 'life-sciences'];
+}
+
+/**
+ * A subject's name as a learner of this grade knows it. CAPS has no "Physical Sciences" or
+ * "Life Sciences" before Grade 10: in Grades 4–9 they are strands of Natural Sciences.
+ */
+export function subjectName(id: SubjectId | string, grade: number): string {
+  const base = getSubject(id)?.name ?? id;
+  if (grade >= 4 && grade <= 9) {
+    if (id === 'physical-sciences') return 'Natural Sciences: Matter & Energy';
+    if (id === 'life-sciences') return 'Natural Sciences: Life & Living';
+  }
+  return base;
+}
+
+/** Why the subject matters, in the words of the learner's phase. */
+export function subjectPitch(id: SubjectId, grade: number): string {
+  if (grade >= 4 && grade <= 9) {
+    if (id === 'physical-sciences') return 'Matter and Materials, Energy and Change: the physics and chemistry inside Natural Sciences. It leads to Physical Sciences in Grade 10.';
+    if (id === 'life-sciences') return 'Life and Living: cells, systems and ecosystems inside Natural Sciences. It leads to Life Sciences in Grade 10.';
+  }
+  return getSubject(id)?.pitch ?? '';
 }
 
 /** What to tick by default for a new learner at a grade. */

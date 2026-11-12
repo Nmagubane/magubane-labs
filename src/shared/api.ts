@@ -198,6 +198,8 @@ export interface SkillDetailResponse {
   lessonCompleted: boolean;
   recentMistakes: { code: string; label: string; tip: string; count: number }[];
   nextBand: { band: MasteryBand; answers: number } | null;
+  /** Set when the skill is above the learner's working band: explore and practise as a preview, no tests, no mastery. */
+  lookAhead: { grade: number; phase: string; tier: string } | null;
 }
 
 export interface WorkedExample {
@@ -239,6 +241,8 @@ export interface MistakeDto {
 
 export interface FeedbackDto {
   questionId: string;
+  /** Look-ahead practice: full feedback, but mastery is not changed. */
+  preview?: boolean;
   /** Junior sort/pick/order: tiles that were out of place (only in the immediate answer response). */
   wrongIds?: string[];
   correct: boolean;

@@ -550,3 +550,9 @@
 .doc li + li {
   margin-top: var(--s2);
 }
+
+/* Tier lockup: "Bonisa Junior", "Bonisa Matric". Same type, regular weight, so it reads as one family. */
+.logo-tier {
+  font-weight: 400;
+  color: var(--ink-2);
+}

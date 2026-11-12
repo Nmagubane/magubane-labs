@@ -4,6 +4,7 @@ import type { MasteryBand } from '../../shared/mastery/model.ts';
 import { BAND_LABEL } from '../lib/format.ts';
 import { Link } from '../lib/router.tsx';
 import type { ApiError } from '../lib/api.ts';
+import { TIERS, type TierId } from '../../shared/curriculum/phases.ts';
 
 type Variant = 'primary' | 'secondary' | 'quiet' | 'danger';
 
@@ -111,9 +112,15 @@ export function Empty({ title, children, action }: { title: string; children?: R
   );
 }
 
-export function Logo({ compact = false }: { compact?: boolean }) {
+/**
+ * The Bonisa mark. One brand, three experiences: the tier suffix ("Junior", "Matric") sits after
+ * the word in the same type at regular weight, so the family reads as one product.
+ */
+export function Logo({ compact = false, tier }: { compact?: boolean; tier?: TierId }) {
+  const suffix = tier ? TIERS.find((t) => t.id === tier)?.suffix : null;
+  const name = suffix ? `Bonisa ${suffix}` : 'Bonisa';
   return (
-    <span className="logo">
+    <span className="logo" data-tier={tier}>
       <svg className="logo-tile" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
         <rect x="1.25" y="1.25" width="33.5" height="33.5" rx="4" fill="none" stroke="currentColor" strokeWidth="2.5" />
         <text x="6" y="11.5" fontSize="7.5" fontWeight="700" fill="currentColor" fontFamily="inherit">
@@ -123,7 +130,14 @@ export function Logo({ compact = false }: { compact?: boolean }) {
           Mg
         </text>
       </svg>
-      {compact ? <span className="sr-only">Bonisa</span> : <span className="logo-word">Bonisa</span>}
+      {compact ? (
+        <span className="sr-only">{name}</span>
+      ) : (
+        <span className="logo-word">
+          Bonisa
+          {suffix ? <span className="logo-tier"> {suffix}</span> : null}
+        </span>
+      )}
     </span>
   );
 }

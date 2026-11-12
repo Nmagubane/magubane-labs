@@ -88,6 +88,14 @@ export function SkillPage({ skillId }: { skillId: string }) {
           </p>
         </div>
       </header>
+      {data.lookAhead ? (
+        <p className="preview-strip">
+          <strong>Look ahead · Grade {data.lookAhead.grade} · {data.lookAhead.phase}</strong>
+          <span>
+            This is {data.lookAhead.tier} work. Explore it freely: practice here is a preview with full feedback, but it doesn&apos;t change your mastery. It counts when you reach Grade {data.lookAhead.grade}.
+          </span>
+        </p>
+      ) : null}
 
       <div className="lesson-layout">
         <article className="lesson-body">
@@ -146,6 +154,19 @@ export function SkillPage({ skillId }: { skillId: string }) {
                 <AssignForm skillId={skillId} compact />
               </div>
             </>
+          ) : data.lookAhead ? (
+          <div className="side-sheet">
+            <h2 className="side-title">Preview</h2>
+            <p className="muted side-note">Try questions with hints and worked solutions. Your mastery and your tests stay on your own grade.</p>
+            <div className="side-actions">
+              <Button busy={busy === 'practice'} onClick={() => void start('practice', { kind: 'practice', skillId, count: 8 })}>
+                Try questions
+              </Button>
+              <Button variant="quiet" onClick={() => void askTutor()}>
+                Ask the tutor about this
+              </Button>
+            </div>
+          </div>
           ) : (
           <div className="side-sheet">
             <h2 className="side-title">Your mastery</h2>

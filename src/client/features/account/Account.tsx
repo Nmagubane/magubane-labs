@@ -9,7 +9,8 @@ import { PasswordField, passwordOk } from '../auth/PasswordField.tsx';
 import { relativeDay } from '../../lib/format.ts';
 import type { MyClassDto } from '../../../shared/api-teach.ts';
 import type { ProfileDto } from '../../../shared/api.ts';
-import { SUBJECTS, subjectsForGrade, defaultSubjects, getSubject, type SubjectId } from '../../../shared/curriculum/catalogue.ts';
+import { SUBJECTS, subjectsForGrade, defaultSubjects, subjectName, type SubjectId } from '../../../shared/curriculum/catalogue.ts';
+import { gradeLabel } from '../../../shared/curriculum/phases.ts';
 
 const GRADES = [4, 5, 6, 7, 8, 9, 10, 11, 12];
 const MINUTES = [10, 20, 30, 45, 60];
@@ -73,11 +74,11 @@ function LearningSettings() {
           <dl className="details">
             <div>
               <dt>Grade</dt>
-              <dd>Grade {profile.grade}</dd>
+              <dd>{gradeLabel(profile.grade)}</dd>
             </div>
             <div>
               <dt>Subjects</dt>
-              <dd>{profile.subjects.map((s) => getSubject(s)?.name ?? s).join(', ')}</dd>
+              <dd>{profile.subjects.map((s) => subjectName(s, profile.grade)).join(', ')}</dd>
             </div>
             <div>
               <dt>Time per day</dt>
@@ -108,7 +109,7 @@ function LearningSettings() {
               {SUBJECTS.filter((x) => offered.includes(x.id)).map((x) => (
                 <button key={x.id} type="button" className={`chip chip-lg${chosen.includes(x.id) ? ' on' : ''}`} aria-pressed={chosen.includes(x.id)} onClick={() => toggle(x.id)}>
                   {chosen.includes(x.id) ? '✓ ' : ''}
-                  {x.name}
+                  {subjectName(x.id, grade)}
                 </button>
               ))}
             </div>

@@ -8,7 +8,7 @@ Short, opinionated, and kept current. If the code and this file disagree, fix on
 
 **Grades 1–3 (Junior, Foundation Phase)** and **Grades 4–12**. Junior is the same app, server and engine with its own child-sized experience; see §8.
 
-**Grades 4–12, South Africa (CAPS) first.** The decision between Mathematics and Mathematical Literacy happens at the end of Grade 9, but the confidence that drives it is built (or lost) from Grade 4. Content runs from place value and Natural Sciences & Technology (Grades 4–6) through Grades 7–10 algebra and science to Grade 12 calculus and finance. Each learner works in a grade band (`skillsForLearner`: grade − 4 to grade + 1); Learn shows that band first and lets curious learners look ahead.
+**Grades 4–12, South Africa (CAPS) first.** The decision between Mathematics and Mathematical Literacy happens at the end of Grade 9, but the confidence that drives it is built (or lost) from Grade 4. Content runs from place value and Natural Sciences & Technology (Grades 4–6) through Grades 7–10 algebra and science to Grade 12 calculus and finance. Each learner works in a grade band (`skillsForLearner`: grade − 4 to grade + 1); Learn shows that band; higher grades sit behind a separate **Look ahead** door (§9).
 
 Grade 4–6 science is mostly concept checks: its question generators draw on curated fact pools (the test suite accepts at least 3 distinct prompts per level for Natural Sciences & Technology, 10 for everything else). The labs carry the engagement: sorting, growing, building and testing, with feedback in words.
 
@@ -214,3 +214,20 @@ Instruction strings still live inside the English generators. Moving them into p
 - Handwriting and letter formation, and reading aloud with speech recognition.
 - Offline play.
 - A school-attested consent workflow beyond the teacher's checkbox, which is recorded as `:school-attested`.
+
+## 9. Three experiences on CAPS phases
+
+**Bonisa Junior** (Grades 1–3, Foundation Phase), **Bonisa** (Grades 4–9, Intermediate and Senior Phases) and **Bonisa Matric** (Grades 10–12, FET Phase). One product and one engine. A tier exists only where the experience genuinely changes: Junior is picture sign-in, voice and adult-led; Bonisa builds towards the Mathematics vs Mathematical Literacy choice at the end of Grade 9; Matric is aimed at the final exams. Intermediate and Senior share a tier because they share every tool; the phase is a label, not a separate brand.
+
+**Naming follows CAPS exactly** (`src/shared/curriculum/phases.ts`). "Senior Phase" means Grades 7–9, never Grades 10–12, because that is what every teacher and education official reads it as. The UI labels grades as "Grade 8 · Senior Phase".
+
+**Subjects follow CAPS too.** Physical Sciences and Life Sciences only exist from Grade 10. In Grades 4–9 the same skills are shown as strands of Natural Sciences (`subjectName(id, grade)`): "Natural Sciences: Matter & Energy" and "Natural Sciences: Life & Living". Grades 4–6 are offered Mathematics and Natural Sciences & Technology only. The subject ids stay the same, so mastery carries across the Grade 9 → 10 move. A real Senior Phase "Natural Sciences" subject with all four CAPS strands (including Planet Earth and Beyond) needs content and is not built yet.
+
+**Brand lockup.** `Logo` takes a `tier`: "Bonisa" in bold, then "Junior" or "Matric" in the same type at regular weight. The shell shows the learner's tier; onboarding switches the lockup as soon as a grade is picked and groups the grades by phase; Junior sign-in shows Bonisa Junior. Teachers and parents see plain Bonisa.
+
+**Look ahead** (`isLookAhead`: skill grade > learner grade + 1, Grades 4–12 only). Curiosity is the point, so nothing is hidden, but a preview must never be mistaken for the learner's own work:
+- Learn shows the learner's band. Look ahead is a separate, dashed section per subject tab, grouped by phase with the tier named, and every row is marked Preview. If the subject changes its name in that phase, it says so.
+- Practice on a look-ahead skill is titled "Look ahead: …", gives full feedback, hints and worked solutions, and **never changes mastery** (`skill_states` is untouched; the response is stored with `rating_before = rating_after` and `FeedbackDto.preview`). So a Grade 7 who tries calculus and struggles starts Grade 12 with a clean slate, and no adult sees it as a weakness.
+- Tests refuse look-ahead skills (`422 look_ahead`). Recommendations, Home, weak areas, exam readiness and teacher views already use the band only.
+- Work a teacher assigns always counts, whatever its grade.
+

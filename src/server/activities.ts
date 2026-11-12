@@ -13,6 +13,7 @@ import { now } from './config.ts';
 import { getProfile, getState, getStates, saveState, localDay } from './learner.ts';
 import type { UserDto, ActivityDto, ActivityStateResponse, AnswerResponse, CreateActivityRequest, FeedbackDto, MistakeDto, PracticeItem, ResultsDto, ReviewItem, AnswerRequest } from '../shared/api.ts';
 import { getSkill, getTopic, skillsInTopic, skillsForLearner, subjectOfSkill, type Skill } from '../shared/curriculum/catalogue.ts';
+import { isLookAhead } from '../shared/curriculum/phases.ts';
 import { generateQuestion } from '../shared/questions/registry.ts';
 import { gradeResponse, canonicalResponse, type ResponseValue } from '../shared/questions/answer.ts';
 import type { AnswerSpec, Difficulty, Misconception, QuestionPayload, RichText } from '../shared/questions/types.ts';
@@ -37,6 +38,7 @@ interface ActivityRow {
   started_at: string;
   completed_at: string | null;
   summary: string | null;
+  assignment_id?: string | null;
 }
 
 interface QuestionRow {
@@ -131,6 +133,17 @@ function mistakeDto(code: string | null): MistakeDto | null {
   const info = mistakeInfo(code);
   return info ? { code, label: info.label, kind: info.kind, tip: info.tip } : null;
 }
+
+/**
+ * Look-ahead practice is a preview: the learner gets full feedback, but the answer never moves
+ * their mastery. Work a teacher assigned always counts.
+ */
+function isPreview(a: ActivityRow, skillId: string, learnerGrade: number | undefined): boolean {
+  const skill = getSkill(skillId);
+  return a.mode === 'learning' && !a.assignment_id && !!skill && learnerGrade !== undefined && isLookAhead(skill.grade, learnerGrade);
+}
+
+const LOOK_AHEAD_TEST = 'Tests cover your own grade. Skills from higher grades are for exploring in practice.';
 
 /** The language a learner's questions are written and spoken in. */
 export function questionLanguage(db: Db, userId: string): string {
@@ -243,7 +256,8 @@ export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest
     target = req.count ?? 8;
     if (req.skillId) {
       skills = [requireSkill(req.skillId)];
-      title = `Practice: ${skills[0]!.name}`;
+      const preview = !opts.assignmentId && isLookAhead(skills[0]!.grade, profile.grade);
+      title = `${preview ? 'Look ahead' : 'Practice'}: ${skills[0]!.name}`;
     } else {
       const weak = weakAreas({ states, now: at, subjects: profile.subjects, grade: profile.grade }, 3).map((w) => getSkill(w.skillId) as Skill);
       skills = weak.length
@@ -265,6 +279,7 @@ export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest
     } else {
       if (req.skillId) {
         skills = [requireSkill(req.skillId)];
+        if (!opts.assignmentId && isLookAhead(skills[0]!.grade, profile.grade)) throw new HttpError(422, 'look_ahead', LOOK_AHEAD_TEST);
         title = `Quick test: ${skills[0]!.name}`;
         target = req.count ?? 5;
       } else if (req.topicId) {
@@ -272,7 +287,8 @@ export function createActivity(db: Db, user: UserDto, req: CreateActivityRequest
         if (!topic) throw new HttpError(404, 'unknown_topic', 'That topic does not exist.');
         const inScope = new Set(skillsForLearner(profile.subjects, profile.grade).map((s) => s.id));
         skills = skillsInTopic(topic.id).filter((s) => inScope.has(s.id) || (states.get(s.id)?.evidence ?? 0) > 0);
-        if (!skills.length) skills = skillsInTopic(topic.id);
+        if (!skills.length) skills = skillsInTopic(topic.id).filter((s) => !isLookAhead(s.grade, profile.grade));
+        if (!skills.length) throw new HttpError(422, 'look_ahead', LOOK_AHEAD_TEST);
         title = `Topic test: ${topic.name}`;
         target = req.count ?? 10;
       } else if (req.examId) {
@@ -378,9 +394,10 @@ function responsesFor(db: Db, activityId: string): Map<string, ResponseRow> {
   return new Map(all<ResponseRow>(db, 'SELECT * FROM responses WHERE activity_id = ?', activityId).map((r) => [r.question_id, r]));
 }
 
-function feedbackFrom(q: QuestionRow, r: ResponseRow, secret: Secret): FeedbackDto {
+function feedbackFrom(q: QuestionRow, r: ResponseRow, secret: Secret, preview = false): FeedbackDto {
   return {
     questionId: q.id,
+    ...(preview ? { preview: true } : {}),
     correct: r.is_correct === 1,
     skipped: r.skipped === 1,
     mistake: mistakeDto(r.mistake_code),
@@ -406,6 +423,7 @@ export function getActivityState(db: Db, user: UserDto, id: string): ActivitySta
   }
   const questions = all<QuestionRow>(db, 'SELECT * FROM question_instances WHERE activity_id = ? ORDER BY position', a.id);
   const responses = responsesFor(db, a.id);
+  const learnerGrade = getProfile(db, a.user_id)?.grade;
   const items: PracticeItem[] = questions.map((q) => {
     const r = responses.get(q.id);
     const secret = JSON.parse(q.secret) as Secret;
@@ -414,7 +432,7 @@ export function getActivityState(db: Db, user: UserDto, id: string): ActivitySta
       question: payloadOf(q),
       response: r?.response ? (JSON.parse(r.response) as ResponseValue) : null,
       hints: a.mode === 'learning' ? secret.hints.slice(0, q.hints_used) : [],
-      feedback: showFeedback ? feedbackFrom(q, r, secret) : null,
+      feedback: showFeedback ? feedbackFrom(q, r, secret, isPreview(a, q.skill_id, learnerGrade)) : null,
     };
   });
   const answered = [...responses.values()].filter((r) => r.response !== null || r.skipped).length;
@@ -524,9 +542,10 @@ export function answerQuestion(db: Db, user: UserDto, questionId: string, body: 
     // A second try comes straight after the worked solution, so it counts like an answer with one hint.
     const score = answerScore(g.correct, q.hints_used + (q.retry_of ? 1 : 0));
     const before = state.rating;
-    const after = updateRating({ rating: before, evidence: state.evidence, level: q.difficulty as Difficulty, score, mode: 'learning' });
+    const preview = isPreview(a, q.skill_id, getProfile(db, user.id)?.grade);
+    const after = preview ? before : updateRating({ rating: before, evidence: state.evidence, level: q.difficulty as Difficulty, score, mode: 'learning' });
     tx(db, () => {
-      saveState(db, user.id, { ...state, rating: after, evidence: state.evidence + 1, attempts: state.attempts + 1, correct: state.correct + (g.correct ? 1 : 0), lastPracticedAt: at.toISOString() });
+      if (!preview) saveState(db, user.id, { ...state, rating: after, evidence: state.evidence + 1, attempts: state.attempts + 1, correct: state.correct + (g.correct ? 1 : 0), lastPracticedAt: at.toISOString() });
       run(
         db,
         `INSERT INTO responses (id, question_id, activity_id, user_id, skill_id, response, skipped, is_correct, score, mistake_code, feedback, confidence, time_ms, rating_before, rating_after, created_at, graded_at)
@@ -550,10 +569,11 @@ export function answerQuestion(db: Db, user: UserDto, questionId: string, body: 
     });
     const answered = (one<{ n: number }>(db, 'SELECT COUNT(*) AS n FROM responses WHERE activity_id = ?', a.id) as { n: number }).n;
     const r = one<ResponseRow>(db, 'SELECT * FROM responses WHERE question_id = ?', q.id) as ResponseRow;
-    const fb = feedbackFrom(q, r, secret);
+    const fb = feedbackFrom(q, r, secret, preview);
     const st = getState(db, user.id, q.skill_id);
     fb.band = band(st, at);
     fb.masteryAfter = effectiveMastery(st, at);
+    if (preview) fb.masteryBefore = fb.masteryAfter;
     if (g.wrongIds?.length) fb.wrongIds = g.wrongIds;
     // Grades 1–3: the moment a skill becomes secure, the child earns an "I can…" statement (once).
     const ican = earnIcan(db, user.id, q.skill_id, a.id, st, at);
