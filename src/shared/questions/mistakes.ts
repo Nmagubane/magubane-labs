@@ -506,6 +506,15 @@ export const MISTAKES = {
   'trig-graph': { label: 'Trig graphs', kind: 'conceptual', tip: 'In y = a sin kx + q: |a| is the amplitude, q moves the graph up or down, and the period is 360° ÷ k (180° ÷ k for tan). sin(x + p) moves the graph p to the LEFT.' },
   'inverse-function': { label: 'Inverse functions', kind: 'procedural', tip: 'To find the inverse, swap x and y, then make y the subject. The inverse of y = bˣ is y = log_b x.' },
   'log-laws': { label: 'Log laws', kind: 'procedural', tip: 'log a + log b = log ab; log a − log b = log(a ÷ b); n log a = log aⁿ. log_b b = 1 and log_b 1 = 0.' },
+  // ---- Calculus and cubic polynomials (Grade 12) ----
+  'remainder-theorem': { label: 'Remainder and factor theorems', kind: 'conceptual', tip: 'Dividing f(x) by (x − a) leaves remainder f(a): use the x that makes the divisor zero. So (x + 2) means substitute x = −2. If the remainder is 0, (x − a) is a factor.' },
+  'limits': { label: 'Limits', kind: 'conceptual', tip: '0/0 is not an answer: it means a common factor is hiding. Factorise (or divide by h), cancel, and only then substitute.' },
+  'first-principles': { label: 'First principles', kind: 'procedural', tip: "f'(x) = lim (f(x + h) − f(x)) / h as h → 0. Expand f(x + h) fully, subtract f(x) (everything without h cancels), divide every term by h, then let h → 0." },
+  'tangent-line': { label: 'Tangent to a curve', kind: 'procedural', tip: "The tangent at x = a has gradient f'(a) and touches the curve at (a; f(a)). Gradient from f', point from f." },
+  'inflection': { label: 'Point of inflection', kind: 'conceptual', tip: "A cubic changes concavity where f''(x) = 0, at x = −b/(3a). It is halfway between the turning points, and it is where the graph of f' turns." },
+  'stationary-points': { label: 'Turning points of a cubic', kind: 'conceptual', tip: "Solve f'(x) = 0 for x, then use f (not f') for y. If f' changes from + to −, it is a maximum; from − to +, a minimum. With a > 0 the left turning point is the maximum." },
+  'rate-of-change': { label: 'Rate of change or value', kind: 'conceptual', tip: "The function gives the amount (height, volume, displacement). Its derivative gives how fast that amount changes (velocity, flow rate). Acceleration is the second derivative." },
+  'optimisation': { label: 'Answering the question asked', kind: 'procedural', tip: "Solving f'(x) = 0 gives where the maximum or minimum happens. If the question asks for the maximum value, substitute that x back into the original function." },
   // ---- Statistics (Grades 10–12) ----
   'mean-median': { label: 'Mean, median or mode', kind: 'conceptual', tip: 'Mean: add everything and divide by how many there are. Median: the middle value once the data is in order. Mode: the value that appears most often.' },
   'data-order': { label: 'Order the data first', kind: 'procedural', tip: 'The median and quartiles come from the data in order, from smallest to largest. Sort first, then count to the middle.' },

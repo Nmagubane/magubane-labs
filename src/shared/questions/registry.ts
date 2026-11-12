@@ -17,6 +17,7 @@ import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './gen
 import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSolarSystem, earthSystems, atmosphere, starLife } from './generators/ns-senior.ts';
 import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, proportionality } from './generators/math-geometry.ts';
 import { circleProofs, similarityProofs } from './generators/math-proofs.ts';
+import { factorTheorem, firstPrinciples, tangentLines, cubicGraphs, optimisation } from './generators/math-calculus.ts';
 import { coordinateGeometry, lineEquations, circleEquations } from './generators/math-analytic.ts';
 import { trigSpecial, trigReduction, trigEquations, triangleRules, compoundAngles } from './generators/math-trig.ts';
 import { trig2d3d } from './generators/math-trig-3d.ts';
@@ -68,6 +69,11 @@ export const TEMPLATES: QuestionTemplate[] = [
   trigRatios,
   finance,
   derivatives,
+  factorTheorem,
+  firstPrinciples,
+  tangentLines,
+  cubicGraphs,
+  optimisation,
   livingNonliving,
   plantNeeds,
   lifeCycles,

@@ -1329,3 +1329,17 @@
 .stats-band { fill: var(--hl); fill-opacity: 0.35; }
 .stats-mean { stroke: var(--pen); stroke-width: 2.5; stroke-dasharray: 4 3; }
 .plot-curve { fill: none; stroke-linejoin: round; }
+
+/* Calculus labs */
+.plot-line.deriv { stroke-dasharray: 7 5; }
+.plot-hollow { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.lab-legend { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); margin: var(--s1) 0 0; font-size: var(--t-sm); color: var(--ink-2); }
+.lab-legend .key-f::before, .lab-legend .key-d::before { content: ''; display: inline-block; width: 1.4rem; height: 0; margin-right: 0.35rem; vertical-align: middle; border-top: 2.5px solid var(--ink); }
+.lab-legend .key-d::before { border-top: 2.5px dashed var(--pen); }
+.calc-box { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s3); align-items: center; }
+@media (min-width: 640px) { .calc-box { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.box-net { width: 100%; height: auto; max-width: 360px; justify-self: center; }
+.box-sheet { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.box-cut { fill: var(--hl); stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 3; }
+.box-fold { fill: none; stroke: var(--pen); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.box-text { font: 600 13px var(--font); fill: var(--ink-2); }

@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (86 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (91 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -352,4 +352,24 @@ Two skills in the `euclidean` topic (`math-proofs.ts`, lessons in `lessons-geome
 **Every statement is measured.** `proofs.test.ts` (300 seeds × 5 levels × 2 skills; it also passed at 1 500 seeds) reads each statement as a claim about the diagram: angles, lengths, areas, ratios, parallel lines, cyclic quads, similar and congruent triangles, with x and y read from the marked angles. Every given statement and every right option must be true in the drawing; every wrong option must be false by more than 1%. Building it found five drawings where a wrong option happened to be true (for example an equilateral triangle, or chords crossing at right angles), now kept out by the generators' ranges. It also checks that every right reason is from `PROOF_REASONS`, that marking names the wrong step, and that an empty blank is refused rather than marked.
 
 **Not built.** Grade 10 proofs (quadrilateral properties, midpoint theorem), the converse "line from the centre to the midpoint of a chord is ⊥", and writing a proof from a blank page.
+
+## 16. Calculus and cubic polynomials (Paper 1)
+
+Five Grade 12 skills (`math-calculus.ts`, `lessons-calculus.ts`, `CalculusLabs.tsx`), next to the existing `derivatives` (power rule):
+
+| Skill | Topic | What it covers |
+|---|---|---|
+| `factor-theorem` | algebra | Remainders, finding k, factorising a cubic from one factor, solving cubic equations, two unknown coefficients |
+| `first-principles` | calculus | Limits by factorising, $f(x + h) - f(x)$, $f'(x)$ from first principles (quadratics, $ax^3$, $\frac{k}{x}$) |
+| `tangent-lines` | calculus | Tangent at a point (quadratic, cubic), the point with a given gradient, tangents parallel or perpendicular to a line, where a cubic's tangent is parallel to a line |
+| `cubic-graphs` | calculus | Point of inflection and concavity, local maximum and minimum, $a$ from a sketch, reading a graph of $f'$, how many $k$ give $f(x) = k$ three roots |
+| `optimisation` | calculus | Velocity and flow rates, maximum height, rest times and acceleration, the open box, fencing along a river, maximum profit |
+
+**Built backwards.** Every function is made from its answer (roots, turning points $f'(x) = 3a(x - p)(x - q)$, the best cut of a box), so answers are exact and come out as whole numbers or simple fractions. Open boxes come from a precomputed list of sheets whose best cut is a whole number.
+
+**Checked independently.** `calculus.test.ts` reads the function back out of each prompt (or the figure) and checks the answer numerically, without the generator's construction: roots are substituted and a cubic needs all three, derivatives are compared with finite differences, tangents must touch the curve with the right gradient (and be parallel or perpendicular as asked), turning points are classified by $f''$, intercepts drawn on a sketch must lie on the curve, maxima are found by golden-section search, and the count of $k$ values is recounted from the turning values.
+
+**Labs.** `calculus-lab` has three modes: *secant* (drag $h$ to 0 and watch the secant gradient $2a + h$ become $f'(a)$), *cubic* (change $a$, $b$, $c$, $d$; $f$ and a dashed $f'$ together, with turning points and the point of inflection marked) and *box* (cut squares from a 16 × 10 sheet; the volume graph has a flat tangent at the best cut, 2 cm).
+
+**Known limits.** The expression checker handles polynomials only, so $f'(x) = -\frac{k}{x^2}$ is asked for at a point ($f'(a)$ as a fraction) rather than typed as an expression, and the power rule for negative and fractional powers ($\frac{1}{x}$, $\sqrt{x}$) is not built yet. New mistake codes: `remainder-theorem`, `limits`, `first-principles`, `tangent-line`, `inflection`, `stationary-points`, `rate-of-change`, `optimisation`.
 

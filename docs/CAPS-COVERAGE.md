@@ -71,7 +71,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Exponents and surds | ✓ laws of exponents | ✗ surds, surd equations | |
 | Number patterns, sequences and series | ✗ linear patterns | ✗ quadratic patterns | ✓ arithmetic and geometric sequences and series |
 | Equations and inequalities | ◐ quadratics by factorising (✗ simultaneous, literal, inequalities) | ◐ quadratic formula (✗ completing the square, quadratic inequalities, nature of roots, linear–quadratic systems) | |
-| Functions | ✓ straight lines, parabola, hyperbola, exponential (effect of a and q), trig graphs with a and q | ✓ effect of p (turning points, asymptotes, axes of symmetry), equations from graphs, average gradient, trig graphs with k and p | ◐ inverses, logarithms and log laws, exponential equations (✗ cubic functions and the factor and remainder theorems, built with calculus) |
+| Functions | ✓ straight lines, parabola, hyperbola, exponential (effect of a and q), trig graphs with a and q | ✓ effect of p (turning points, asymptotes, axes of symmetry), equations from graphs, average gradient, trig graphs with k and p | ✓ inverses, logarithms and log laws, exponential equations; cubic functions (with calculus); factor and remainder theorems |
 | Finance, growth and decay | ✓ simple and compound interest | ✗ depreciation, nominal and effective rates | ✗ annuities, loans |
 | Trigonometry | ✓ ratios in right triangles and on the Cartesian plane, special angles, simple equations | ✓ identities, reduction formulas, general solution, sine, cosine and area rules, 2D problems (in the Grade 12 2D/3D skill, which Grade 11 learners see in their band) | ✓ compound and double angles, 2D and 3D problems |
 | Euclidean geometry | ◐ quadrilaterals, midpoint theorem and converse (✗ proofs of quadrilateral properties) | ✓ all seven circle theorems and converses; proofs of the four examinable circle theorems; riders | ✓ proportionality, similarity, Pythagoras by similar triangles; proofs of both examinable theorems and Pythagoras; riders |
@@ -79,7 +79,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Statistics | ✓ mean, median, mode, quartiles, IQR, five-number summary, box-and-whisker plots, grouped data | ✓ ogives, variance and standard deviation, outliers | ✓ scatter plots, least squares regression line, correlation coefficient, prediction |
 | Measurement | ✗ surface area and volume of solids | | |
 | Probability | ✗ Venn diagrams, mutually exclusive events | ✗ independent events, tree diagrams | ✗ counting principle |
-| Differential calculus | | | ◐ derivatives (✗ first principles, cubic graphs, optimisation) |
+| Differential calculus | | | ◐ limits and first principles, power rule, tangents, cubic graphs (turning points, inflection, concavity, reading f′), optimisation and rates of change (✗ the power rule for negative and fractional powers, such as 1/x and √x) |
 
 ### Grades 7–9 (every topic runs through all three grades)
 
@@ -101,7 +101,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Measurement | Length ✗ · Mass ✗ · Capacity/volume ✗ · Time ✗ · Temperature ✗ · Perimeter, area and volume ✓ |
 | Data handling | Collecting and organising ✗ · Representing ✗ · Analysing and reporting ✗ · Probability ✗ |
 
-**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks), analytical geometry (40), trigonometry (40) and statistics (20) are now built, so all of Paper 2 is covered. Trig graphs are counted under Functions.
+**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks), analytical geometry (40), trigonometry (40) and statistics (20) are now built, so all of Paper 2 is covered. On Paper 1, functions and graphs (35) and calculus (35) are built; probability, finance, patterns, and equations and inequalities are next. Trig graphs are counted under Functions.
 
 **Euclidean geometry: what ✓ means.** Every theorem in the Grades 10–12 list is taught (lesson and lab) and practised: calculate angles and lengths, give the reason for a step, solve for x. Proofs are practised as *complete the proof*: a statement–reason table with blanks, each filled from four options, and each blank marked. This covers six of the seven theorem proofs that the DBE Grade 12 examination guidelines list as examinable (perpendicular from the centre bisects a chord, angle at the centre, opposite angles of a cyclic quad, tan chord, proportionality, equiangular triangles), plus Pythagoras by similar triangles and ten riders. Missing: the converse "a line from the centre to the midpoint of a chord is perpendicular to it". Limit: learners choose each line rather than write it from a blank page, so this is not yet the same as writing a proof in the exam. Free writing needs marking of open text, which is a later decision. Grade 10 stays ◐: CAPS asks learners to prove quadrilateral properties and the midpoint theorem, and those proofs are not built.
 
@@ -109,7 +109,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 
 1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~, ~~analytical geometry~~, ~~trigonometry~~, ~~statistics~~. All built.
 2. ~~**Euclidean proofs**~~: built as complete-the-proof (statement–reason input, riders and the examinable theorem proofs). Grade 10 quadrilateral proofs remain.
-3. **Paper 1 gaps, Grades 10–12:** ~~functions and graphs~~ (built), calculus (with cubic functions and the factor theorem), probability, equations and inequalities, finance, surds and patterns.
+3. **Paper 1 gaps, Grades 10–12:** ~~functions and graphs~~ (built), ~~calculus~~ (built, apart from negative and fractional powers), probability, equations and inequalities, finance, surds and patterns.
 4. **Grades 7–9:** geometry (2D, straight lines, construction), exponents, Pythagoras, data handling and probability, patterns.
 5. **Grades 4–6:** measurement, 2D and 3D shapes, patterns, data handling.
 

@@ -58,6 +58,7 @@ export type WidgetSpec =
   | { type: 'trig-lab'; mode: 'circle' | 'triangle' }
   | { type: 'stats-lab'; mode: 'dots' | 'scatter' }
   | { type: 'function-lab'; mode: 'algebraic' | 'trig' }
+  | { type: 'calculus-lab'; mode: 'secant' | 'cubic' | 'box' }
   // Mathematics, Grades 4–6
   | { type: 'place-value-chart'; start: number }
   | { type: 'array-model'; rows: number; cols: number }
