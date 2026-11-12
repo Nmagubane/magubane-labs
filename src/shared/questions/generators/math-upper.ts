@@ -234,7 +234,7 @@ export const quadraticFormula: QuestionTemplate = {
       const wrong1 = rat(-p, 1), wrong2 = rat(-qn, a);
       return {
         prompt: `Use the quadratic formula to solve $${quad(a, b, c)} = 0$.`,
-        input: { kind: 'roots', count: 2, variable: 'x' },
+        input: { kind: 'roots', variable: 'x' },
         answer: { kind: 'roots', values: [r1, r2] },
         answerDisplay: `$x = ${p}$ or $x = ${r2.d === 1 ? r2.n : `${r2.n < 0 ? '-' : ''}\\tfrac{${Math.abs(r2.n)}}{${r2.d}}`}$`,
         hints: [`$a = ${a}$, $b = ${b}$, $c = ${c}$.`, '$x = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$. Divide the **whole** top by $2a$.'],
@@ -671,7 +671,7 @@ export const derivatives: QuestionTemplate = {
     ];
     return {
       prompt: `Find the $x$-values of the stationary points of $f(x) = ${polyTex(coefs)}$.`,
-      input: { kind: 'roots', count: 2, variable: 'x' },
+      input: { kind: 'roots', variable: 'x' },
       answer: { kind: 'roots', values: [rat(p, 1), rat(q, 1)] },
       answerDisplay: `$x = ${p}$ or $x = ${q}$`,
       hints: ['At a stationary point the gradient is 0: solve $f\'(x) = 0$.', 'Take out a common factor, then factorise the quadratic.'],

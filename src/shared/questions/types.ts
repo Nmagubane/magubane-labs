@@ -19,7 +19,8 @@ export type InputSpec =
   | { kind: 'equation'; variables: string[]; placeholder?: string }
   /** A coordinate pair, typed as name(x; y). */
   | { kind: 'point'; name: string }
-  | { kind: 'roots'; count: number; variable: string }
+  /** Solutions of an equation. The learner adds as many boxes as they need: how many solutions there are is part of the question. */
+  | { kind: 'roots'; variable: string }
   | { kind: 'coefficients'; species: string[]; arrowAfter: number }
   | { kind: 'choice'; options: ChoiceOption[] }
   // ---- Junior (Grades 1–3): touch-first inputs. See src/shared/junior. ----
@@ -91,6 +92,11 @@ export type Figure =
       segments?: { x1: number; y1: number; x2: number; y2: number; dashed?: boolean }[];
       /** Circles force equal scales on both axes, so they stay round. */
       circles?: { cx: number; cy: number; r: number }[];
+      /** A number line only (box-and-whisker plots): no y-axis. */
+      hideY?: boolean;
+      /** Axis titles, e.g. "Mark (%)" and "Cumulative frequency". */
+      xTitle?: string;
+      yTitle?: string;
     }
   | { kind: 'circuit'; voltage: number | null; resistors: (number | null)[]; current: number | null }
   | { kind: 'punnett'; parentA: string; parentB: string; reveal: boolean }
@@ -110,7 +116,8 @@ export interface GeometryFigure {
   segments?: { a: string; b: string; ticks?: 1 | 2; arrows?: 1 | 2; dashed?: boolean; extend?: number; text?: string }[];
   circles?: { c: string; r: number }[];
   /** An angle at vertex `at`, between rays to `from` and `to`, marked with `text` (e.g. "64°" or "x"). */
-  angles?: { at: string; from: string; to: string; text: string; right?: boolean }[];
+  /** `r` scales the arc radius, so two marks at one vertex don't overlap (default 1). */
+  angles?: { at: string; from: string; to: string; text: string; right?: boolean; r?: number }[];
 }
 
 /**

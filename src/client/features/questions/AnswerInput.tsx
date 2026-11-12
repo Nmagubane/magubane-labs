@@ -223,22 +223,34 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
 }
 
 function RootsInput({ input, value, onChange, onSubmit, disabled, autoFocus }: Props & { input: Extract<InputSpec, { kind: 'roots' }> }) {
-  const vals = Array.isArray(value) ? value : Array.from({ length: input.count }, () => '');
+  // One box to start with: the learner decides how many solutions there are.
+  const vals = Array.isArray(value) && value.length > 0 ? value : [''];
   const set = (i: number, s: string) => onChange(vals.map((x, j) => (j === i ? s : x)));
+  const remove = (i: number) => onChange(vals.filter((_, j) => j !== i));
   return (
-    <div className="answer-row roots" role="group" aria-label="Solutions">
-      {vals.map((v, i) => (
-        <span key={i} className="root">
-          {i > 0 ? <span className="root-or">or</span> : null}
-          <span className="answer-prefix" aria-hidden>
-            <Tex tex={`${input.variable} =`} />
+    <div className="roots-input">
+      <div className="answer-row roots" role="group" aria-label="Solutions">
+        {vals.map((v, i) => (
+          <span key={i} className="root">
+            {i > 0 ? <span className="root-or">or</span> : null}
+            <span className="answer-prefix" aria-hidden>
+              <Tex tex={`${input.variable} =`} />
+            </span>
+            <input aria-label={`Solution ${i + 1}`} className="answer-box answer-narrow" type="text" inputMode="decimal" autoComplete="off" value={v} disabled={disabled} autoFocus={(autoFocus && i === 0) || (i > 0 && i === vals.length - 1 && v === '')} onChange={(e) => set(i, e.target.value)} onKeyDown={enter(onSubmit)} />
+            <button type="button" className="key key-sign" onClick={() => set(i, toggleSign(v))} disabled={disabled} aria-label={`Make solution ${i + 1} negative or positive`}>
+              ±
+            </button>
+            {i > 0 ? (
+              <button type="button" className="key key-remove" onClick={() => remove(i)} disabled={disabled} aria-label={`Remove solution ${i + 1}`}>
+                ×
+              </button>
+            ) : null}
           </span>
-          <input aria-label={`Solution ${i + 1}`} className="answer-box answer-narrow" type="text" inputMode="decimal" autoComplete="off" value={v} disabled={disabled} autoFocus={autoFocus && i === 0} onChange={(e) => set(i, e.target.value)} onKeyDown={enter(onSubmit)} />
-          <button type="button" className="key key-sign" onClick={() => set(i, toggleSign(v))} disabled={disabled} aria-label={`Make solution ${i + 1} negative or positive`}>
-            ±
-          </button>
-        </span>
-      ))}
+        ))}
+      </div>
+      <button type="button" className="roots-add" onClick={() => onChange([...vals, ''])} disabled={disabled || vals.length >= 8}>
+        + Add another solution
+      </button>
     </div>
   );
 }
@@ -301,6 +313,7 @@ function ChoiceInput({ input, value, onChange, disabled, describedBy }: Props & 
 export function hasAnswer(input: InputSpec, value: ResponseValue | null): boolean {
   if (input.kind === 'coefficients') return true; // empty boxes mean 1
   if (value === null) return false;
+  if (input.kind === 'roots') return Array.isArray(value) ? value.some((v) => v.trim() !== '') : value.trim() !== '';
   if (Array.isArray(value)) return value.length > 0 && value.every((v) => v.trim() !== '');
   return value.trim() !== '' && !value.trim().endsWith('/') && !value.trim().startsWith('/');
 }

@@ -389,7 +389,7 @@ export const quadraticEquations: QuestionTemplate = {
       const roots = [rat(-p), rat(-q)];
       return {
         prompt: `Solve for $x$: $${binomial(1, 'x', p)}${binomial(1, 'x', q)} = 0$`,
-        input: { kind: 'roots', count: 2, variable: 'x' },
+        input: { kind: 'roots', variable: 'x' },
         answer: rootsAns(roots),
         answerDisplay: `$${rootsTex(roots)}$`,
         hints: ['If two things multiply to give 0, at least one of them must be 0.', 'Set each bracket equal to zero.'],
@@ -402,7 +402,7 @@ export const quadraticEquations: QuestionTemplate = {
       const roots = [rat(0), rat(-b)];
       return {
         prompt: `Solve for $x$: $${sum([[1, 'x^2'], [b, 'x']])} = 0$`,
-        input: { kind: 'roots', count: 2, variable: 'x' },
+        input: { kind: 'roots', variable: 'x' },
         answer: rootsAns(roots),
         answerDisplay: `$${rootsTex(roots)}$`,
         hints: ['Both terms contain $x$. Take out the common factor.', `$x(${sum([[1, 'x'], [b, '']])}) = 0$. Now use the zero-product rule.`],
@@ -424,7 +424,7 @@ export const quadraticEquations: QuestionTemplate = {
       const roots = [rat(-p, a), rat(-q)];
       return {
         prompt: `Solve for $x$: $${sum([[A, 'x^2'], [B, 'x'], [C, '']])} = 0$`,
-        input: { kind: 'roots', count: 2, variable: 'x' },
+        input: { kind: 'roots', variable: 'x' },
         answer: rootsAns(roots),
         answerDisplay: `$${rootsTex(roots)}$`,
         hints: [`Factorise: look for two numbers that multiply to $${A} \\times ${C} = ${A * C}$ and add to ${B}.`, 'One root will be a fraction.'],
@@ -444,7 +444,7 @@ export const quadraticEquations: QuestionTemplate = {
     const roots = [rat(-p), rat(-q)];
     return {
       prompt: `Solve for $x$: $${sum([[1, 'x^2'], [p + q, 'x'], [p * q, '']])} = 0$`,
-      input: { kind: 'roots', count: 2, variable: 'x' },
+      input: { kind: 'roots', variable: 'x' },
       answer: rootsAns(roots),
       answerDisplay: `$${rootsTex(roots)}$`,
       hints: [`Factorise first: two numbers that multiply to ${p * q} and add to ${p + q}.`, 'Then set each bracket equal to zero.'],

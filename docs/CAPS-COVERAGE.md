@@ -73,7 +73,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Equations and inequalities | ◐ quadratics by factorising (✗ simultaneous, literal, inequalities) | ◐ quadratic formula (✗ completing the square, quadratic inequalities, nature of roots, linear–quadratic systems) | |
 | Functions | ◐ straight lines (✗ parabola, hyperbola, exponential) | ✗ parameters, average gradient, trig graphs | ✗ inverses, logarithms ✗ polynomials (factor and remainder theorems) |
 | Finance, growth and decay | ✓ simple and compound interest | ✗ depreciation, nominal and effective rates | ✗ annuities, loans |
-| Trigonometry | ✓ ratios in right triangles and on the Cartesian plane, special angles, simple equations | ◐ identities, reduction formulas, general solution, sine, cosine and area rules (✗ 2D problems that combine two triangles) | ◐ compound and double angles (✗ 2D and 3D problems) |
+| Trigonometry | ✓ ratios in right triangles and on the Cartesian plane, special angles, simple equations | ✓ identities, reduction formulas, general solution, sine, cosine and area rules, 2D problems (in the Grade 12 2D/3D skill, which Grade 11 learners see in their band) | ✓ compound and double angles, 2D and 3D problems |
 | Euclidean geometry | ◐ quadrilaterals, midpoint theorem and converse | ◐ all seven circle theorems and converses | ◐ proportionality, similarity, Pythagoras by similar triangles |
 | Analytical geometry | ✓ distance, midpoint, gradient; parallel, perpendicular and collinear points | ✓ equation of a line (through a point, parallel, perpendicular), inclination, angle between lines | ✓ equation of a circle (any centre, completing the square), tangent at a point |
 | Statistics | ✗ central tendency, quartiles, box-and-whisker | ✗ ogives, variance and standard deviation | ✗ regression and correlation |
@@ -101,13 +101,13 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Measurement | Length ✗ · Mass ✗ · Capacity/volume ✗ · Time ✗ · Temperature ✗ · Perimeter, area and volume ✓ |
 | Data handling | Collecting and organising ✗ · Representing ✗ · Analysing and reporting ✗ · Probability ✗ |
 
-**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks, proofs still to come), analytical geometry (40) and trigonometry (40, apart from multi-triangle 2D and 3D problems) are now built; statistics (20) is not. Trig graphs are counted under Functions.
+**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks, proofs still to come), analytical geometry (40) and trigonometry (40) are now built; statistics (20) is not. Trig graphs are counted under Functions.
 
 **Euclidean geometry: what ◐ means.** Every theorem in the Grades 10–12 list is taught (lesson and lab) and practised: calculate angles and lengths from a diagram, give the reason for a step, and solve for x using a theorem. Not yet: writing a full multi-step proof in statement–reason form (the "riders" that carry most exam marks), and proving the theorems themselves (CAPS requires learners to prove some of them). Step-by-step proof input is the next piece of work on this topic.
 
 ### Build order
 
-1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~ (built, proofs still to come), ~~analytical geometry~~ (built), ~~trigonometry~~ (built; 2D/3D problems still to come), then statistics. Half the Grade 12 maths mark.
+1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~ (built, proofs still to come), ~~analytical geometry~~ (built), ~~trigonometry~~ (built), then statistics. Half the Grade 12 maths mark.
 2. **Paper 1 gaps, Grades 10–12:** functions and graphs, probability, equations and inequalities, finance, calculus.
 3. **Grades 7–9:** geometry (2D, straight lines, construction), exponents, Pythagoras, data handling and probability, patterns.
 4. **Grades 4–6:** measurement, 2D and 3D shapes, patterns, data handling.

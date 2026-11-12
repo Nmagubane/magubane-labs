@@ -38,10 +38,10 @@ function ticks(a: number, b: number): number[] {
   return out;
 }
 
-export function Plot({ xRange, yRange, width = 360, height = 300, children, label, svgProps }: { xRange: [number, number]; yRange: [number, number]; width?: number; height?: number; children?: (s: Scale) => ReactNode; label: string; svgProps?: SVGProps<SVGSVGElement> }) {
+export function Plot({ xRange, yRange, width = 360, height = 300, children, label, svgProps, hideY = false }: { xRange: [number, number]; yRange: [number, number]; width?: number; height?: number; children?: (s: Scale) => ReactNode; label: string; svgProps?: SVGProps<SVGSVGElement>; /** A number line: no y grid, axis or labels (box-and-whisker plots, dot plots). */ hideY?: boolean }) {
   const s = makeScale(xRange, yRange, width, height);
   const xs = ticks(xRange[0], xRange[1]);
-  const ys = ticks(yRange[0], yRange[1]);
+  const ys = hideY ? [] : ticks(yRange[0], yRange[1]);
   return (
     <svg className="plot" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} {...svgProps}>
       {xs.map((v) => (
@@ -51,7 +51,7 @@ export function Plot({ xRange, yRange, width = 360, height = 300, children, labe
         <line key={`gy${v}`} y1={s.y(v)} y2={s.y(v)} x1={s.x(xRange[0])} x2={s.x(xRange[1])} className="plot-grid" />
       ))}
       {yRange[0] <= 0 && yRange[1] >= 0 ? <line x1={s.x(xRange[0])} x2={s.x(xRange[1])} y1={s.y(0)} y2={s.y(0)} className="plot-axis" /> : null}
-      {xRange[0] <= 0 && xRange[1] >= 0 ? <line y1={s.y(yRange[0])} y2={s.y(yRange[1])} x1={s.x(0)} x2={s.x(0)} className="plot-axis" /> : null}
+      {!hideY && xRange[0] <= 0 && xRange[1] >= 0 ? <line y1={s.y(yRange[0])} y2={s.y(yRange[1])} x1={s.x(0)} x2={s.x(0)} className="plot-axis" /> : null}
       {xs
         .filter((v) => v !== 0)
         .map((v) => (
@@ -71,7 +71,7 @@ export function Plot({ xRange, yRange, width = 360, height = 300, children, labe
           x
         </text>
       ) : null}
-      {yRange[1] > 0 ? (
+      {!hideY && yRange[1] > 0 ? (
         <text x={xRange[0] <= 0 && xRange[1] >= 0 ? s.x(0) + 7 : s.x(xRange[0]) + 7} y={s.y(yRange[1]) + 10} className="plot-axis-label">
           y
         </text>

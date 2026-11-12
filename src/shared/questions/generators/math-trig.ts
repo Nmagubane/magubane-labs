@@ -461,7 +461,7 @@ export const trigEquations: QuestionTemplate = {
         const xs = solveIn(e.fn, e.ref, sign, 0, 360);
         return {
           prompt: `Solve for $x$ without a calculator, if $0^\\circ \\le x \\le 360^\\circ$: $\\ ${form}$`,
-          input: { kind: 'roots', count: xs.length, variable: 'x' },
+          input: { kind: 'roots', variable: 'x' },
           answer: rootsAns(xs),
           answerDisplay: `$${rootsTex(xs)}$`,
           hints: hintsBase,
@@ -507,7 +507,7 @@ export const trigEquations: QuestionTemplate = {
       const sign = Math.sign(b);
       return {
         prompt: `Solve for $x$, if $0^\\circ \\le x \\le 360^\\circ$: $\\ ${a}\\${fn} x = ${b}$. Round to one decimal place.`,
-        input: { kind: 'roots', count: xs.length, variable: 'x' },
+        input: { kind: 'roots', variable: 'x' },
         answer: rootsAns(ROUND(xs)),
         answerDisplay: `$${rootsTex(ROUND(xs), 1)}$`,
         hints: [`$\\${fn} x = \\dfrac{${b}}{${a}}$. Use the positive value to find the reference angle.`, ...hintsBase.slice(1)],
@@ -533,7 +533,7 @@ export const trigEquations: QuestionTemplate = {
         const arg = `x ${c > 0 ? '+' : '-'} ${D(Math.abs(c))}`;
         return {
           prompt: `Solve for $x$ without a calculator, if $0^\\circ \\le x \\le 360^\\circ$: $\\ \\${e.fn}(${arg}) = ${ratTex(e.v)}$`,
-          input: { kind: 'roots', count: xs.length, variable: 'x' },
+          input: { kind: 'roots', variable: 'x' },
           answer: rootsAns(xs),
           answerDisplay: `$${rootsTex(xs)}$`,
           hints: [`Let $\\theta = ${arg}$ and solve $\\${e.fn}\\theta = ${ratTex(e.v)}$ first.`, `Then $x = \\theta ${c > 0 ? '-' : '+'} ${D(Math.abs(c))}$. Keep only the values from $0^\\circ$ to $360^\\circ$.`],
@@ -546,7 +546,7 @@ export const trigEquations: QuestionTemplate = {
       const xs = thetas.map((t) => t / k);
       return {
         prompt: `Solve for $x$ without a calculator, if $0^\\circ \\le x \\le 180^\\circ$: $\\ \\${e.fn} 2x = ${ratTex(e.v)}$`,
-        input: { kind: 'roots', count: xs.length, variable: 'x' },
+        input: { kind: 'roots', variable: 'x' },
         answer: rootsAns(xs),
         answerDisplay: `$${rootsTex(xs, 1)}$`,
         hints: ['If $0^\\circ \\le x \\le 180^\\circ$, then $0^\\circ \\le 2x \\le 360^\\circ$.', 'Solve for $2x$ in that interval, then halve.'],
@@ -562,7 +562,7 @@ export const trigEquations: QuestionTemplate = {
       const xs = ROUND(solveIn('tan', ref, Math.sign(k), 0, 360));
       return {
         prompt: `Solve for $x$, if $0^\\circ \\le x \\le 360^\\circ$: $\\ ${d === 1 ? '' : d}\\sin x = ${k}\\cos x$. Round to one decimal place.`,
-        input: { kind: 'roots', count: xs.length, variable: 'x' },
+        input: { kind: 'roots', variable: 'x' },
         answer: rootsAns(xs),
         answerDisplay: `$${rootsTex(xs, 1)}$`,
         hints: ['Divide both sides by $\\cos x$.', '$\\dfrac{\\sin x}{\\cos x} = \\tan x$.'],
@@ -592,7 +592,7 @@ export const trigEquations: QuestionTemplate = {
     if (xs.length === 0) return trigEquations.generate(rng, 5);
     return {
       prompt: `Solve for $x$ without a calculator, if $${D(lo)} \\le x \\le ${D(hi)}$: $\\ ${rng.pick(Q.tex)}$`,
-      input: { kind: 'roots', count: xs.length, variable: 'x' },
+      input: { kind: 'roots', variable: 'x' },
       answer: rootsAns(xs),
       answerDisplay: `$${rootsTex(xs)}$`,
       hints: [`Treat it as a quadratic in $\\${Q.fn} x$ and factorise.`, `$${Q.fac}$`],

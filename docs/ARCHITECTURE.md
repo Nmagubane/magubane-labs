@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (76 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (77 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -271,7 +271,7 @@ The `graph` figure gained `segments`, `circles` (always drawn round, on equal sc
 
 ## 12. Trigonometry (Paper 2)
 
-Five new skills in the `trigonometry` topic, after the existing Grade 10 `trig-ratios` (right-angled triangles):
+Six new skills in the `trigonometry` topic, after the existing Grade 10 `trig-ratios` (right-angled triangles); the sixth, `trig-2d-3d`, is described below the table:
 
 | Skill | Grade | What it covers |
 |---|---|---|
@@ -287,5 +287,9 @@ Five new skills in the `trigonometry` topic, after the existing Grade 10 `trig-r
 
 **Labs** (`TrigLabs.tsx`, `trig-lab`): a terminal arm you turn through 360° with x, y, r, CAST and the reference angle, and a triangle whose sides and angle you change while the three sine-rule ratios stay equal. Geometry figures gained side labels (`segments[].text`).
 
-**Not built yet.** 2D problems combining two triangles, 3D problems (Grade 12), and trig graphs (counted under Functions). The `roots` input shows one box per solution, which tells the learner how many solutions there are; asking for the count is a better test and is worth adding.
+**2D and 3D** (`trig-2d-3d`, Grade 12, `math-trig-3d.ts`): two triangles that share a side. 2D: a quadrilateral split by a diagonal (cosine rule, then sine rule) and a tower seen from two points in line. 3D: a vertical tower PQ on a horizontal plane with R and S; find the height, a ground distance, a ground angle or the area of the ground triangle. 2D figures are true to scale; 3D figures use an oblique projection, like exam diagrams (angle marks can take `r` to keep two marks at one vertex apart). `trig.test.ts` checks 2D answers against the drawn figure and recomputes 3D answers independently from the numbers in the prompt. Answers allow 0,3% because learners round the first side before using it.
+
+**Equations don't reveal how many solutions they have.** The `roots` input starts with one box; the learner adds more ("+ Add another solution") or removes them. Grading tells a learner who found some but not all solutions `missing-solutions`, and one who added a wrong value `extra-solutions`, without giving the missing ones away. Answers may be typed as `x = 30°`.
+
+**Not built yet.** Trig graphs (counted under Functions).
 

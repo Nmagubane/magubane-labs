@@ -31,7 +31,8 @@ function GraphFigure({ f }: { f: Extract<FigureSpec, { kind: 'graph' }> }) {
   const H = round ? 320 : 300;
   return (
     <figure className="q-figure">
-      <Plot xRange={xRange} yRange={yRange} width={W} height={H} label={`Graph showing ${desc}`}>
+      {f.yTitle ? <p className="plot-title-y">{f.yTitle}</p> : null}
+      <Plot xRange={xRange} yRange={yRange} width={W} height={f.hideY ? 140 : H} hideY={f.hideY} label={`${f.xTitle ? `${f.xTitle}${f.yTitle ? ` against ${f.yTitle}` : ''}. ` : ''}Graph showing ${desc}`}>
         {(s) => (
           <>
             {(f.circles ?? []).map((c, i) => (
@@ -55,6 +56,7 @@ function GraphFigure({ f }: { f: Extract<FigureSpec, { kind: 'graph' }> }) {
           </>
         )}
       </Plot>
+      {f.xTitle ? <p className="plot-title-x">{f.xTitle}</p> : null}
     </figure>
   );
 }
@@ -279,7 +281,7 @@ export function GeometryFigure({ f }: { f: Extract<FigureSpec, { kind: 'geometry
           while (d <= -Math.PI) d += 2 * Math.PI;
           while (d > Math.PI) d -= 2 * Math.PI;
           a2 = a1 + d;
-          const r = 16;
+          const r = 16 * (g.r ?? 1);
           const mid = a1 + d / 2;
           const lx = v.sx + Math.cos(mid) * (r + 13);
           const ly = v.sy + Math.sin(mid) * (r + 13);

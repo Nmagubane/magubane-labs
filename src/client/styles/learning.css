@@ -1706,3 +1706,10 @@
   font-weight: 700;
   color: var(--ink-2);
 }
+
+/* Roots: the learner adds boxes, so the number of solutions isn't given away. */
+.roots-input { display: grid; gap: var(--s2); justify-items: start; }
+.roots-add { background: none; border: 0; padding: var(--s1) 0; min-height: 44px; font: inherit; font-weight: 700; color: var(--pen); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.roots-add:disabled { color: var(--ink-3); cursor: default; }
+.roots-add:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; border-radius: 4px; }
+.key-remove { font-size: var(--t-lg); color: var(--ink-2); }

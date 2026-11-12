@@ -126,7 +126,7 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue)
     }
     case 'roots': {
       const parts = (Array.isArray(response) ? response : response.split(/;|\bor\b|\band\b|,\s+/))
-        .map((p) => p.trim())
+        .map((p) => p.replace(/^\s*[a-z]\s*=/i, '').replace(/°/g, '').trim())
         .filter(Boolean);
       if (parts.length === 0) return { error: 'Enter each solution.' };
       const values: Rational[] = [];
@@ -280,6 +280,15 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
   }
   if (answer.kind === 'sequence' && parsed.kind === 'sequence') {
     return { correct: false, wrongIds: answer.ids.filter((id, i) => parsed.ids[i] !== id) };
+  }
+
+  if (answer.kind === 'roots' && parsed.kind === 'roots') {
+    // Right values, wrong count: say which, without giving away the missing ones.
+    const want = answer.values.map((v) => rat(v.n, v.d));
+    const allRight = parsed.values.every((p) => want.some((w) => req(w, p)));
+    const allFound = want.every((w) => parsed.values.some((p) => req(w, p)));
+    if (allRight && !allFound) return { correct: false, mistake: 'missing-solutions', feedback: 'Every value you gave is a solution, but there are more. Check every quadrant or case.' };
+    if (allFound && !allRight) return { correct: false, mistake: 'extra-solutions', feedback: 'You found all the solutions, but you also gave a value that is not a solution (or is outside the interval).' };
   }
 
   if (answer.kind === 'coefficients' && parsed.kind === 'coefficients') {

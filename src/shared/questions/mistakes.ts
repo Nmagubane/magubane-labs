@@ -494,6 +494,19 @@ export const MISTAKES = {
   'radius-squared': { label: 'r or r²', kind: 'procedural', tip: 'The right-hand side is r², the radius squared. Square the radius when you write the equation; take the square root when you read the radius off.' },
   'complete-square': { label: 'Completing the square', kind: 'procedural', tip: 'Halve the coefficient of x (and of y), square it, and add it to both sides.' },
   'tangent-gradient': { label: 'Tangent gradient', kind: 'conceptual', tip: 'A tangent is perpendicular to the radius at the point of contact. Find the gradient of the radius, then use the negative reciprocal.' },
+  // ---- Equations with several solutions ----
+  'missing-solutions': { label: 'Some solutions missing', kind: 'conceptual', tip: 'An equation can have more than one solution. A quadratic can have two; a trig equation can have one in each of several quadrants. Check every case before you stop.' },
+  'extra-solutions': { label: 'A value that isn\'t a solution', kind: 'careless', tip: 'Substitute each answer back into the equation, and check it is inside the interval you were given.' },
+  // ---- Statistics (Grades 10–12) ----
+  'mean-median': { label: 'Mean, median or mode', kind: 'conceptual', tip: 'Mean: add everything and divide by how many there are. Median: the middle value once the data is in order. Mode: the value that appears most often.' },
+  'data-order': { label: 'Order the data first', kind: 'procedural', tip: 'The median and quartiles come from the data in order, from smallest to largest. Sort first, then count to the middle.' },
+  'quartile': { label: 'Quartiles and IQR', kind: 'procedural', tip: 'Q1 is the median of the lower half, Q3 the median of the upper half. IQR = Q3 − Q1; the range is max − min. A quarter of the data lies in each section of a box-and-whisker plot.' },
+  'grouped-mean': { label: 'Mean of grouped data', kind: 'procedural', tip: 'Use the midpoint of each class: estimated mean = Σ(f × midpoint) ÷ Σf. Divide by the total frequency, not by the number of classes.' },
+  'std-dev': { label: 'Standard deviation', kind: 'procedural', tip: 'σ = √(Σ(x − x̄)² ÷ n). Square the deviations, find their mean (the variance), then take the square root. CAPS divides by n.' },
+  'ogive': { label: 'Reading an ogive', kind: 'conceptual', tip: 'An ogive shows cumulative frequency: how many values are less than each upper boundary. For the median, go across from n ÷ 2 on the vertical axis and read down.' },
+  'outlier': { label: 'Outliers', kind: 'procedural', tip: 'An outlier is below Q1 − 1,5 × IQR or above Q3 + 1,5 × IQR.' },
+  'regression': { label: 'Regression line', kind: 'procedural', tip: 'ŷ = a + bx, where b is the slope and a the y-intercept. Enter x and y in the right order on your calculator (STAT mode, A + BX).' },
+  'correlation': { label: 'Correlation', kind: 'conceptual', tip: 'r is between −1 and 1. The sign is the direction (up or down); the size is the strength: close to ±1 is strong, close to 0 is no correlation.' },
   // ---- Trigonometry (Grades 10–12) ----
   'special-angles': { label: 'Special angles', kind: 'procedural', tip: 'Learn the triangle values: sin 30° = cos 60° = ½, tan 45° = 1, sin 60° = cos 30° = √3⁄2, sin 45° = cos 45° = √2⁄2. sin²60° means (sin 60°)², which is ¾.' },
   'cast-sign': { label: 'Sign in the quadrant', kind: 'conceptual', tip: 'Use the quadrant: All positive in I, Sin in II, Tan in III, Cos in IV (CAST). With x, y and r, the sign comes from x and y; r is always positive.' },

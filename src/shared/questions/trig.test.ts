@@ -4,6 +4,7 @@ import { generateQuestion } from './registry.ts';
 import { exactTrig } from './generators/math-trig.ts';
 import { toNumber } from './rational.ts';
 import type { AnswerSpec, GeneratedQuestion } from './types.ts';
+import { gradeResponse } from './answer.ts';
 
 const SEEDS = 150;
 const LEVELS = [1, 2, 3, 4, 5] as const;
@@ -90,4 +91,48 @@ test('triangle rules: answers match the triangle that is drawn', () => {
     assert.ok(Math.abs(ansNum(q.answer) - want) < 0.06, `triangle L${level} s${seed}: answer ${ansNum(q.answer)}, drawn ${want}`);
     for (const m of g.angles ?? []) if (/^\d+°$/.test(m.text)) assert.ok(Math.abs(ang(m.at, m.from, m.to) - Number(m.text.slice(0, -1))) < 0.05, `triangle L${level} s${seed}: angle ${m.at}`);
   }
+});
+
+test('2D and 3D problems: answers match the figure (2D) or an independent calculation (3D)', () => {
+  const nums = (s: string) => [...s.matchAll(/(-?\d+(?:\{,\}\d+)?)/g)].map((m) => Number(m[1]!.replace('{,}', '.')));
+  for (let seed = 1; seed <= SEEDS; seed++) {
+    for (const level of [1, 2] as const) {
+      const q = generateQuestion('trig-2d-3d', seed, level);
+      const g = q.figure!;
+      assert.ok(g.kind === 'geometry');
+      const P = Object.fromEntries(g.points.map((p) => [p.id, p]));
+      const d = (u: string, v: string) => Math.hypot(P[u]!.x - P[v]!.x, P[u]!.y - P[v]!.y);
+      const want = level === 1 ? d('B', 'C') : d('F', 'T');
+      assert.ok(Math.abs(ansNum(q.answer) - want) < 0.01 * want + 0.01, `2D L${level} s${seed}: answer ${ansNum(q.answer)}, drawn ${want}`);
+      if (level === 1) {
+        // The drawn quadrilateral has the stated angle at C.
+        const v1 = [P.B!.x - P.C!.x, P.B!.y - P.C!.y];
+        const v2 = [P.D!.x - P.C!.x, P.D!.y - P.C!.y];
+        const angC = (Math.acos((v1[0]! * v2[0]! + v1[1]! * v2[1]!) / (Math.hypot(v1[0]!, v1[1]!) * Math.hypot(v2[0]!, v2[1]!))) * 180) / Math.PI;
+        const stated = Number(/\\hat\{C\} = (\d+)/.exec(q.prompt)![1]);
+        assert.ok(Math.abs(angC - stated) < 0.1, `2D L1 s${seed}: angle C drawn ${angC}, stated ${stated}`);
+      }
+    }
+    {
+      const q = generateQuestion('trig-2d-3d', seed, 3);
+      const [d, x, y, th] = nums(q.prompt.replace(/PQ|QRS|RS|QSR/g, ''));
+      const QR = (d! * F.sin(y!)) / F.sin(180 - x! - y!);
+      assert.ok(Math.abs(ansNum(q.answer) - QR * F.tan(th!)) < 0.01, `3D L3 s${seed}`);
+    }
+    {
+      const q = generateQuestion('trig-2d-3d', seed, 4);
+      const [h, a, b, g] = nums(q.prompt);
+      const QR = h! / F.tan(a!);
+      const QS = h! / F.tan(b!);
+      assert.ok(Math.abs(ansNum(q.answer) - Math.sqrt(QR * QR + QS * QS - 2 * QR * QS * F.cos(g!))) < 0.01, `3D L4 s${seed}`);
+    }
+  }
+});
+
+test('roots: a partial answer is told that solutions are missing, not just "wrong"', () => {
+  const spec: AnswerSpec = { kind: 'roots', values: [{ n: 30, d: 1 }, { n: 150, d: 1 }] };
+  assert.equal(gradeResponse(spec, ['30']).mistake, 'missing-solutions');
+  assert.equal(gradeResponse(spec, ['30', '150', '210']).mistake, 'extra-solutions');
+  assert.equal(gradeResponse(spec, ['x = 150°', '30']).correct, true);
+  assert.equal(gradeResponse(spec, ['30', '']).mistake, 'missing-solutions');
 });

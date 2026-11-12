@@ -456,6 +456,18 @@ export const SKILLS: Skill[] = [
     mappings: caps(12, 'Trigonometry: compound and double angle identities'),
   },
   {
+    id: 'trig-2d-3d',
+    topicId: 'trigonometry',
+    name: 'Problems in 2D and 3D',
+    outcome: 'Solve problems that link two triangles, in a plane and in three dimensions, with the sine, cosine and area rules.',
+    signature: 'PQ = QR\\tan\\theta',
+    grade: 12,
+    prerequisites: ['triangle-rules'],
+    templateId: 'trig-2d-3d',
+    lessonId: 'trig-2d-3d',
+    mappings: caps(12, 'Trigonometry: problems in two and three dimensions'),
+  },
+  {
     id: 'finance',
     topicId: 'finance',
     name: 'Simple and compound interest',

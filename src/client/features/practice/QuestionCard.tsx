@@ -11,7 +11,7 @@ import type { PracticeItem, AnswerResponse, ResponseValue, TutorConversationDeta
 
 export function defaultValue(item: PracticeItem): ResponseValue | null {
   if (item.question.input.kind === 'coefficients') return item.question.input.species.map(() => '');
-  if (item.question.input.kind === 'roots') return Array.from({ length: item.question.input.count }, () => '');
+  if (item.question.input.kind === 'roots') return [''];
   return null;
 }
 

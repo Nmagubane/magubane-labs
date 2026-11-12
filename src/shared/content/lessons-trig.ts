@@ -130,4 +130,30 @@ export const TRIG_LESSONS: Lesson[] = [
       { kind: 'check', level: 2 },
     ],
   },
+  {
+    id: 'trig-2d-3d',
+    skillId: 'trig-2d-3d',
+    title: 'Problems in 2D and 3D',
+    minutes: 14,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'A vertical tower PQ stands at Q on flat ground. R is on the ground. Which angle in triangle PQR is 90°?',
+        options: ['The angle at P', 'The angle at Q', 'The angle at R'],
+        answer: 1,
+        explanation: 'The tower is vertical and the ground is horizontal, so they meet at a right angle at the foot, Q. That right angle is the key to every 3D tower problem.',
+      },
+      {
+        kind: 'widget',
+        title: 'Triangle lab',
+        task: 'Every 2D or 3D problem is two triangles that share a side. Practise moving between the rules: which one would you use if you knew two sides and the angle between them? Two angles and a side?',
+        widget: { type: 'trig-lab', mode: 'triangle' },
+      },
+      { kind: 'key-idea', body: '1. Find the triangle you can **solve now** (you know enough sides and angles). 2. Use it to find the **shared side**. 3. Move to the second triangle. In 3D, the vertical triangle has a right angle at the foot: use $\tan$ for the angle of elevation. The horizontal triangle on the ground usually needs the sine, cosine or area rule.' },
+      { kind: 'trap', wrong: 'The angle of elevation is at the top of the tower.', why: 'An angle of elevation is measured **up from the horizontal** at the observer, so it is at R (or S), between the ground and the line of sight.' },
+      { kind: 'example', level: 3 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 4 },
+    ],
+  },
 ];
