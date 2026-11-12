@@ -6,6 +6,7 @@
  */
 import type { ServerResponse } from 'node:http';
 import type { Db } from './db.ts';
+import type { InputSpec } from '../shared/questions/types.ts';
 import { all, one, run, newId } from './db.ts';
 import { HttpError, RateLimiter } from './http.ts';
 import { config, now } from './config.ts';
@@ -178,7 +179,7 @@ function systemPrompt(db: Db, user: UserDto, ctx: Context | null): string {
       const info = questionInfo(db, user, ctx.questionId);
       lines.push('', 'The learner opened this conversation from this question:', `QUESTION: ${info.payload.prompt}`);
       if (info.response?.response) {
-        const resp = responseText(JSON.parse(info.response.response) as ResponseValue);
+        const resp = responseText(JSON.parse(info.response.response) as ResponseValue, (info.payload as { input?: InputSpec }).input);
         lines.push(`THE LEARNER ANSWERED: ${resp} — which was ${info.response.is_correct ? 'CORRECT' : 'INCORRECT'}.`);
         if (info.response.mistake_code) lines.push(`Diagnosed mistake: ${mistakeInfo(info.response.mistake_code)?.label ?? info.response.mistake_code}.`);
         lines.push(`CORRECT ANSWER (they have already seen it): ${info.secret.answerDisplay}`, `WORKED SOLUTION: ${info.secret.solution.join(' ')}`);

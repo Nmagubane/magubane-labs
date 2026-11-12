@@ -6,7 +6,7 @@
 import { useId, useMemo, useRef, type KeyboardEvent } from 'react';
 import type { InputSpec } from '../../../shared/questions/types.ts';
 import type { ResponseValue } from '../../../shared/questions/answer.ts';
-import { parseExpression, toTex, ParseError } from '../../../shared/questions/expr.ts';
+import { parseExpression, toTex, ParseError, splitEquation } from '../../../shared/questions/expr.ts';
 import { Rich, Tex } from '../../ui/RichText.tsx';
 import { chem } from '../../../shared/questions/tex.ts';
 
@@ -41,6 +41,10 @@ export function AnswerInput(props: Props) {
       return <FractionInput {...props} input={props.input} />;
     case 'expression':
       return <ExpressionInput {...props} input={props.input} />;
+    case 'equation':
+      return <ExpressionInput {...props} input={props.input} />;
+    case 'point':
+      return <PointInput {...props} input={props.input} />;
     case 'roots':
       return <RootsInput {...props} input={props.input} />;
     case 'coefficients':
@@ -132,18 +136,25 @@ function FractionInput({ input, value, onChange, onSubmit, disabled, autoFocus, 
   );
 }
 
-function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus, describedBy }: Props & { input: Extract<InputSpec, { kind: 'expression' }> }) {
+/** Expressions, and equations (one = sign, each side read separately). */
+function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus, describedBy }: Props & { input: Extract<InputSpec, { kind: 'expression' | 'equation' }> }) {
+  const isEq = input.kind === 'equation';
   const id = useId();
   const ref = useRef<HTMLInputElement>(null);
   const v = typeof value === 'string' ? value : '';
   const preview = useMemo(() => {
     if (!v.trim()) return null;
     try {
+      if (isEq) {
+        const sides = splitEquation(v);
+        if (!sides) return { tex: null, error: v.includes('=') ? 'Use one = sign' : 'Add the = sign' };
+        return { tex: `${toTex(parseExpression(sides[0]))} = ${toTex(parseExpression(sides[1]))}`, error: null };
+      }
       return { tex: toTex(parseExpression(v)), error: null };
     } catch (e) {
       return { tex: null, error: e instanceof ParseError ? e.message : 'Check your expression' };
     }
-  }, [v]);
+  }, [v, isEq]);
   const insert = (s: string) => {
     const el = ref.current;
     if (!el) return onChange(v + s);
@@ -157,11 +168,11 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
       el.setSelectionRange(pos, pos);
     });
   };
-  const keys = [...input.variables, '²', '(', ')', '+', '−'];
+  const keys = [...input.variables, '²', '(', ')', '+', '−', ...(isEq ? ['='] : [])];
   return (
     <div className="expr-input">
       <div className="answer-row">
-        {input.prefix ? (
+        {input.kind === 'expression' && input.prefix ? (
           <label htmlFor={id} className="answer-prefix">
             <Tex tex={input.prefix} />
           </label>
@@ -183,7 +194,7 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
           disabled={disabled}
           autoFocus={autoFocus}
           aria-describedby={`${id}-preview${describedBy ? ` ${describedBy}` : ''}`}
-          placeholder="e.g. (x + 2)(x - 3)"
+          placeholder={isEq ? (input.placeholder ?? 'e.g. y = 2x + 3') : 'e.g. (x + 2)(x - 3)'}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={enter(onSubmit)}
         />
@@ -204,7 +215,7 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
         ) : preview?.error ? (
           <span className="muted">{preview.error}</span>
         ) : (
-          <span className="muted">Type with the keyboard: x^2 for x², and brackets for factors.</span>
+          <span className="muted">{isEq ? 'Type the whole equation, with one = sign. x^2 for x².' : 'Type with the keyboard: x^2 for x², and brackets for factors.'}</span>
         )}
       </p>
     </div>
@@ -244,6 +255,26 @@ function CoefficientsInput({ input, value, onChange, onSubmit, disabled, autoFoc
           <Tex tex={chem(sp)} />
         </span>
       ))}
+    </div>
+  );
+}
+
+function PointInput({ input, value, onChange, onSubmit, disabled, autoFocus }: Props & { input: Extract<InputSpec, { kind: 'point' }> }) {
+  const vals = Array.isArray(value) && value.length === 2 ? value : ['', ''];
+  const set = (i: number, s: string) => onChange(vals.map((x, j) => (j === i ? s : x)));
+  return (
+    <div className="answer-row point-input" role="group" aria-label={`Coordinates of ${input.name}`}>
+      <span className="answer-prefix" aria-hidden>
+        <Tex tex={`${input.name}\\,(`} />
+      </span>
+      <input aria-label={`${input.name}, x-coordinate`} className="answer-box answer-narrow" type="text" inputMode="decimal" autoComplete="off" value={vals[0]} disabled={disabled} autoFocus={autoFocus} onChange={(e) => set(0, e.target.value)} onKeyDown={enter(onSubmit)} />
+      <span className="point-sep" aria-hidden>
+        ;
+      </span>
+      <input aria-label={`${input.name}, y-coordinate`} className="answer-box answer-narrow" type="text" inputMode="decimal" autoComplete="off" value={vals[1]} disabled={disabled} onChange={(e) => set(1, e.target.value)} onKeyDown={enter(onSubmit)} />
+      <span className="answer-prefix" aria-hidden>
+        <Tex tex=")" />
+      </span>
     </div>
   );
 }

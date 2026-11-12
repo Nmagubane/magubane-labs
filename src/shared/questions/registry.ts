@@ -16,6 +16,7 @@ import { livingNonliving, plantNeeds, lifeCycles, matterProperties, metalsNonmet
 import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './generators/nst-energy-earth.ts';
 import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSolarSystem, earthSystems, atmosphere, starLife } from './generators/ns-senior.ts';
 import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, proportionality } from './generators/math-geometry.ts';
+import { coordinateGeometry, lineEquations, circleEquations } from './generators/math-analytic.ts';
 import { JUNIOR_TEMPLATES } from '../junior/templates.ts';
 
 export const TEMPLATES: QuestionTemplate[] = [
@@ -87,6 +88,9 @@ export const TEMPLATES: QuestionTemplate[] = [
   circleTheorems,
   cyclicTangents,
   proportionality,
+  coordinateGeometry,
+  lineEquations,
+  circleEquations,
   ...JUNIOR_TEMPLATES,
 ];
 

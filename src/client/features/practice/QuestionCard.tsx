@@ -123,7 +123,7 @@ export function QuestionCard({
           {hints.length ? <span className="muted small">Hints lower the credit for this question a little. Learning is what counts.</span> : null}
         </div>
       ) : (
-        <FeedbackPanel feedback={feedback} response={value}>
+        <FeedbackPanel feedback={feedback} response={value} input={item.question.input}>
           {afterFeedback}
           <Button variant="quiet" onClick={() => void ask(item.question.id)}>
             {feedback.correct ? 'Discuss with the tutor' : 'Ask the tutor why'}

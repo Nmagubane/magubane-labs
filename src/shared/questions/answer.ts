@@ -3,8 +3,8 @@
  * before responding. Accepts the way South African learners write numbers: "2,5" and "2.5".
  */
 import { rat, eq as req, toNumber, type Rational } from './rational.ts';
-import { parseExpression, toPoly, polyEqual, isExpandedForm, isFactorisedForm, ParseError } from './expr.ts';
-import type { AnswerSpec, Misconception, RichText } from './types.ts';
+import { parseExpression, toPoly, polyEqual, isExpandedForm, isFactorisedForm, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
+import type { AnswerSpec, InputSpec, Misconception, RichText } from './types.ts';
 import type { MistakeCode } from './mistakes.ts';
 
 export type ResponseValue = string | string[];
@@ -61,6 +61,8 @@ type Parsed =
   | { kind: 'numeric'; value: number; exact: Rational | null }
   | { kind: 'fraction'; exact: Rational; simplest: boolean }
   | { kind: 'expression'; text: string }
+  | { kind: 'equation'; text: string }
+  | { kind: 'point'; x: Rational; y: Rational }
   | { kind: 'roots'; values: Rational[] }
   | { kind: 'coefficients'; values: number[] }
   | { kind: 'choice'; id: string }
@@ -102,6 +104,25 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue)
       } catch (e) {
         return { error: e instanceof ParseError ? `${e.message}. Use * or brackets if you need to, e.g. 2x(x+3).` : 'Check your expression.' };
       }
+    }
+    case 'equation': {
+      const text = asText(response);
+      const sides = splitEquation(text);
+      if (!sides) return { error: 'Write an equation with one = sign, like y = 2x + 3.' };
+      try {
+        parseExpression(sides[0]);
+        parseExpression(sides[1]);
+        return { kind, text };
+      } catch (e) {
+        return { error: e instanceof ParseError ? `${e.message}. Use * or brackets if you need to, e.g. (x - 2)^2.` : 'Check your equation.' };
+      }
+    }
+    case 'point': {
+      const parts = Array.isArray(response) ? response : response.replace(/[()]/g, '').split(';');
+      if (parts.length !== 2 || parts.some((x) => !x.trim())) return { error: 'Enter both coordinates.' };
+      const [px, py] = parts.map((x) => parseNumber(x));
+      if (!px?.exact || !py?.exact) return { error: 'Enter each coordinate as a number, like -3, 2,5 or 7/2.' };
+      return { kind, x: px.exact, y: py.exact };
     }
     case 'roots': {
       const parts = (Array.isArray(response) ? response : response.split(/;|\bor\b|\band\b|,\s+/))
@@ -196,6 +217,10 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
         return false;
       }
     }
+    case 'equation':
+      return parsed.kind === 'equation' && equationsEquivalent(parsed.text, spec.expr);
+    case 'point':
+      return parsed.kind === 'point' && req(parsed.x, rat(spec.x.n, spec.x.d)) && req(parsed.y, rat(spec.y.n, spec.y.d));
     case 'roots':
       return parsed.kind === 'roots' && sameMultiset(parsed.values, spec.values);
     case 'coefficients':
@@ -277,6 +302,10 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
       return a.d === 1 ? String(a.n) : `${a.n}/${a.d}`;
     case 'expression':
       return a.expr;
+    case 'equation':
+      return a.expr;
+    case 'point':
+      return [a.x.d === 1 ? String(a.x.n) : `${a.x.n}/${a.x.d}`, a.y.d === 1 ? String(a.y.n) : `${a.y.n}/${a.y.d}`];
     case 'roots':
       return a.values.map((v) => (v.d === 1 ? String(v.n) : `${v.n}/${v.d}`));
     case 'coefficients':
@@ -294,6 +323,8 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
 }
 
 /** Human-readable echo of what the learner entered, for review screens. */
-export function responseText(response: ResponseValue): string {
+export function responseText(response: ResponseValue, input?: InputSpec): string {
+  // A point is written (x; y): with decimal commas, "3,5, -4" would be ambiguous.
+  if (input?.kind === 'point' && Array.isArray(response)) return `${input.name}(${response.map((r) => r.trim()).join('; ')})`;
   return Array.isArray(response) ? response.map((r) => r.trim() || '1').join(', ') : response;
 }

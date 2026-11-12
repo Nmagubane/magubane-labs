@@ -15,6 +15,10 @@ export type InputSpec =
   | { kind: 'numeric'; unit?: string; prefix?: string; placeholder?: string }
   | { kind: 'fraction'; prefix?: string }
   | { kind: 'expression'; prefix?: string; variables: string[] }
+  /** An equation the learner types with one = sign; any equivalent rearrangement is accepted. */
+  | { kind: 'equation'; variables: string[]; placeholder?: string }
+  /** A coordinate pair, typed as name(x; y). */
+  | { kind: 'point'; name: string }
   | { kind: 'roots'; count: number; variable: string }
   | { kind: 'coefficients'; species: string[]; arrowAfter: number }
   | { kind: 'choice'; options: ChoiceOption[] }
@@ -58,6 +62,8 @@ export type AnswerSpec =
   | { kind: 'numeric'; value: number; tolerance: number; relative?: boolean }
   | { kind: 'fraction'; n: number; d: number; requireSimplest: boolean }
   | { kind: 'expression'; expr: string; form?: 'expanded' | 'factorised' }
+  | { kind: 'equation'; expr: string }
+  | { kind: 'point'; x: { n: number; d: number }; y: { n: number; d: number } }
   | { kind: 'roots'; values: { n: number; d: number }[] }
   | { kind: 'coefficients'; values: number[] }
   | { kind: 'choice'; id: string }
@@ -80,7 +86,11 @@ export type Figure =
       xRange: [number, number];
       yRange: [number, number];
       lines?: { m: number; c: number; label?: string }[];
-      points?: { x: number; y: number; label?: string }[];
+      /** `text` replaces the default "A(x; y)" label, e.g. "B(x; 5)" when a coordinate is unknown. */
+      points?: { x: number; y: number; label?: string; text?: string }[];
+      segments?: { x1: number; y1: number; x2: number; y2: number; dashed?: boolean }[];
+      /** Circles force equal scales on both axes, so they stay round. */
+      circles?: { cx: number; cy: number; r: number }[];
     }
   | { kind: 'circuit'; voltage: number | null; resistors: (number | null)[]; current: number | null }
   | { kind: 'punnett'; parentA: string; parentB: string; reveal: boolean }

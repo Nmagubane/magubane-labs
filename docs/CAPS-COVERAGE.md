@@ -75,7 +75,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Finance, growth and decay | ✓ simple and compound interest | ✗ depreciation, nominal and effective rates | ✗ annuities, loans |
 | Trigonometry | ◐ ratios (✗ special angles, equations) | ✗ identities, reduction, general solution, sine, cosine and area rules | ✗ compound and double angles, 2D and 3D |
 | Euclidean geometry | ◐ quadrilaterals, midpoint theorem and converse | ◐ all seven circle theorems and converses | ◐ proportionality, similarity, Pythagoras by similar triangles |
-| Analytical geometry | ◐ gradient (✗ distance, midpoint, parallel and perpendicular) | ✗ equations of lines, inclination | ✗ circles and tangents |
+| Analytical geometry | ✓ distance, midpoint, gradient; parallel, perpendicular and collinear points | ✓ equation of a line (through a point, parallel, perpendicular), inclination, angle between lines | ✓ equation of a circle (any centre, completing the square), tangent at a point |
 | Statistics | ✗ central tendency, quartiles, box-and-whisker | ✗ ogives, variance and standard deviation | ✗ regression and correlation |
 | Measurement | ✗ surface area and volume of solids | | |
 | Probability | ✗ Venn diagrams, mutually exclusive events | ✗ independent events, tree diagrams | ✗ counting principle |
@@ -101,13 +101,13 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Measurement | Length ✗ · Mass ✗ · Capacity/volume ✗ · Time ✗ · Temperature ✗ · Perimeter, area and volume ✓ |
 | Data handling | Collecting and organising ✗ · Representing ✗ · Analysing and reporting ✗ · Probability ✗ |
 
-**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks) is now built; analytical geometry, most of trigonometry and all of statistics are not.
+**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks, proofs still to come) and analytical geometry (40 marks) are now built; most of trigonometry (40) and all of statistics (20) are not.
 
 **Euclidean geometry: what ◐ means.** Every theorem in the Grades 10–12 list is taught (lesson and lab) and practised: calculate angles and lengths from a diagram, give the reason for a step, and solve for x using a theorem. Not yet: writing a full multi-step proof in statement–reason form (the "riders" that carry most exam marks), and proving the theorems themselves (CAPS requires learners to prove some of them). Step-by-step proof input is the next piece of work on this topic.
 
 ### Build order
 
-1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~ (built, proofs still to come), then analytical geometry, trigonometry, statistics. Half the Grade 12 maths mark.
+1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~ (built, proofs still to come), ~~analytical geometry~~ (built), then trigonometry, statistics. Half the Grade 12 maths mark.
 2. **Paper 1 gaps, Grades 10–12:** functions and graphs, probability, equations and inequalities, finance, calculus.
 3. **Grades 7–9:** geometry (2D, straight lines, construction), exponents, Pythagoras, data handling and probability, patterns.
 4. **Grades 4–6:** measurement, 2D and 3D shapes, patterns, data handling.

@@ -50,6 +50,10 @@ function wrongResponse(answer: AnswerSpec, misconceptions: { answer: AnswerSpec 
       return `${answer.n + 1}/${answer.d}`;
     case 'expression':
       return `${answer.expr}+1`;
+    case 'equation':
+      return `${answer.expr}+1`;
+    case 'point':
+      return [String(answer.x.n / answer.x.d + 1), String(answer.y.n / answer.y.d)];
     case 'roots':
       return answer.values.map((v) => String(v.n / v.d + 1));
     case 'coefficients':

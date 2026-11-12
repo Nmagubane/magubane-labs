@@ -152,7 +152,7 @@ test('the complete learning loop', async () => {
     if (i % 4 === 3) await neo.call('POST', `/api/questions/${item.question.id}/answer`, { response: null, skipped: true, timeMs: 3000 });
     else if (i % 2 === 0) await neo.call('POST', `/api/questions/${item.question.id}/answer`, { response: correctResponse(secret.answer), timeMs: 20000 });
     else {
-      const wrong = secret.misconceptions[0] ? correctResponse(secret.misconceptions[0].answer) : secret.answer.kind === 'choice' ? 'not-an-option' : secret.answer.kind === 'roots' ? ['99', '98'] : secret.answer.kind === 'coefficients' ? ['9', '9', '9', '9', '9'].slice(0, secret.answer.values.length) : secret.answer.kind === 'expression' ? 'x+12345' : '987654';
+      const wrong = secret.misconceptions[0] ? correctResponse(secret.misconceptions[0].answer) : secret.answer.kind === 'choice' ? 'not-an-option' : secret.answer.kind === 'roots' ? ['99', '98'] : secret.answer.kind === 'coefficients' ? ['9', '9', '9', '9', '9'].slice(0, secret.answer.values.length) : secret.answer.kind === 'expression' ? 'x+12345' : secret.answer.kind === 'equation' ? 'y = 12345x' : secret.answer.kind === 'point' ? ['999', '999'] : '987654';
       await neo.call('POST', `/api/questions/${item.question.id}/answer`, { response: wrong, timeMs: 15000 });
     }
   }

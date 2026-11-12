@@ -9,6 +9,7 @@ import { SoundLab, CircuitBuilder, MoonLab, PlanetStrip, BridgeLab } from './Nst
 import { PlaceValueChart, ArrayModel, FractionOfSet, DecimalGrid, RectangleLab } from './MathLabs2.tsx';
 import { FossilLayers, ElementTable, SeasonsLab, TideLab, ReflectionLab, LightTravel, RockCycleLab, AtmosphereClimb, StarLab } from './EarthSpaceLabs.tsx';
 import { QuadLab, MidpointLab, CircleLab, ProportionLab } from './GeometryLabs.tsx';
+import { CoordLab } from './AnalyticLabs.tsx';
 import { ExponentLadder, DiscriminantLab, SequencePlotter, TriangleTrig, SavingsGrowth, TangentLab } from './MathLabs3.tsx';
 
 export function Widget({ spec }: { spec: WidgetSpec }) {
@@ -111,6 +112,8 @@ export function Widget({ spec }: { spec: WidgetSpec }) {
       return <CircleLab mode={spec.mode} />;
     case 'proportion-lab':
       return <ProportionLab />;
+    case 'coord-lab':
+      return <CoordLab mode={spec.mode} />;
     case 'place-value-chart':
       return <PlaceValueChart start={spec.start} />;
     case 'array-model':

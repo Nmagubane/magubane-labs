@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react';
 import type { QuestionPayload, ResponseValue, FeedbackDto } from '../../../shared/api.ts';
+import type { InputSpec } from '../../../shared/questions/types.ts';
 import { Rich, RichBlocks } from '../../ui/RichText.tsx';
 import { Figure } from '../../ui/Figure.tsx';
 import { AnswerInput } from './AnswerInput.tsx';
@@ -55,7 +56,7 @@ export function QuestionView({
   );
 }
 
-export function FeedbackPanel({ feedback, response, children, solutionOpen }: { feedback: FeedbackDto; response?: ResponseValue | null; children?: ReactNode; solutionOpen?: boolean }) {
+export function FeedbackPanel({ feedback, response, input, children, solutionOpen }: { feedback: FeedbackDto; response?: ResponseValue | null; input?: InputSpec; children?: ReactNode; solutionOpen?: boolean }) {
   const gained = feedback.masteryAfter - feedback.masteryBefore;
   return (
     <section className={`feedback ${feedback.correct ? 'is-correct' : 'is-wrong'}`} aria-live="polite">
@@ -67,7 +68,7 @@ export function FeedbackPanel({ feedback, response, children, solutionOpen }: { 
           <h3>{feedback.correct ? 'Correct.' : feedback.skipped ? 'Skipped.' : feedback.mistake ? feedback.mistake.label : 'Not quite.'}</h3>
           {!feedback.correct && response ? (
             <p className="feedback-your">
-              You answered <strong>{responseText(response)}</strong>.
+              You answered <strong>{responseText(response, input)}</strong>.
             </p>
           ) : null}
         </div>

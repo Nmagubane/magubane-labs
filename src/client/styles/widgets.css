@@ -1306,3 +1306,13 @@
 /* Lengths come in pairs (AD, DB …): keep each pair on one row. */
 .es-stats.geo-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 720px) { .es-stats.geo-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+
+/* ---------- Analytical geometry: segments and circles on the Cartesian plane ---------- */
+.plot-segment { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+.plot-segment.dashed { stroke-dasharray: 5 5; stroke-width: 1.5; stroke: var(--ink-2); }
+.plot-circle { fill: none; stroke: var(--ink); stroke-width: 2.5; }
+.point-input { gap: var(--s1); }
+.point-sep { font-size: var(--t-lg, 1.25rem); font-weight: 700; }
+.ag-lab .plot { width: 100%; max-width: 440px; height: auto; display: block; margin: 0 auto; touch-action: none; }
+.ag-readout { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); align-items: baseline; }
+.ag-run { font-size: 12px; font-weight: 700; fill: var(--ink-2); }

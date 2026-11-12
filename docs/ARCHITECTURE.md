@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (68 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (71 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -130,7 +130,7 @@ The audit checks every screen, every lesson (68 at the last count) and every Jun
 ## 6. Not built yet (on purpose)
 - A guardian dashboard for **Grade 4–12** learners. Their guardians get weekly PDF reports by email. Parent accounts exist, but only for the Grade 1–3 children they create (§8).
 - School-level admin (many teachers, one school) and sponsor/impact dashboards.
-- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), root sets, coefficients and multiple choice. Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
+- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients and multiple choice. Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
 - Image questions to the tutor, and oral explanation assessments.
 - Career pathways ("I want to be an engineer").
 - Content authoring UI. Content is typed data in `src/shared/content` and is ready to move into the DB.
@@ -252,4 +252,20 @@ The first Paper 2 topic: five skills in a new `euclidean` topic, following the C
 **Labs come before theorems.** `GeometryLabs.tsx`: a quadrilateral explorer (live property checklist as the shape changes), a midpoint lab, a circle lab (angle at the centre, same segment and diameter; cyclic quad and tangent–chord) and a parallel-line lab. Each lesson asks for a prediction, lets the learner find the pattern in the lab, then states the theorem.
 
 **Not built yet.** Writing a full multi-step proof in statement–reason form, and proving the theorems themselves. Both need a step-by-step proof input; current questions assess one step or one calculation at a time.
+
+## 11. Analytical geometry (Paper 2)
+
+Three skills in the `analytical` topic, each with a lab mode (`AnalyticLabs.tsx`, `coord-lab`) and a lesson (`lessons-analytic.ts`):
+
+| Skill | Grade | Lab |
+|---|---|---|
+| `coordinate-geometry`: distance, midpoint, gradient; parallel, perpendicular, collinear | 10 | Drag A and B; the right triangle, AB and M update |
+| `line-equations`: line through a point, parallel or perpendicular; inclination; angle between lines | 11 | Drag a line; a second line through P stays parallel or perpendicular; θ is marked |
+| `circle-equations`: equation of a circle, completing the square, tangent at a point | 12 | Drag the centre, change the radius, move P; the tangent stays ⊥ the radius |
+
+**Two new answer types**, because analytical geometry is written as equations and points:
+- `equation`: the learner types a whole equation with one = sign. It is right when lhs − rhs is a non-zero multiple of the answer's, so `y = -1/2x + 3`, `2y = -x + 6` and `x + 2y - 6 = 0` all count, and `(x - 2)^2 + (y + 3)^2 = 25` matches its expanded form. `1/2x` reads as ½x, as learners write it.
+- `point`: two boxes, written `M( ; )`. Graded exactly, so `3,5`, `3.5` and `7/2` are the same.
+
+The `graph` figure gained `segments`, `circles` (always drawn round, on equal scales) and a `text` override for labels such as `B(k; 5)`. `analytic.test.ts` checks the equation and point grading, and checks the answers independently: every named point lies on the answer circle, the tangent is the line through P perpendicular to CP, and every line passes through its point.
 

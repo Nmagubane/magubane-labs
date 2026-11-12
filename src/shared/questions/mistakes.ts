@@ -484,6 +484,16 @@ export const MISTAKES = {
   'midpoint-ratio': { label: 'Midpoint theorem', kind: 'conceptual', tip: 'The line joining two midpoints is parallel to the third side and exactly half as long. It halves lengths, not angles.' },
   'circle-theorem': { label: 'Circle theorems', kind: 'conceptual', tip: 'Centre angle = 2 × circumference angle on the same arc. Opposite angles of a cyclic quad add to 180°. Tangent ⊥ radius. Tangent–chord angle = angle in the alternate segment.' },
   'proportion-ratio': { label: 'Ratios in triangles', kind: 'conceptual', tip: 'Match corresponding sides: small to small, big to big. With DE ∥ BC, AD : DB = AE : EC. Set up the ratio before you multiply.' },
+  // ---- Analytical geometry (Grades 10–12) ----
+  'distance-formula': { label: 'Distance formula', kind: 'procedural', tip: 'The distance is the hypotenuse of a right triangle: square the change in x and the change in y, add them, then take the square root.' },
+  'midpoint-formula': { label: 'Midpoint formula', kind: 'procedural', tip: 'The midpoint is the average of the endpoints: add the x-values and halve; add the y-values and halve. To find an endpoint, go as far past M as the other end is before it.' },
+  'perpendicular-gradient': { label: 'Parallel or perpendicular gradient', kind: 'conceptual', tip: 'Parallel lines have equal gradients. Perpendicular gradients multiply to −1: flip the fraction and change the sign.' },
+  'line-through-point': { label: 'Line through a point', kind: 'procedural', tip: 'Use the gradient you need, then substitute the given point to find c. A parallel line has the same gradient but a different c.' },
+  'inclination-quadrant': { label: 'Angle of inclination', kind: 'conceptual', tip: 'tan θ = m, with θ measured anticlockwise from the positive x-axis, between 0° and 180°. If m is negative, θ is obtuse: add 180° to the calculator answer.' },
+  'circle-sign': { label: 'Centre of a circle', kind: 'procedural', tip: 'In (x − a)² + (y − b)² = r², the centre is (a; b): the signs inside the brackets are the opposite of the centre\'s coordinates.' },
+  'radius-squared': { label: 'r or r²', kind: 'procedural', tip: 'The right-hand side is r², the radius squared. Square the radius when you write the equation; take the square root when you read the radius off.' },
+  'complete-square': { label: 'Completing the square', kind: 'procedural', tip: 'Halve the coefficient of x (and of y), square it, and add it to both sides.' },
+  'tangent-gradient': { label: 'Tangent gradient', kind: 'conceptual', tip: 'A tangent is perpendicular to the radius at the point of contact. Find the gradient of the radius, then use the negative reciprocal.' },
   // ---- Natural Sciences: Planet Earth and Beyond, the Periodic Table, visible light ----
   'rock-layers': { label: 'Rocks, soil and fossils', kind: 'conceptual', tip: 'Sedimentary rock builds up in layers from the bottom, so deeper layers and their fossils are older. Body fossils are parts of a living thing; trace fossils are signs it left.' },
   'element-facts': { label: 'The Periodic Table', kind: 'conceptual', tip: 'The table is in order of atomic number (protons). Metals on the left and middle, non-metals on the right, semi-metals on the staircase. Some symbols come from Latin: Na, K, Fe, Au.' },

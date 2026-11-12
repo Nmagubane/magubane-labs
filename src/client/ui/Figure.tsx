@@ -10,23 +10,45 @@ export function Figure({ figure }: { figure: FigureSpec }) {
 
 function GraphFigure({ f }: { f: Extract<FigureSpec, { kind: 'graph' }> }) {
   const desc = [
-    ...(f.points ?? []).map((p) => `point ${p.label ?? ''} at (${p.x}, ${p.y})`),
+    ...(f.points ?? []).map((p) => `point ${p.text ?? `${p.label ?? ''} at (${p.x}, ${p.y})`}`),
     ...(f.lines ?? []).map(() => 'a straight line'),
+    ...(f.segments ?? []).map((g) => `a line segment from (${g.x1}, ${g.y1}) to (${g.x2}, ${g.y2})`),
+    ...(f.circles ?? []).map((c) => `a circle with centre (${c.cx}, ${c.cy})`),
   ].join(', ');
+  // Circles must stay round: give both axes the same span and draw on a square.
+  const round = (f.circles ?? []).length > 0;
+  let { xRange, yRange } = f;
+  if (round) {
+    const span = Math.max(xRange[1] - xRange[0], yRange[1] - yRange[0]);
+    const grow = (r: [number, number]): [number, number] => {
+      const extra = (span - (r[1] - r[0])) / 2;
+      return [r[0] - Math.floor(extra), r[1] + Math.ceil(extra)];
+    };
+    xRange = grow(xRange);
+    yRange = grow(yRange);
+  }
+  const W = round ? 320 : 340;
+  const H = round ? 320 : 300;
   return (
     <figure className="q-figure">
-      <Plot xRange={f.xRange} yRange={f.yRange} width={340} height={300} label={`Graph showing ${desc}`}>
+      <Plot xRange={xRange} yRange={yRange} width={W} height={H} label={`Graph showing ${desc}`}>
         {(s) => (
           <>
+            {(f.circles ?? []).map((c, i) => (
+              <ellipse key={`c${i}`} cx={s.x(c.cx)} cy={s.y(c.cy)} rx={Math.abs(s.x(c.cx + c.r) - s.x(c.cx))} ry={Math.abs(s.y(c.cy + c.r) - s.y(c.cy))} className="plot-circle" />
+            ))}
             {(f.lines ?? []).map((l, i) => {
               const [x1, y1, x2, y2] = lineSegment(l.m, l.c, s);
               return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} className="plot-line" />;
             })}
+            {(f.segments ?? []).map((g, i) => (
+              <line key={`s${i}`} x1={s.x(g.x1)} y1={s.y(g.y1)} x2={s.x(g.x2)} y2={s.y(g.y2)} className={`plot-segment${g.dashed ? ' dashed' : ''}`} />
+            ))}
             {(f.points ?? []).map((p, i) => (
               <g key={i}>
                 <circle cx={s.x(p.x)} cy={s.y(p.y)} r={4.5} className="plot-point" />
-                <text x={s.x(p.x) + 8} y={s.y(p.y) - 8} className="plot-point-label">
-                  {p.label ? `${p.label}(${p.x}; ${p.y})` : `(${p.x}; ${p.y})`}
+                <text x={s.x(p.x) + (s.x(p.x) > W - 70 ? -8 : 8)} y={s.y(p.y) - 8} className="plot-point-label" textAnchor={s.x(p.x) > W - 70 ? 'end' : 'start'}>
+                  {p.text ?? (p.label ? `${p.label}(${p.x}; ${p.y})` : `(${p.x}; ${p.y})`)}
                 </text>
               </g>
             ))}

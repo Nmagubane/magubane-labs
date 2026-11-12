@@ -355,6 +355,43 @@ export function isFactorisedForm(node: Node): boolean {
   return true;
 }
 
+/** Split "lhs = rhs" into its two sides, or null if there isn't exactly one = sign. */
+export function splitEquation(src: string): [string, string] | null {
+  const parts = src.split('=');
+  if (parts.length !== 2 || !parts[0]!.trim() || !parts[1]!.trim()) return null;
+  return [parts[0]!, parts[1]!];
+}
+
+/** lhs − rhs as a polynomial, or null. */
+function equationPoly(src: string): Poly | null {
+  const sides = splitEquation(src);
+  if (!sides) return null;
+  return toPoly(parseExpression(`(${sides[0]})-(${sides[1]})`));
+}
+
+/**
+ * Two equations are equivalent when lhs − rhs of one is a non-zero multiple of the other's:
+ * "y = 2x + 3", "2x - y + 3 = 0" and "2y = 4x + 6" all match.
+ */
+export function equationsEquivalent(a: string, b: string): boolean {
+  try {
+    const pa = equationPoly(a);
+    const pb = equationPoly(b);
+    if (!pa || !pb || pa.size === 0 || pa.size !== pb.size) return false;
+    let k: Rational | null = null;
+    for (const [m, ca] of pa) {
+      const cb = pb.get(m);
+      if (!cb) return false;
+      const r = rdiv(ca, cb);
+      if (k && !req(k, r)) return false;
+      k = r;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function expressionsEquivalent(a: string, b: string): boolean {
   try {
     const pa = toPoly(parseExpression(a));

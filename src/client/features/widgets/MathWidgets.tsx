@@ -230,7 +230,7 @@ export function AreaModel({ p: p0, q: q0, target }: { p: number; q: number; targ
 }
 
 // ---------------------------------------------------------------------------
-function Draggable({ s, x, y, label, onMove }: { s: Scale; x: number; y: number; label: string; onMove: (x: number, y: number) => void }) {
+export function Draggable({ s, x, y, label, onMove }: { s: Scale; x: number; y: number; label: string; onMove: (x: number, y: number) => void }) {
   const dragging = useRef(false);
   const toData = (e: PointerEvent<SVGGElement>) => {
     const svg = (e.currentTarget.ownerSVGElement as SVGSVGElement) ?? null;
