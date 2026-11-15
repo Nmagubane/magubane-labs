@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (99 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (104 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -416,3 +416,25 @@ Five skills in the `equations` topic (`math-equations.ts`, `lessons-equations.ts
 **New mistake codes:** `inequality-endpoint`, `inequality-direction`, `inequality-flip`, `quadratic-inequality`, `simultaneous`, `change-subject`, `discriminant-condition`.
 
 **Not built:** completing the square as a method (Grade 11). The formula checker also unblocks calculus with negative and fractional powers ($-\dfrac{k}{x^2}$, $\dfrac{3}{2}\sqrt{x}$), which is next after finance.
+
+## 19. Finance, growth and decay (Paper 1)
+
+Five skills in the `finance` topic (`math-finance.ts`, `lessons-finance.ts`, `FinanceLabs.tsx`), after the Grade 10 `finance` skill (simple and compound interest, monthly compounding, doubling time):
+
+| Skill | Grade | What it covers |
+|---|---|---|
+| `finance-applications` | 10 | Exchange rates both ways, hire purchase (instalment and total cost), inflation forwards and backwards, population growth and its rate, a weaker rand, a trip's change, the rate a shop charges |
+| `depreciation` | 11 | Straight-line and reducing-balance book values, the cost from a book value, the rate, comparing the methods, when straight-line reaches a value, saving for a replacement |
+| `nominal-effective` | 11 | Nominal ↔ effective, comparing two offers, a rate that changes part-way, deposits and a withdrawal on one timeline |
+| `future-value-annuities` | 12 | Savings, the payment for a goal, sinking funds, a payment today (one extra payment), payments that stop while the money stays in, the number of months to reach a goal |
+| `present-value-annuities` | 12 | The largest affordable loan, repayments (with a deposit), interest paid, the outstanding balance, the number of payments (full, or to settle), a delayed first payment, the final payment |
+
+**Money is exact where it matters.** Answers are to the cent and accept 0,02% either way, so a learner who keeps $i = \frac{r}{12}$ in the calculator is right; rounding $i$ early (to 0,0058, say) usually lands outside, as an exam marker would expect. Percentages are to two decimals. Counts of months are exact, and the question says whether to round up (to settle or reach a goal) or down (full payments). Worked solutions show $\tfrac{0{,}085}{12}$, never a rounded rate. An outstanding balance is accepted by either method (present value of the remaining payments, or the loan run forward); the test checks both against the tolerance.
+
+**Checked by simulation.** `finance.test.ts` reads every amount, rate and period back out of the prompt and runs the money period by period: savings get interest and then the payment each month, a loan gets interest and then the repayment, an asset loses its depreciation each year. Unknowns (a payment, a loan, a cost, a rate) are found by bisection on the simulation, and month counts by running until the goal is reached or the loan is settled. It never uses the closed formulas the generators use. Breaking four of the generators' formulas on purpose (the future value, the effective rate, straight-line depreciation and the hire purchase deposit) made all five finance tests fail.
+
+**Rendering.** Prices in US dollars need a literal dollar sign, so `RichText` now reads `\$` as one (it was always the start of maths); the KaTeX checks in the question and content tests know the same rule. A bare `R` answer prefix is set upright (`\text{R}`), not as an italic variable, everywhere, including the Grade 10 skill. `Plot` takes an optional `padLeft` for wide y labels; the default is unchanged.
+
+**Labs.** `finance-lab` has four modes: *depreciation* (straight-line against reducing balance on one machine), *effective* (one nominal rate compounded annually to daily, as bars), *savings* (monthly savings split into what you paid in and interest earned) and *loan* (the balance month by month; a repayment at or below the first month's interest never pays the loan off). The labs simulate rather than use the formulas, so they show where the formulas come from.
+
+**New mistake codes:** `exchange-rate`, `hire-purchase`, `depreciation-method`, `nominal-effective`, `timeline`, `annuity-formula`, `annuity-timing`, `outstanding-balance`, `annuity-term`.

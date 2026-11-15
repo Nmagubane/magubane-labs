@@ -19,6 +19,7 @@ import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, propor
 import { circleProofs, similarityProofs } from './generators/math-proofs.ts';
 import { factorTheorem, firstPrinciples, tangentLines, cubicGraphs, optimisation } from './generators/math-calculus.ts';
 import { probabilityRules, independentEvents, countingPrinciple } from './generators/math-probability.ts';
+import { financeApplications, depreciation, nominalEffective, futureValueAnnuities, presentValueAnnuities } from './generators/math-finance.ts';
 import { simultaneousEquations, literalEquations, linearInequalities, quadraticInequalities, rootsParameter } from './generators/math-equations.ts';
 import { coordinateGeometry, lineEquations, circleEquations } from './generators/math-analytic.ts';
 import { trigSpecial, trigReduction, trigEquations, triangleRules, compoundAngles } from './generators/math-trig.ts';
@@ -84,6 +85,11 @@ export const TEMPLATES: QuestionTemplate[] = [
   linearInequalities,
   quadraticInequalities,
   rootsParameter,
+  financeApplications,
+  depreciation,
+  nominalEffective,
+  futureValueAnnuities,
+  presentValueAnnuities,
   livingNonliving,
   plantNeeds,
   lifeCycles,

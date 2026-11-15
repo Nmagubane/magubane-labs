@@ -526,6 +526,16 @@ export const MISTAKES = {
   'counting-principle': { label: 'Counting principle', kind: 'procedural', tip: 'Draw a box for each position and write the number of choices in it, then multiply. Without repetition the choices go down by one each time.' },
   'arrangement-restriction': { label: 'Arrangements with a rule', kind: 'procedural', tip: 'Fill the restricted places first. "Together": glue them into one block, arrange, then multiply by the ways inside the block. "Not together" = all − together.' },
   'identical-items': { label: 'Identical items', kind: 'conceptual', tip: 'Swapping identical letters makes no new arrangement. Divide n! by the factorial of each repeat count, e.g. BANANA: 6! ÷ (3! × 2!).' },
+  // ---- Finance (Grades 10–12) ----
+  'exchange-rate': { label: 'Exchange rates', kind: 'conceptual', tip: 'If $1 = R18, a dollar costs more than a rand: foreign to rand, multiply by the rate; rand to foreign, divide.' },
+  'hire-purchase': { label: 'Hire purchase', kind: 'procedural', tip: 'Take off the deposit first. Simple interest is charged on what is still owed, and the total is shared over the number of months.' },
+  'depreciation-method': { label: 'Depreciation method', kind: 'conceptual', tip: 'Straight-line loses the same amount each year: A = P(1 − in). Reducing balance loses a percentage of what is left: A = P(1 − i)ⁿ.' },
+  'nominal-effective': { label: 'Nominal and effective rates', kind: 'conceptual', tip: 'Compare rates as effective annual rates: 1 + i_eff = (1 + i/m)^m. The nominal rate is the one quoted "per year, compounded …".' },
+  'timeline': { label: 'Timelines', kind: 'procedural', tip: 'Draw a timeline. Move every amount to the same point in time, each for the number of periods it is actually invested (or withdrawn).' },
+  'annuity-formula': { label: 'Choosing the annuity formula', kind: 'conceptual', tip: 'Saving towards a future amount: future value, F = x[(1 + i)ⁿ − 1]/i. A loan received now: present value, P = x[1 − (1 + i)⁻ⁿ]/i.' },
+  'annuity-timing': { label: 'Counting payments on a timeline', kind: 'procedural', tip: 'The formulas assume payments at the end of each period, the first one period after the start. Count the payments on a timeline and adjust for anything different.' },
+  'outstanding-balance': { label: 'Outstanding balance', kind: 'conceptual', tip: 'The balance still owed is the present value of the payments still to come, not the loan minus the payments made.' },
+  'annuity-term': { label: 'Number of payments', kind: 'procedural', tip: 'Solve for n with logs. Full payments: round down. Payments to settle the loan (or reach a goal): round up.' },
   // ---- Equations and inequalities (Grades 10–12) ----
   'inequality-endpoint': { label: 'Ends of an inequality', kind: 'procedural', tip: '< and > leave the boundary value out (open dot); ≤ and ≥ include it (closed dot). Keep the sign the question uses.' },
   'inequality-direction': { label: 'Direction of an inequality', kind: 'conceptual', tip: 'Test one value from your answer in the original inequality. Multiplying or dividing by a negative number reverses the sign.' },

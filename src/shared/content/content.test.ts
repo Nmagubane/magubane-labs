@@ -6,16 +6,18 @@ import { SKILLS } from '../curriculum/catalogue.ts';
 import { EQUATIONS } from '../questions/generators/science-chemistry.ts';
 
 function texOk(text: string, where: string) {
-  const re = /\$\$([\s\S]+?)\$\$|\$([^$]+?)\$/g;
+  // As in RichText: \$ is a literal dollar sign.
+  const re = /\\\$|\$\$([\s\S]+?)\$\$|\$([^$]+?)\$/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
+    if (m[0] === '\\$') continue;
     try {
       katex.renderToString((m[1] ?? m[2]) as string, { throwOnError: true, strict: 'ignore' });
     } catch (e) {
       assert.fail(`${where}: ${(e as Error).message}`);
     }
   }
-  assert.equal((text.match(/\$/g) ?? []).length % 2, 0, `${where}: unbalanced $`);
+  assert.equal((text.replace(/\\\$/g, '').match(/\$/g) ?? []).length % 2, 0, `${where}: unbalanced $`);
 }
 
 test('every skill has a lesson for the same skill', () => {

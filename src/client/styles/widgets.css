@@ -1350,3 +1350,17 @@
 .cslot { display: grid; justify-items: center; gap: 4px; }
 .cslot-n { display: grid; place-items: center; width: 3rem; height: 3rem; border: 2px solid var(--pen); border-radius: 6px; background: var(--paper); font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 .cslot-label { font-size: var(--t-xs); color: var(--ink-2); }
+
+/* Finance labs */
+.fin-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); }
+.fin-bar { width: 100%; display: grid; grid-template-columns: minmax(0, 7rem) minmax(0, 1fr) minmax(0, 4.5rem); align-items: center; gap: var(--s2); padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); color: var(--ink); font: inherit; text-align: left; cursor: pointer; min-height: 44px; }
+.fin-bar.on { border-color: var(--pen); box-shadow: inset 0 0 0 1px var(--pen); }
+.fin-bar:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+.fin-bar-name { font-size: var(--t-sm); }
+.fin-bar-track { height: 10px; background: var(--desk); border-radius: 3px; overflow: hidden; }
+.fin-bar-fill { display: block; height: 100%; background: var(--ink-2); }
+.fin-bar.on .fin-bar-fill { background: var(--pen); }
+.fin-bar-value { text-align: right; font-weight: 700; }
+.fin-area { stroke: none; }
+.fin-area.paid { fill: var(--rule); }
+.fin-area.interest { fill: color-mix(in srgb, var(--pen) 22%, transparent); }

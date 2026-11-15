@@ -13,15 +13,16 @@ export interface Scale {
   height: number;
 }
 
-export function makeScale(xRange: [number, number], yRange: [number, number], width: number, height: number, pad = 18): Scale {
+/** `padLeft` makes room for wide y labels (e.g. "400" in thousands of rand); it defaults to `pad`. */
+export function makeScale(xRange: [number, number], yRange: [number, number], width: number, height: number, pad = 18, padLeft = pad): Scale {
   const [x0, x1] = xRange;
   const [y0, y1] = yRange;
-  const sx = (width - 2 * pad) / (x1 - x0);
+  const sx = (width - pad - padLeft) / (x1 - x0);
   const sy = (height - 2 * pad) / (y1 - y0);
   return {
-    x: (v) => pad + (v - x0) * sx,
+    x: (v) => padLeft + (v - x0) * sx,
     y: (v) => height - pad - (v - y0) * sy,
-    ix: (px) => x0 + (px - pad) / sx,
+    ix: (px) => x0 + (px - padLeft) / sx,
     iy: (py) => y0 + (height - pad - py) / sy,
     xRange,
     yRange,
@@ -45,8 +46,8 @@ function ticks(a: number, b: number): number[] {
   return out;
 }
 
-export function Plot({ xRange, yRange, width = 360, height = 300, children, label, svgProps, hideY = false, xStep }: { xRange: [number, number]; yRange: [number, number]; width?: number; height?: number; children?: (s: Scale) => ReactNode; label: string; svgProps?: SVGProps<SVGSVGElement>; /** A number line: no y grid, axis or labels (box-and-whisker plots, dot plots). */ hideY?: boolean; /** Fixed x tick step, e.g. 90 for trig graphs in degrees. */ xStep?: number }) {
-  const s = makeScale(xRange, yRange, width, height);
+export function Plot({ xRange, yRange, width = 360, height = 300, children, label, svgProps, hideY = false, xStep, padLeft }: { xRange: [number, number]; yRange: [number, number]; width?: number; height?: number; children?: (s: Scale) => ReactNode; label: string; svgProps?: SVGProps<SVGSVGElement>; /** Extra room on the left for wide y labels. */ padLeft?: number; /** A number line: no y grid, axis or labels (box-and-whisker plots, dot plots). */ hideY?: boolean; /** Fixed x tick step, e.g. 90 for trig graphs in degrees. */ xStep?: number }) {
+  const s = makeScale(xRange, yRange, width, height, 18, padLeft);
   const xs = xStep ? Array.from({ length: Math.floor(xRange[1] / xStep) - Math.ceil(xRange[0] / xStep) + 1 }, (_, i) => (Math.ceil(xRange[0] / xStep) + i) * xStep) : ticks(xRange[0], xRange[1]);
   const ys = hideY ? [] : ticks(yRange[0], yRange[1]);
   return (

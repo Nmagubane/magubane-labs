@@ -12,9 +12,11 @@ const canonical = canonicalResponse;
 
 /** Every $…$ / $$…$$ segment must render in KaTeX. */
 function assertTexRenders(text: string, where: string) {
-  const re = /\$\$([\s\S]+?)\$\$|\$([^$]+?)\$/g;
+  // As in RichText: \$ is a literal dollar sign.
+  const re = /\\\$|\$\$([\s\S]+?)\$\$|\$([^$]+?)\$/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
+    if (m[0] === '\\$') continue;
     const tex = (m[1] ?? m[2]) as string;
     try {
       katex.renderToString(tex, { throwOnError: true, strict: 'ignore' });

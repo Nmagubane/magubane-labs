@@ -21,13 +21,14 @@ export interface GradeResult {
   wrongIds?: string[];
 }
 
-/** Parses "3", "-2,5", "0.75", "3/4", "-3/4", "1 1/2". Returns exact rational when possible. */
+/** Parses "3", "-2,5", "0.75", "3/4", "-3/4", "1 1/2", "R12 500,50". Returns exact rational when possible. */
 export function parseNumber(raw: string): { value: number; exact: Rational | null } | null {
   let s = raw
     .trim()
     .replace(/[−–—]/g, '-')
     .replace(/[\s\u00a0\u202f]+/g, ' ')
-    .replace(/^x\s*=\s*/i, '');
+    .replace(/^x\s*=\s*/i, '')
+    .replace(/^R\s*(?=[\d.,])/, '');
   if (!s) return null;
   // South African digit grouping: "4 725" or "1 250 000,5".
   if (/^-?\d{1,3}(?: \d{3})+(?:[.,]\d+)?$/.test(s)) s = s.replace(/ /g, '');

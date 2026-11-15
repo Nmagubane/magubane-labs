@@ -26,6 +26,9 @@ interface Props {
   marks?: string[];
 }
 
+/** A prefix in TeX: "R" (rand) is set upright, as text, not as an italic variable; "?" is a blank box. */
+const prefixTex = (p: string) => (p === 'R' ? '\\text{R}' : p.replace('?', '\\square'));
+
 function toggleSign(v: string): string {
   const t = v.trim();
   return t.startsWith('-') ? t.slice(1) : `-${t}`;
@@ -72,7 +75,7 @@ function NumericInput({ input, value, onChange, onSubmit, disabled, autoFocus, d
     <div className="answer-row">
       {input.prefix ? (
         <label htmlFor={id} className="answer-prefix">
-          <Tex tex={input.prefix.replace('?', '\\square')} />
+          <Tex tex={prefixTex(input.prefix)} />
         </label>
       ) : (
         <label htmlFor={id} className="sr-only">

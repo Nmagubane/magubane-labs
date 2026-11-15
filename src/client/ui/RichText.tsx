@@ -1,6 +1,6 @@
 /**
  * Renders platform text: $inline$ and $$display$$ maths via KaTeX (HTML + MathML for screen readers),
- * **bold**, *italic*, `code`, paragraphs and simple lists. Builds React elements — no raw HTML
+ * **bold**, *italic*, `code`, \$ for a literal dollar sign, paragraphs and simple lists. Builds React elements — no raw HTML
  * except KaTeX's own output, which escapes its input (trust: false).
  */
 import { memo, type ReactNode } from 'react';
@@ -31,14 +31,16 @@ export const Tex = memo(function Tex({ tex, display = false, className }: { tex:
 /** Inline: maths, bold, italic, code. */
 function inline(text: string, keyBase: string): ReactNode[] {
   const out: ReactNode[] = [];
-  const re = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$|\*\*([^*]+?)\*\*|(?<![*\w])\*([^*\n]+?)\*(?!\*)|`([^`]+?)`/g;
+  // \$ is a literal dollar sign (prices in US dollars), not the start of maths.
+  const re = /\\\$|\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$|\*\*([^*]+?)\*\*|(?<![*\w])\*([^*\n]+?)\*(?!\*)|`([^`]+?)`/g;
   let last = 0;
   let m: RegExpExecArray | null;
   let i = 0;
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
     const k = `${keyBase}-${i++}`;
-    if (m[1] !== undefined) out.push(<Tex key={k} tex={m[1]} display />);
+    if (m[0] === '\\$') out.push('$');
+    else if (m[1] !== undefined) out.push(<Tex key={k} tex={m[1]} display />);
     else if (m[2] !== undefined) out.push(<Tex key={k} tex={m[2]} />);
     else if (m[3] !== undefined) out.push(<strong key={k}>{inline(m[3], k)}</strong>);
     else if (m[4] !== undefined) out.push(<em key={k}>{m[4]}</em>);
