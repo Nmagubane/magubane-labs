@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (108 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (109 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -371,7 +371,7 @@ Five Grade 12 skills (`math-calculus.ts`, `lessons-calculus.ts`, `CalculusLabs.t
 
 **Labs.** `calculus-lab` has three modes: *secant* (drag $h$ to 0 and watch the secant gradient $2a + h$ become $f'(a)$), *cubic* (change $a$, $b$, $c$, $d$; $f$ and a dashed $f'$ together, with turning points and the point of inflection marked) and *box* (cut squares from a 16 × 10 sheet; the volume graph has a flat tangent at the best cut, 2 cm).
 
-**Known limits.** The expression checker handles polynomials only, so $f'(x) = -\frac{k}{x^2}$ is asked for at a point ($f'(a)$ as a fraction) rather than typed as an expression, and the power rule for negative and fractional powers ($\frac{1}{x}$, $\sqrt{x}$) is not built yet. New mistake codes: `remainder-theorem`, `limits`, `first-principles`, `tangent-line`, `inflection`, `stationary-points`, `rate-of-change`, `optimisation`.
+**Negative and fractional powers** are in §21. New mistake codes: `remainder-theorem`, `limits`, `first-principles`, `tangent-line`, `inflection`, `stationary-points`, `rate-of-change`, `optimisation`.
 
 ## 17. Probability (Paper 1)
 
@@ -461,3 +461,23 @@ Four skills (`math-surds-patterns.ts`, `lessons-number.ts`, `NumberLabs.tsx`):
 **New mistake codes:** `surd-simplify`, `surd-add`, `surd-expand`, `rationalise`, `extraneous-root`, `rational-exponent`, `term-number`, `second-difference`, `sigma-notation`, `sum-to-infinity`, `convergence`.
 
 **Not built:** Grade 10 algebraic expressions (binomial × trinomial, sums and differences of cubes, grouping, algebraic fractions) and completing the square.
+
+## 21. Derivatives of negative and fractional powers (Paper 1)
+
+One Grade 12 skill, `derivative-powers` (`math-calculus-powers.ts`, lesson in `lessons-calculus.ts`), which closes the last calculus gap:
+
+| Level | What it asks |
+|---|---|
+| 1 | One term written naturally: $\dfrac{5}{x^4}$, $6\sqrt[3]{x^2}$, $2x\sqrt{x}$, $\dfrac{3}{\sqrt{x}}$ |
+| 2 | A positive power, a negative power, a root and a constant together, as $f'(x)$ or $\dfrac{dy}{dx}$ |
+| 3 | Rewrite first: divide a quotient out, expand $(\sqrt{x} + c)^2$ or $\sqrt{x}(x - c)$ |
+| 4 | The gradient at a point (an exact fraction), or the tangent to $y = \dfrac{k}{x} + q$ |
+| 5 | Turning points of $ax^2 + \dfrac{b}{x}$ and $a\sqrt{x} - bx$ |
+
+**Derivatives are typed, not chosen.** The answer is a `formula` (§18), marked by value at sample points, so $-\dfrac{12}{x^4}$, `-12x^(-4)` and `-12/x^4` are all right, and `3/(2sqrt(x))` reads as written. The predicted mistakes are the ones teachers see: lowering a negative power the wrong way ($-2 \to -1$), forgetting to multiply by the power, differentiating a denominator on its own, differentiating the top and bottom of a fraction separately, and treating $(\sqrt{x} + c)^2$ with the chain rule.
+
+**Checked numerically.** `calculus-powers.test.ts` reads $f$ from the prompt (including $\sqrt[3]{x^2}$) and differentiates it by central differences at five points; every answer must match and every predicted mistake must not. Tangents must touch the curve with that gradient; turning points need $f' = 0$, a sign change in $f'$, and $y$ from $f$. Breaking the power rule for negative powers, or the tangent's gradient, made the test fail.
+
+**Lab.** `calculus-lab` gained a *powers* mode: choose $n$ from $-2$ to $3$ (including $\frac{1}{2}$ and $\frac{3}{2}$), move the point, and the tangent's gradient $nx^{n-1}$ is shown next to a tiny secant's, which agrees.
+
+**New mistake code:** `rewrite-first`.

@@ -758,6 +758,18 @@ export const SKILLS: Skill[] = [
     mappings: caps(12, 'Algebra: the remainder and factor theorems; factorising third-degree polynomials'),
   },
   {
+    id: 'derivative-powers',
+    topicId: 'calculus',
+    name: 'Derivatives of negative and fractional powers',
+    outcome: 'Rewrite 1/x², √x and quotients as powers of x, differentiate, and find gradients, tangents and turning points.',
+    signature: '\\dfrac{d}{dx}\\left(\\dfrac{1}{x^2}\\right) = -\\dfrac{2}{x^3}',
+    grade: 12,
+    prerequisites: ['derivatives', 'surds'],
+    templateId: 'derivative-powers',
+    lessonId: 'derivative-powers',
+    mappings: caps(12, 'Differential calculus: the power rule for rational exponents'),
+  },
+  {
     id: 'first-principles',
     topicId: 'calculus',
     name: 'Limits and first principles',

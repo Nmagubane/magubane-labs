@@ -526,6 +526,7 @@ export const MISTAKES = {
   'counting-principle': { label: 'Counting principle', kind: 'procedural', tip: 'Draw a box for each position and write the number of choices in it, then multiply. Without repetition the choices go down by one each time.' },
   'arrangement-restriction': { label: 'Arrangements with a rule', kind: 'procedural', tip: 'Fill the restricted places first. "Together": glue them into one block, arrange, then multiply by the ways inside the block. "Not together" = all − together.' },
   'identical-items': { label: 'Identical items', kind: 'conceptual', tip: 'Swapping identical letters makes no new arrangement. Divide n! by the factorial of each repeat count, e.g. BANANA: 6! ÷ (3! × 2!).' },
+  'rewrite-first': { label: 'Rewrite before differentiating', kind: 'procedural', tip: 'Write every term as a power of x before you differentiate: divide fractions out, expand brackets, 1/x² = x⁻², √x = x^½. Never differentiate a top and bottom separately.' },
   // ---- Surds, patterns and series (Grades 10–12) ----
   'surd-simplify': { label: 'Simplifying surds', kind: 'procedural', tip: 'Find the largest perfect square factor: √72 = √(36 × 2) = 6√2. The square comes out as its square root.' },
   'surd-add': { label: 'Adding surds', kind: 'conceptual', tip: '√a + √b is not √(a + b). Simplify each surd; only like surds (the same number under the root) can be added.' },

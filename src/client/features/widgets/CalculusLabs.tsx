@@ -191,6 +191,61 @@ function BoxMode() {
   );
 }
 
-export function CalculusLab({ mode }: { mode: 'secant' | 'cubic' | 'box' }) {
-  return mode === 'secant' ? <SecantMode /> : mode === 'cubic' ? <CubicMode /> : <BoxMode />;
+/** The powers in the powers lab, with how each is written. */
+const POWERS = [
+  { n: -2, f: '\\dfrac{1}{x^2}', p: 'x^{-2}' },
+  { n: -1, f: '\\dfrac{1}{x}', p: 'x^{-1}' },
+  { n: -0.5, f: '\\dfrac{1}{\\sqrt{x}}', p: 'x^{-\\frac{1}{2}}' },
+  { n: 0.5, f: '\\sqrt{x}', p: 'x^{\\frac{1}{2}}' },
+  { n: 1.5, f: 'x\\sqrt{x}', p: 'x^{\\frac{3}{2}}' },
+  { n: 2, f: 'x^2', p: 'x^{2}' },
+  { n: 3, f: 'x^3', p: 'x^{3}' },
+];
+
+/** The power rule beyond whole numbers: f(x) = xⁿ for negative and fractional n, with its tangent at x = a. */
+function PowersMode() {
+  const [j, setJ] = useState(1);
+  const [a, setA] = useState(1.5);
+  const P = POWERS[j]!;
+  const f = (x: number) => (x > 0 ? x ** P.n : NaN);
+  const m = P.n * a ** (P.n - 1);
+  // The secant over a tiny step agrees with the power rule.
+  const h = 0.001;
+  const secant = (f(a + h) - f(a)) / h;
+  const xr: [number, number] = [0, 4];
+  const yr: [number, number] = [-1, 6];
+  // A coefficient of 1 or −1 is written as nothing or a minus sign.
+  const nTex = P.n === 1 ? '' : P.n === -1 ? '-' : n(P.n, 1);
+  const nm1 = n(P.n - 1, 1);
+  return (
+    <>
+      <div className="widget-readout ag-readout" aria-live="polite">
+        <Tex tex={`f(x) = ${P.f} = ${P.p}`} />
+        <Tex tex={`\\Rightarrow\\; f'(x) = ${nTex}${P.n - 1 === 1 ? 'x' : `x^{${nm1}}`},\\quad f'(${n(a, 2)}) = ${n(m, 3)}`} />
+      </div>
+      <Plot xRange={xr} yRange={yr} width={400} height={320} label={`f(x) = x to the power ${t(P.n, 1)}, with the tangent at x = ${t(a, 2)}. Its gradient is ${t(m, 3)}.`}>
+        {(s) => (
+          <>
+            <Curve s={s} f={f} xr={[0.02, 4]} yr={yr} className="plot-line" />
+            <Curve s={s} f={(x) => f(a) + m * (x - a)} xr={xr} yr={yr} className="plot-line pen" />
+            <circle cx={s.x(a)} cy={s.y(f(a))} r={6} className="plot-point pen" />
+          </>
+        )}
+      </Plot>
+      <div className="widget-controls">
+        <Slider label="Power n" value={j} min={0} max={POWERS.length - 1} onChange={setJ} format={(i) => t(POWERS[i]!.n, 1)} />
+        <Slider label="Point x = a" tex="a" value={a} min={0.25} max={3.5} step={0.05} onChange={setA} format={(v) => t(v, 2)} />
+      </div>
+      <Note ok={null}>
+        <Rich
+          as="p"
+          text={`The power rule still works: $f'(x) = ${nTex}${P.n - 1 === 1 ? 'x' : `x^{${nm1}}`}$. A secant over a tiny step gives $${n(secant, 3)}$, the same gradient. ${P.n < 0 ? 'With a negative power the curve falls, so the gradient is negative.' : P.n < 1 ? 'With a power between 0 and 1 the curve rises but flattens out.' : 'With a power above 1 the curve gets steeper.'}`}
+        />
+      </Note>
+    </>
+  );
+}
+
+export function CalculusLab({ mode }: { mode: 'secant' | 'cubic' | 'box' | 'powers' }) {
+  return mode === 'secant' ? <SecantMode /> : mode === 'cubic' ? <CubicMode /> : mode === 'powers' ? <PowersMode /> : <BoxMode />;
 }

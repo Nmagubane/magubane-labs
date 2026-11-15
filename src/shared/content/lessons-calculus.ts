@@ -126,4 +126,32 @@ export const CALCULUS_LESSONS: Lesson[] = [
       { kind: 'check', level: 5 },
     ],
   },
+  {
+    id: 'derivative-powers',
+    skillId: 'derivative-powers',
+    title: 'Derivatives of negative and fractional powers',
+    minutes: 13,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'The power rule says $\\dfrac{d}{dx}x^n = nx^{n-1}$. What is the derivative of $\\dfrac{1}{x}$?',
+        options: ['$\\dfrac{1}{1} = 1$', '$-\\dfrac{1}{x^2}$', '$\\dfrac{1}{x^2}$'],
+        answer: 1,
+        explanation: '$\\dfrac{1}{x} = x^{-1}$, so the derivative is $-1 \\times x^{-2} = -\\dfrac{1}{x^2}$. It is negative because the graph of $\\dfrac{1}{x}$ falls for $x > 0$.',
+      },
+      {
+        kind: 'widget',
+        title: 'Powers lab',
+        task: 'Choose $n = -1$ and move the point. Is the tangent ever rising? Then try $n = \\tfrac{1}{2}$: what happens to the gradient as $x$ gets close to 0?',
+        widget: { type: 'calculus-lab', mode: 'powers' },
+      },
+      { kind: 'key-idea', body: 'The power rule works for **any** power: $\\dfrac{d}{dx}x^n = nx^{n-1}$. So **rewrite first**: $\\dfrac{3}{x^2} = 3x^{-2}$, $\\sqrt{x} = x^{\\frac{1}{2}}$, $\\dfrac{1}{\\sqrt{x}} = x^{-\\frac{1}{2}}$, $x\\sqrt{x} = x^{\\frac{3}{2}}$. Divide a fraction out term by term, and expand brackets, before differentiating. Subtracting 1 from a negative power makes it **more** negative: $-2 - 1 = -3$. Then use $f\'(x)$ as before: the gradient at a point, the tangent, and $f\'(x) = 0$ for turning points (with $y$ from $f$).' },
+      { kind: 'trap', wrong: '$f(x) = \\dfrac{x^3 + 4}{x}$, so $f\'(x) = \\dfrac{3x^2}{1} = 3x^2$.', why: 'You can\'t differentiate the top and bottom separately. Divide first: $f(x) = x^2 + 4x^{-1}$, so $f\'(x) = 2x - \\dfrac{4}{x^2}$.' },
+      { kind: 'example', level: 3 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 2 },
+      { kind: 'check', level: 4 },
+      { kind: 'check', level: 5 },
+    ],
+  },
 ];
