@@ -284,6 +284,16 @@ test('the complete learning loop', async () => {
   const examDate = new Date(Date.now() + 20 * 86_400_000).toISOString().slice(0, 10);
   const exam = await neo.call('POST', '/api/exams', { title: 'Maths June exam', subjectId: 'mathematics', examDate });
   assert.ok(exam.readiness > 0 && exam.readiness < 100);
+  // Papers: a Grade 10 learner can add Mathematics Paper 2, and only Paper 2 skills are kept.
+  const options = await neo.call('GET', '/api/exams/options');
+  assert.deepEqual(options.filter((o: { subjectId: string }) => o.subjectId === 'mathematics').map((o: { id: string }) => o.id), ['mathematics:p1', 'mathematics:p2', 'mathematics:test']);
+  await neo.call('POST', '/api/exams', { optionId: 'mathematics:p2', examDate, skillIds: ['finance'] }, 422);
+  await neo.call('POST', '/api/exams', { optionId: 'mathematics:p9', examDate }, 422);
+  const p2 = await neo.call('POST', '/api/exams', { optionId: 'mathematics:p2', examDate, skillIds: ['finance', 'trig-special', 'coordinate-geometry'] });
+  assert.deepEqual(p2.skillIds, ['trig-special', 'coordinate-geometry']);
+  assert.equal(p2.paper, 2);
+  assert.equal(p2.title, 'Mathematics Paper 2');
+  await neo.call('DELETE', `/api/exams/${p2.id}`);
   const detail = await neo.call('GET', `/api/exams/${exam.id}`);
   assert.ok(detail.plan.days.length >= 19);
   assert.equal(detail.plan.days.at(-1).items[0].action, 'mock');

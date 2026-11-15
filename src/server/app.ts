@@ -7,7 +7,7 @@ import { config } from './config.ts';
 import { createSession, destroySession, destroyAllSessions, userForSession, createUser, deleteUser, verifyPassword, burnPasswordCheck, markEmailVerified, setPassword, getUser, toUserDto, USER_COLS, type UserRow } from './auth.ts';
 import { getProfile, saveProfile } from './learner.ts';
 import { createActivity, getActivityState, nextQuestion, answerQuestion, takeHint, submitActivity, getResults, listActivities } from './activities.ts';
-import { catalogue, skillDetail, workedExample, home, progress, listExams, createExam, deleteExam, examDetail } from './insights.ts';
+import { catalogue, skillDetail, workedExample, home, progress, listExams, createExam, listExamOptions, deleteExam, examDetail } from './insights.ts';
 import { tutorStatus, listConversations, createConversation, getConversation, deleteConversation, streamReply } from './tutor.ts';
 import { sendVerificationEmail, sendResetEmail, checkCode } from './verification.ts';
 import { sendMail, layout } from './mailer.ts';
@@ -273,6 +273,7 @@ export function buildRouter(db: Db): Router {
   });
   r.get('/api/progress', (ctx) => progress(db, requireLearner(ctx)));
   r.get('/api/exams', (ctx) => listExams(db, requireLearner(ctx)));
+  r.get('/api/exams/options', (ctx) => listExamOptions(db, requireLearner(ctx)));
   r.post('/api/exams', async (ctx) => createExam(db, requireLearner(ctx), await readJson(ctx, ExamBody)));
   r.get('/api/exams/:id', (ctx) => examDetail(db, requireLearner(ctx), ctx.params.id as string));
   r.delete('/api/exams/:id', (ctx) => {

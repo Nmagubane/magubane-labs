@@ -1430,10 +1430,36 @@
   padding: 0 var(--s4);
   margin-bottom: var(--s5);
 }
+.skill-pick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2) var(--s4);
+}
+.skill-pick-head p {
+  flex: 1 1 18rem;
+  margin: 0;
+}
+.skill-pick-all {
+  display: flex;
+  gap: var(--s1);
+}
+.skill-pick-grade {
+  white-space: nowrap;
+}
+.skill-pick-topic + .skill-pick-topic {
+  margin-top: var(--s3);
+}
+.skill-pick-topic-name {
+  margin: var(--s3) 0 0;
+  font-size: var(--t-sm);
+  font-weight: 700;
+}
 .skill-pick ul {
   list-style: none;
   padding: 0;
-  margin: var(--s2) 0 0;
+  margin: var(--s1) 0 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
   gap: 0 var(--s4);

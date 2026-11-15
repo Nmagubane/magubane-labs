@@ -125,12 +125,18 @@ export const AnswerBody = z.object({
 });
 export type AnswerRequest = z.infer<typeof AnswerBody>;
 
-export const ExamBody = z.object({
-  title: z.string().trim().min(1).max(80),
-  subjectId: z.enum(SUBJECT_IDS),
-  examDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  skillIds: z.array(z.string().max(60)).min(1).max(40).optional(),
-});
+export const ExamBody = z
+  .object({
+    /** Blank: the option's label, e.g. "Mathematics Paper 1". */
+    title: z.string().trim().max(80).optional(),
+    /** From GET /api/exams/options, e.g. `mathematics:p1`. */
+    optionId: z.string().max(40).optional(),
+    /** Older clients: a test on the whole subject. */
+    subjectId: z.enum(SUBJECT_IDS).optional(),
+    examDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    skillIds: z.array(z.string().max(60)).min(1).max(60).optional(),
+  })
+  .refine((b) => b.optionId || b.subjectId, { message: 'Choose what you are writing.' });
 
 export const TutorConversationBody = z.object({
   skillId: z.string().max(60).optional(),
@@ -368,6 +374,10 @@ export interface ExamDto {
   id: string;
   title: string;
   subjectId: SubjectId;
+  /** 1 or 2 for a Grade 10–12 paper; null for a whole-subject exam or a class test. */
+  paper: 1 | 2 | null;
+  /** "Mathematics Paper 1", "Life Sciences". */
+  label: string;
   examDate: string;
   skillIds: string[];
   daysLeft: number;

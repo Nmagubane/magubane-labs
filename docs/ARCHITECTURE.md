@@ -79,6 +79,13 @@ Each learner has a rating θ per skill. Each question has a difficulty level fro
 ### Exam readiness
 `readiness = mean over exam skills of (mastery × confidence + 0.3 × (1 − confidence))`. Confidence is `min(1, evidence / 8)`: an unassessed skill counts as "probably not ready", never as 0 or 100. The study plan is rebuilt from current mastery every time it's viewed, so it adapts automatically.
 
+**What can be added** (`src/shared/curriculum/papers.ts`, `GET /api/exams/options`). One list, "What are you writing?", built from the learner's own subjects:
+- **Grades 10–12 Mathematics and Physical Sciences** offer Paper 1, Paper 2 and a class test. A paper lists only its own skills, using the DBE examination guidelines' split. Mathematics Paper 1 is algebra, equations, patterns, functions, finance, calculus and probability. Paper 2 is statistics, analytical geometry, trigonometry and Euclidean geometry. Trig graphs are Paper 2, listed under Trigonometry there. Physical Sciences Paper 1 is Physics and Paper 2 is Chemistry.
+- **Life Sciences** is one exam until its paper split is checked. **Grades 4–9** have one exam per subject.
+- **Ticked when the form opens:** the learner's own grade (a Grade 12 learner gets Grades 10–12, because the final covers all three). Earlier grades are listed unticked. A class test starts with nothing ticked.
+- **Never listed:** skills above the learner's grade.
+- **On the server:** `exams.paper` (migration v8) stores the paper, and the server keeps only skills that belong to the chosen option, so a Paper 1 exam can't hold trigonometry. A blank name becomes the option's label ("Mathematics Paper 1"). `papers.test.ts` checks the split, that the two papers together are the whole subject with no overlap, and the defaults for every grade.
+
 ### Data model (SQLite, see `src/server/db.ts`)
 `users`, `sessions` (hashed tokens), `learner_profiles`, `skill_states` (θ, evidence, last practised), `activities` (lesson/practice/test/baseline; mode learning|assessment), `question_instances` (render payload + secret answer + misconceptions), `responses` (score, hints, time, confidence, mistake code, θ before/after), `mastery_snapshots` (daily, for trends), `lesson_progress`, `exams`, `tutor_conversations`, `tutor_messages`, `email_codes` (HMAC-hashed 6-digit codes: 10-minute expiry, 5 attempts), `email_log` (one weekly report per recipient per period), `classes`, `class_members`, `assignments` (`activities.assignment_id` links work to an assignment).
 

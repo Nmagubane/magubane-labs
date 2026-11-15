@@ -1,6 +1,7 @@
 /** Read models: catalogue, skill detail, home, progress, exams. Computed from raw learning data. */
 import { randomInt } from 'node:crypto';
 import { examDateProblem } from '../shared/exam-dates.ts';
+import { examOptions, examLabel, defaultSkillIds, type ExamOption, type PaperNo } from '../shared/curriculum/papers.ts';
 import type { Db } from './db.ts';
 import { all, one, run, newId } from './db.ts';
 import { HttpError } from './http.ts';
@@ -330,34 +331,48 @@ interface ExamRow {
   subject_id: SubjectId;
   exam_date: string;
   skill_ids: string;
+  paper: number | null;
 }
 
-function examDto(row: ExamRow, states: Map<string, SkillState>, at: Date): ExamDto {
+function examDto(row: ExamRow, states: Map<string, SkillState>, at: Date, grade: number): ExamDto {
   const skillIds = JSON.parse(row.skill_ids) as string[];
   const r = computeReadiness(skillIds, states, row.exam_date, at);
-  return { id: row.id, title: row.title, subjectId: row.subject_id, examDate: row.exam_date, skillIds, daysLeft: r.daysLeft, readiness: r.score, confidence: r.confidence };
+  const paper = row.paper === 1 || row.paper === 2 ? row.paper : null;
+  return { id: row.id, title: row.title, subjectId: row.subject_id, paper, label: examLabel(row.subject_id, paper, grade), examDate: row.exam_date, skillIds, daysLeft: r.daysLeft, readiness: r.score, confidence: r.confidence };
 }
+
+const gradeOf = (db: Db, user: UserDto): number => getProfile(db, user.id)?.grade ?? 0;
 
 export function listExams(db: Db, user: UserDto): ExamDto[] {
   const at = now();
   const states = getStates(db, user.id);
-  return all<ExamRow>(db, 'SELECT * FROM exams WHERE user_id = ? ORDER BY exam_date', user.id).map((r) => examDto(r, states, at));
+  const grade = gradeOf(db, user);
+  return all<ExamRow>(db, 'SELECT * FROM exams WHERE user_id = ? ORDER BY exam_date', user.id).map((r) => examDto(r, states, at, grade));
 }
 
-export function createExam(db: Db, user: UserDto, body: { title: string; subjectId: SubjectId; examDate: string; skillIds?: string[] | undefined }): ExamDto {
+/** What this learner can add: their subjects' papers (Grades 10–12), whole-subject exams and class tests. */
+export function listExamOptions(db: Db, user: UserDto): ExamOption[] {
+  const profile = requireProfile(db, user);
+  return examOptions(profile.subjects, profile.grade);
+}
+
+export function createExam(db: Db, user: UserDto, body: { title?: string | undefined; optionId?: string | undefined; subjectId?: SubjectId | undefined; examDate: string; skillIds?: string[] | undefined }): ExamDto {
   const profile = requireProfile(db, user);
   const at = now();
   const dateProblem = examDateProblem(body.examDate, at);
   if (dateProblem) throw new HttpError(422, 'invalid', dateProblem);
-  const valid = new Set(skillsInSubject(body.subjectId).map((s) => s.id));
-  // Default: the subject's skills in the learner's grade band; if none (e.g. a Grade 5 choosing Physical Sciences), the nearest-grade ones.
-  const band = skillsForLearner([body.subjectId], profile.grade);
-  const nearest = band.length ? band : skillsInSubject(body.subjectId).sort((a, b) => Math.abs(a.grade - profile.grade) - Math.abs(b.grade - profile.grade)).slice(0, 4);
-  const skillIds = body.skillIds?.length ? body.skillIds.filter((id) => valid.has(id)) : nearest.map((s) => s.id);
-  if (!skillIds.length) throw new HttpError(422, 'invalid', 'Pick at least one topic that will be in the exam.');
+  // Older clients send only a subject: that is a test on the whole subject.
+  const optionId = body.optionId ?? (body.subjectId ? `${body.subjectId}:test` : '');
+  const option = examOptions(profile.subjects, profile.grade).find((o) => o.id === optionId);
+  if (!option) throw new HttpError(422, 'invalid', 'Choose one of your subjects, or one of its papers.');
+  // Only skills that belong in this paper (or subject) count: a Paper 1 exam can't contain trigonometry.
+  const allowed = new Set(option.skills.map((s) => s.skillId));
+  const skillIds = body.skillIds?.length ? [...new Set(body.skillIds.filter((id) => allowed.has(id)))] : defaultSkillIds(option);
+  if (!skillIds.length) throw new HttpError(422, 'invalid', option.kind === 'paper' ? `Tick at least one ${option.label} topic.` : 'Tick at least one skill that will be in it.');
   const id = newId('exm');
-  run(db, 'INSERT INTO exams (id, user_id, title, subject_id, exam_date, skill_ids, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', id, user.id, body.title, body.subjectId, body.examDate, JSON.stringify(skillIds), at.toISOString());
-  return examDto(one<ExamRow>(db, 'SELECT * FROM exams WHERE id = ?', id) as ExamRow, getStates(db, user.id), at);
+  const title = body.title?.trim() || option.label;
+  run(db, 'INSERT INTO exams (id, user_id, title, subject_id, paper, exam_date, skill_ids, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', id, user.id, title, option.subjectId, option.paper, body.examDate, JSON.stringify(skillIds), at.toISOString());
+  return examDto(one<ExamRow>(db, 'SELECT * FROM exams WHERE id = ?', id) as ExamRow, getStates(db, user.id), at, profile.grade);
 }
 
 export function deleteExam(db: Db, user: UserDto, id: string): void {
@@ -391,7 +406,7 @@ export function examDetail(db: Db, user: UserDto, id: string): ExamDetailRespons
 
   const name = (sid: string) => getSkill(sid)?.name ?? sid;
   return {
-    exam: examDto(row, states, at),
+    exam: examDto(row, states, at, profile.grade),
     readiness: {
       score: r.score,
       confidence: r.confidence,

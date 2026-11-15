@@ -4,15 +4,27 @@ import { api, ApiError } from '../../lib/api.ts';
 import { Link, useRouter } from '../../lib/router.tsx';
 import { Button, Loading, ErrorState, PageHeader, TextInput } from '../../ui/primitives.tsx';
 import { inDays } from '../../lib/format.ts';
-import type { ExamDto, CatalogueResponse } from '../../../shared/api.ts';
+import type { ExamDto } from '../../../shared/api.ts';
+import type { ExamOption, ExamOptionSkill } from '../../../shared/curriculum/papers.ts';
 import { EXAM_MAX_DAYS, addDays, examDateProblem, isoDay } from '../../../shared/exam-dates.ts';
+
+/** Skills grouped by topic, in the order they first appear. */
+function byTopic(skills: ExamOptionSkill[]): { topicId: string; topicName: string; skills: ExamOptionSkill[] }[] {
+  const groups = new Map<string, { topicId: string; topicName: string; skills: ExamOptionSkill[] }>();
+  for (const s of skills) {
+    const g = groups.get(s.topicId) ?? { topicId: s.topicId, topicName: s.topicName, skills: [] };
+    g.skills.push(s);
+    groups.set(s.topicId, g);
+  }
+  return [...groups.values()];
+}
 
 export function Exams() {
   const exams = useResource<ExamDto[]>('/api/exams');
-  const cat = useResource<CatalogueResponse>('/api/catalogue');
+  const options = useResource<ExamOption[]>('/api/exams/options');
   const { navigate } = useRouter();
   const [title, setTitle] = useState('');
-  const [subjectId, setSubjectId] = useState<string>('mathematics');
+  const [optionId, setOptionId] = useState<string | null>(null);
   const [date, setDate] = useState('');
   const [picked, setPicked] = useState<Set<string> | null>(null);
   const [busy, setBusy] = useState(false);
@@ -22,20 +34,38 @@ export function Exams() {
   const [skillsError, setSkillsError] = useState(false);
   const dateRef = useRef<HTMLInputElement>(null);
 
-  const subject = cat.data?.subjects.find((s) => s.id === subjectId);
-  const skills = useMemo(() => subject?.topics.flatMap((t) => t.skills.map((k) => ({ ...k, topic: t.name }))) ?? [], [subject]);
-  const inBand = skills.filter((k) => k.inScope);
-  const selected = picked ?? new Set((inBand.length ? inBand : skills).map((k) => k.skillId));
+  const option = options.data?.find((o) => o.id === optionId) ?? options.data?.[0];
+  const selected = useMemo(() => picked ?? new Set(option?.skills.filter((s) => s.ticked).map((s) => s.skillId)), [picked, option]);
+  const groups = useMemo(() => byTopic(option?.skills ?? []), [option]);
   const today = new Date();
   const tomorrow = isoDay(addDays(today, 1));
   const lastDay = isoDay(addDays(today, EXAM_MAX_DAYS));
   const dateProblem = examDateProblem(date, today);
 
-  if ((exams.loading && !exams.data) || (cat.loading && !cat.data)) return <Loading />;
+  if ((exams.loading && !exams.data) || (options.loading && !options.data)) return <Loading />;
   if (exams.error && !exams.data) return <ErrorState error={exams.error} onRetry={() => void exams.reload()} />;
+  if (options.error && !options.data) return <ErrorState error={options.error} onRetry={() => void options.reload()} />;
+
+  const choose = (id: string) => {
+    setOptionId(id);
+    setPicked(null);
+    setSkillsError(false);
+  };
+  const toggle = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setPicked(next);
+    if (next.size) setSkillsError(false);
+  };
+  const setAll = (on: boolean) => {
+    setPicked(new Set(on ? option?.skills.map((s) => s.skillId) : []));
+    if (on) setSkillsError(false);
+  };
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
+    if (!option) return;
     setError(null);
     setDateTouched(true);
     setSkillsError(selected.size === 0);
@@ -46,7 +76,7 @@ export function Exams() {
     if (selected.size === 0) return;
     setBusy(true);
     try {
-      const ex = await api.post<ExamDto>('/api/exams', { title: title || `${subject?.name ?? ''} exam`, subjectId, examDate: date, skillIds: [...selected] });
+      const ex = await api.post<ExamDto>('/api/exams', { title: title.trim() || undefined, optionId: option.id, examDate: date, skillIds: [...selected] });
       invalidate('/api/exams', '/api/home');
       navigate(`/exams/${ex.id}`);
     } catch (err) {
@@ -67,6 +97,7 @@ export function Exams() {
                 <span className="row-main">
                   <span className="row-title">{e.title}</span>
                   <span className="row-sub">
+                    {e.label !== e.title ? `${e.label} · ` : ''}
                     {new Date(`${e.examDate}T00:00:00`).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}, {e.daysLeft >= 0 ? inDays(e.daysLeft) : 'finished'}
                   </span>
                 </span>
@@ -81,73 +112,82 @@ export function Exams() {
         <h2 id="add-exam" className="sheet-title">
           Add an exam
         </h2>
-        <form onSubmit={create} className="form" noValidate>
-          <div className="form-row">
-            <TextInput label="Name" placeholder="e.g. Maths June exam" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
-            <div className="field">
-              <label htmlFor="exam-subject">Subject</label>
-              <select id="exam-subject" value={subjectId} onChange={(e) => (setSubjectId(e.target.value), setPicked(null))}>
-                {cat.data?.subjects.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+        {!option ? (
+          <p className="muted">There is nothing to add an exam for yet. Choose your subjects in your account first.</p>
+        ) : (
+          <form onSubmit={create} className="form" noValidate>
+            <div className="form-row">
+              <div className="field">
+                <label htmlFor="exam-option">What are you writing?</label>
+                <select id="exam-option" value={option.id} onChange={(e) => choose(e.target.value)}>
+                  {options.data?.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <TextInput label="Name (optional)" placeholder={option.label} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
+              <TextInput
+                ref={dateRef}
+                label="Date"
+                type="date"
+                className="field-date"
+                min={tomorrow}
+                max={lastDay}
+                value={date}
+                onChange={(e) => (setDate(e.target.value), setDateTouched(true))}
+                hint="From tomorrow to a year from now."
+                error={dateTouched ? dateProblem : null}
+                required
+              />
             </div>
-            <TextInput
-              ref={dateRef}
-              label="Date"
-              type="date"
-              className="field-date"
-              min={tomorrow}
-              max={lastDay}
-              value={date}
-              onChange={(e) => (setDate(e.target.value), setDateTouched(true))}
-              hint="From tomorrow to a year from now."
-              error={dateTouched ? dateProblem : null}
-              required
-            />
-          </div>
-          <fieldset className="skill-pick">
-            <legend>What will be in it?</legend>
-            <p className="muted small">Your grade&apos;s skills are ticked. Untick anything your teacher said won&apos;t be examined.</p>
-            <ul>
-              {skills.map((k) => (
-                <li key={k.skillId}>
-                  <label className="check-row">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(k.skillId)}
-                      onChange={() => {
-                        const next = new Set(selected);
-                        if (next.has(k.skillId)) next.delete(k.skillId);
-                        else next.add(k.skillId);
-                        setPicked(next);
-                        if (next.size) setSkillsError(false);
-                      }}
-                    />
-                    <span>
-                      {k.name} <span className="muted small">{k.topic}</span>
-                    </span>
-                  </label>
-                </li>
+            <fieldset className="skill-pick">
+              <legend>What will be in it?</legend>
+              <div className="skill-pick-head">
+                <p className="muted small">{option.note}</p>
+                <span className="skill-pick-all">
+                  <Button type="button" variant="quiet" size="sm" onClick={() => setAll(true)}>
+                    Tick all
+                  </Button>
+                  <Button type="button" variant="quiet" size="sm" onClick={() => setAll(false)}>
+                    Untick all
+                  </Button>
+                </span>
+              </div>
+              {groups.map((g) => (
+                <div key={g.topicId} className="skill-pick-topic">
+                  <h3 className="skill-pick-topic-name">{g.topicName}</h3>
+                  <ul>
+                    {g.skills.map((k) => (
+                      <li key={k.skillId}>
+                        <label className="check-row">
+                          <input type="checkbox" checked={selected.has(k.skillId)} onChange={() => toggle(k.skillId)} />
+                          <span>
+                            {k.name} <span className="muted small skill-pick-grade">Grade {k.grade}</span>
+                          </span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
-            {skillsError ? (
-              <p className="field-msg" role="alert">
-                Tick at least one skill that will be in the exam.
+              {skillsError ? (
+                <p className="field-msg" role="alert">
+                  Tick at least one skill that will be in {option.kind === 'paper' ? option.label : 'it'}.
+                </p>
+              ) : null}
+            </fieldset>
+            {error ? (
+              <p className="form-error" role="alert">
+                {error}
               </p>
             ) : null}
-          </fieldset>
-          {error ? (
-            <p className="form-error" role="alert">
-              {error}
-            </p>
-          ) : null}
-          <Button type="submit" busy={busy}>
-            Add exam and build my plan
-          </Button>
-        </form>
+            <Button type="submit" busy={busy}>
+              Add and build my plan
+            </Button>
+          </form>
+        )}
       </section>
     </div>
   );

@@ -305,6 +305,10 @@ const MIGRATIONS: string[] = [
   UPDATE classes SET subject_id = 'natural-sciences' WHERE grade BETWEEN 4 AND 9 AND subject_id IN ('physical-sciences', 'life-sciences');
   UPDATE classes SET subject_id = 'physical-sciences' WHERE grade >= 10 AND subject_id = 'natural-sciences';
   `,
+  // v8: an exam can be one paper (Mathematics Paper 1, Physical Sciences Paper 2) in Grades 10–12.
+  `
+  ALTER TABLE exams ADD COLUMN paper INTEGER CHECK (paper IN (1, 2));
+  `,
 ];
 
 /** A per-installation secret (for signed links in emails), created on first use and kept in the database. */
