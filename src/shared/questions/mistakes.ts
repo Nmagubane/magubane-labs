@@ -526,6 +526,18 @@ export const MISTAKES = {
   'counting-principle': { label: 'Counting principle', kind: 'procedural', tip: 'Draw a box for each position and write the number of choices in it, then multiply. Without repetition the choices go down by one each time.' },
   'arrangement-restriction': { label: 'Arrangements with a rule', kind: 'procedural', tip: 'Fill the restricted places first. "Together": glue them into one block, arrange, then multiply by the ways inside the block. "Not together" = all − together.' },
   'identical-items': { label: 'Identical items', kind: 'conceptual', tip: 'Swapping identical letters makes no new arrangement. Divide n! by the factorial of each repeat count, e.g. BANANA: 6! ÷ (3! × 2!).' },
+  // ---- Surds, patterns and series (Grades 10–12) ----
+  'surd-simplify': { label: 'Simplifying surds', kind: 'procedural', tip: 'Find the largest perfect square factor: √72 = √(36 × 2) = 6√2. The square comes out as its square root.' },
+  'surd-add': { label: 'Adding surds', kind: 'conceptual', tip: '√a + √b is not √(a + b). Simplify each surd; only like surds (the same number under the root) can be added.' },
+  'surd-expand': { label: 'Expanding with surds', kind: 'procedural', tip: 'Multiply every term by every term, and use √a × √a = a. (x + y)² has a middle term 2xy.' },
+  'rationalise': { label: 'Rationalising the denominator', kind: 'procedural', tip: 'Multiply top and bottom by √b, or by the conjugate a − √b. The product of conjugates is a difference of squares.' },
+  'extraneous-root': { label: 'Checking surd equations', kind: 'conceptual', tip: 'Squaring both sides can create a false solution. Substitute every answer into the original equation; a square root is never negative.' },
+  'rational-exponent': { label: 'Rational exponents', kind: 'procedural', tip: 'x^(p/q) = k: raise both sides to the reciprocal power q/p. b^(p/q) is the qth root of b, to the power p.' },
+  'term-number': { label: 'Term numbers', kind: 'procedural', tip: 'The term number n is where a term sits, not its value. Check by substituting your n back into Tₙ.' },
+  'second-difference': { label: 'Quadratic patterns', kind: 'conceptual', tip: 'If the second differences are constant the pattern is quadratic: Tₙ = an² + bn + c with 2a = second difference.' },
+  'sigma-notation': { label: 'Sigma notation', kind: 'procedural', tip: 'Σ from k = a to b adds every term from k = a to k = b: that is b − a + 1 terms. Write out the first few.' },
+  'sum-to-infinity': { label: 'Sum to infinity', kind: 'procedural', tip: 'S∞ = a/(1 − r), only when −1 < r < 1. Put a negative r in brackets.' },
+  'convergence': { label: 'Convergence', kind: 'conceptual', tip: 'A geometric series converges when −1 < r < 1. Solve both sides of the double inequality.' },
   // ---- Finance (Grades 10–12) ----
   'exchange-rate': { label: 'Exchange rates', kind: 'conceptual', tip: 'If $1 = R18, a dollar costs more than a rand: foreign to rand, multiply by the rate; rand to foreign, divide.' },
   'hire-purchase': { label: 'Hire purchase', kind: 'procedural', tip: 'Take off the deposit first. Simple interest is charged on what is still owed, and the total is shared over the number of months.' },

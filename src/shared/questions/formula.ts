@@ -5,6 +5,7 @@
  */
 export class FormulaError extends Error {}
 
+export type Formula = F;
 type F =
   | { t: 'num'; v: number }
   | { t: 'var'; name: string }
@@ -23,8 +24,9 @@ function tokenize(raw: string): Tok[] {
     .replace(/²/g, '^2')
     .replace(/³/g, '^3')
     .replace(/\*\*/g, '^')
-    .replace(/\bsqrt\b/gi, '√')
-    .replace(/\bpi\b/g, 'π');
+    // Not \b: "6sqrt(2)" and "2pi" have no word boundary after the digit. Letters on either side mean a name.
+    .replace(/(?<![A-Za-z])sqrt/gi, '√')
+    .replace(/(?<![A-Za-z])pi(?![A-Za-z])/g, 'π');
   const out: Tok[] = [];
   let i = 0;
   while (i < s.length) {

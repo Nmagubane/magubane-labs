@@ -1,0 +1,108 @@
+/** Surds (Grade 11), linear and quadratic patterns (Grades 10–11) and series (Grade 12). */
+import type { Lesson } from './types.ts';
+
+export const NUMBER_LESSONS: Lesson[] = [
+  {
+    id: 'surds',
+    skillId: 'surds',
+    title: 'Surds and rational exponents',
+    minutes: 15,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'Is $\\sqrt{9} + \\sqrt{16}$ equal to $\\sqrt{25}$?',
+        options: ['Yes', 'No'],
+        answer: 1,
+        explanation: '$\\sqrt{9} + \\sqrt{16} = 3 + 4 = 7$, but $\\sqrt{25} = 5$. Square roots don\'t add like that: $\\sqrt{a} + \\sqrt{b} \\ne \\sqrt{a + b}$. They **do** multiply: $\\sqrt{a} \\times \\sqrt{b} = \\sqrt{ab}$.',
+      },
+      {
+        kind: 'widget',
+        title: 'Inside a surd',
+        task: 'Set the area to 72. How many small squares across is the big square, and what is the side of each? Then try 50 and 108.',
+        widget: { type: 'number-lab', mode: 'surd' },
+      },
+      { kind: 'key-idea', body: '**Simplify:** take out the largest square factor, $\\sqrt{72} = \\sqrt{36 \\times 2} = 6\\sqrt{2}$. **Add** only like surds, after simplifying: $\\sqrt{50} + \\sqrt{8} = 5\\sqrt{2} + 2\\sqrt{2} = 7\\sqrt{2}$. **Multiply** every term by every term, with $\\sqrt{a} \\times \\sqrt{a} = a$. **Rationalise:** multiply top and bottom by $\\sqrt{b}$, or by the conjugate ($a + \\sqrt{b}$ and $a - \\sqrt{b}$), whose product $a^2 - b$ has no root. **Rational exponents:** $b^{\\frac{p}{q}} = (\\sqrt[q]{b})^{p}$. **Surd equations:** get the root alone, square both sides, and check every answer in the original: a square root is never negative. Type answers with the √ key: `6√2`, `3 - 2√5`, `(1 + √3)/2`.' },
+      { kind: 'trap', wrong: '$\\sqrt{2x + 3} = x$ gives $x^2 - 2x - 3 = 0$, so $x = 3$ or $x = -1$.', why: 'Check $x = -1$: the right side is $-1$, but $\\sqrt{1} = 1$. Squaring added a false root. Only $x = 3$.' },
+      { kind: 'example', level: 4 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 2 },
+      { kind: 'check', level: 3 },
+      { kind: 'check', level: 5 },
+    ],
+  },
+  {
+    id: 'linear-patterns',
+    skillId: 'linear-patterns',
+    title: 'Linear patterns',
+    minutes: 11,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'One table seats 6 people. Two tables pushed together seat 10, three seat 14. How many do 10 tables seat?',
+        options: ['60', '42', '46'],
+        answer: 1,
+        explanation: 'Each extra table adds 4 seats (2 seats are lost where tables touch): $T_n = 4n + 2$, so $T_{10} = 42$. Ten separate tables would seat 60.',
+      },
+      { kind: 'key-idea', body: 'A **linear** pattern goes up (or down) by the same **constant difference** $d$ each time. Its general term is $T_n = dn + c$: find $d$ from two neighbours, then $c$ from $T_1$ (so $c = T_1 - d$). Then $T_n$ gives any term, and setting $T_n$ equal to a value and solving gives the **term number** $n$, which must be a positive whole number.' },
+      { kind: 'trap', wrong: '$5;\\ 8;\\ 11;\\ \\dots$ has $d = 3$, so $T_n = 3n + 5$.', why: 'Check $n = 1$: $3(1) + 5 = 8$, not 5. The constant is $T_1 - d = 2$: $T_n = 3n + 2$.' },
+      { kind: 'example', level: 1 },
+      { kind: 'check', level: 2 },
+      { kind: 'check', level: 3 },
+      { kind: 'check', level: 4 },
+    ],
+  },
+  {
+    id: 'quadratic-patterns',
+    skillId: 'quadratic-patterns',
+    title: 'Quadratic patterns',
+    minutes: 13,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'What comes next: $3;\\ 6;\\ 11;\\ 18;\\ \\dots$?',
+        options: ['25', '27', '29'],
+        answer: 1,
+        explanation: 'The differences are $3;\\ 5;\\ 7$: they go up by 2 each time. The next difference is 9, so the next term is $18 + 9 = 27$.',
+      },
+      {
+        kind: 'widget',
+        title: 'Differences',
+        task: 'Set the second difference to 0: what kind of pattern is it? Then make it negative and watch the dots.',
+        widget: { type: 'number-lab', mode: 'differences' },
+      },
+      { kind: 'key-idea', body: 'If the **second differences** are constant, the pattern is quadratic: $T_n = an^2 + bn + c$. Three equations find it: $2a =$ second difference, $3a + b = T_2 - T_1$, and $a + b + c = T_1$. Like any quadratic, its dots lie on a parabola, so a pattern with $a > 0$ can fall and then rise, with a smallest term near $n = -\\dfrac{b}{2a}$.' },
+      { kind: 'trap', wrong: 'The second difference of $3;\\ 6;\\ 11;\\ 18$ is 2, so $a = 2$.', why: 'The second difference is $2a$: so $a = 1$, and $T_n = n^2 + 2$.' },
+      { kind: 'example', level: 2 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 3 },
+      { kind: 'check', level: 5 },
+    ],
+  },
+  {
+    id: 'series',
+    skillId: 'series',
+    title: 'Series: sigma notation and sums to infinity',
+    minutes: 14,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'Keep adding: $1 + \\frac{1}{2} + \\frac{1}{4} + \\frac{1}{8} + \\dots$ forever. What happens to the total?',
+        options: ['It grows without limit', 'It gets closer and closer to 2', 'It reaches 2 exactly after 10 terms'],
+        answer: 1,
+        explanation: 'Each term fills half the gap that is left to 2, so the total gets as close to 2 as you like but never passes it. That limit is the sum to infinity: $S_\\infty = \\dfrac{1}{1 - \\frac{1}{2}} = 2$.',
+      },
+      {
+        kind: 'widget',
+        title: 'Partial sums',
+        task: 'Try $r = 0{,}5$, then $r = -0{,}5$, then $r = 1{,}1$. When do the sums settle?',
+        widget: { type: 'number-lab', mode: 'series' },
+      },
+      { kind: 'key-idea', body: '$\\displaystyle\\sum_{k=1}^{n} T_k$ means $T_1 + T_2 + \\dots + T_n$; from $k = a$ to $k = b$ there are $b - a + 1$ terms. A geometric series **converges** only when $-1 < r < 1$, and then $S_\\infty = \\dfrac{a}{1 - r}$. To find **how many terms** give a sum, set $S_n$ equal to it and solve (a quadratic for arithmetic, logs or powers for geometric). If you know $S_n$ for every $n$, then $T_n = S_n - S_{n-1}$.' },
+      { kind: 'trap', wrong: '$\\displaystyle\\sum_{k=3}^{20}$ has $20 - 3 = 17$ terms.', why: 'Count both ends: $k = 3, 4, \\dots, 20$ is $20 - 3 + 1 = 18$ terms.' },
+      { kind: 'example', level: 2 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 3 },
+      { kind: 'check', level: 5 },
+    ],
+  },
+];

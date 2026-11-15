@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (104 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (108 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -130,7 +130,7 @@ The audit checks every screen, every lesson (104 at the last count) and every Ju
 ## 6. Not built yet (on purpose)
 - A guardian dashboard for **Grade 4–12** learners. Their guardians get weekly PDF reports by email. Parent accounts exist, but only for the Grade 1–3 children they create (§8).
 - School-level admin (many teachers, one school) and sponsor/impact dashboards.
-- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients, multiple choice, complete-the-proof, solution sets of inequalities and formulas (§18). Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
+- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients, multiple choice, complete-the-proof, solution sets of inequalities, formulas (§18) and exact surds (§20). Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
 - Image questions to the tutor, and oral explanation assessments.
 - Career pathways ("I want to be an engineer").
 - Content authoring UI. Content is typed data in `src/shared/content` and is ready to move into the DB.
@@ -438,3 +438,26 @@ Five skills in the `finance` topic (`math-finance.ts`, `lessons-finance.ts`, `Fi
 **Labs.** `finance-lab` has four modes: *depreciation* (straight-line against reducing balance on one machine), *effective* (one nominal rate compounded annually to daily, as bars), *savings* (monthly savings split into what you paid in and interest earned) and *loan* (the balance month by month; a repayment at or below the first month's interest never pays the loan off). The labs simulate rather than use the formulas, so they show where the formulas come from.
 
 **New mistake codes:** `exchange-rate`, `hire-purchase`, `depreciation-method`, `nominal-effective`, `timeline`, `annuity-formula`, `annuity-timing`, `outstanding-balance`, `annuity-term`.
+
+## 20. Surds, patterns and series (Paper 1)
+
+Four skills (`math-surds-patterns.ts`, `lessons-number.ts`, `NumberLabs.tsx`):
+
+| Skill | Topic | Grade | What it covers |
+|---|---|---|---|
+| `surds` | algebra | 11 | Between which whole numbers a surd lies, simplifying, adding like surds, expanding (including $(\sqrt{a} \pm \sqrt{b})^2$ and conjugates), rational exponents, rationalising (by $\sqrt{b}$ and by the conjugate), surd equations with a false root, $x^{\frac{p}{q}} = k$ |
+| `linear-patterns` | patterns | 10 | General term, any term, which term has a value, contexts (tables, matchsticks, tiles), the smallest number of shapes for more than a value, an unknown $x$ in a linear pattern, the general term from two terms |
+| `quadratic-patterns` | patterns | 11 | Next term, general term from second differences, any term, which term has a value, contexts (handshakes, lines between points, matches, triangular dots), a missing term, the smallest term |
+| `series` | patterns | 12 | Number of terms in sigma notation, evaluating a sum, sum to infinity, the ratio from $S_\infty$, convergence as an inequality in $x$, how many terms give a sum, $T_n = S_n - S_{n-1}$ |
+
+**A new answer kind: exact surds.** `surd.ts` reduces an answer exactly to "rational + $\sum c\sqrt{r}$" with square-free $r$: it multiplies, divides by a single surd or a conjugate pair, takes roots of rationals and evaluates rational powers. So any correct value is recognised, however it is written. Separately, *simplest form* is checked on what the learner typed: square factors out, no surd in a denominator, no powers, brackets expanded, like surds collected, fractions cancelled. A right value in the wrong form is marked as unsimplified, with the specific problem ("Take the square factors out of √72", "Rationalise the denominator", "Cancel the fraction"). The input is the formula input with a √ key, a "reads as" preview and no letters.
+
+**Checked against the prompt.** `surds-patterns.test.ts` evaluates each surd prompt numerically and requires the answer to equal it with square-free radicands; surd equations are solved by trying every whole number from −200 to 4 000 (all their roots are whole numbers), so a kept false root or a lost real one fails. Pattern answers are recomputed from the listed terms (whose differences are checked), context answers from the table in the prompt, and series by adding terms one by one (sums to infinity to 3 000 terms); convergence answers are tested value by value. The surd engine has its own tests, including ten forms it must refuse as not simplest. Breaking four generator formulas on purpose made all four generator tests fail.
+
+**A parser fix found on the way.** `6sqrt(2)` and `2pi` were not read, because the `sqrt` and `pi` patterns needed a word boundary and there is none between a digit and a letter. Both now work everywhere formulas are typed (equations, literal equations, surds), with tests.
+
+**Labs.** `number-lab` has three modes: *surd* (a square of area $n$ cut into $k \times k$ small squares of area $s$, so its side is $k\sqrt{s}$), *differences* (a quadratic pattern's table of first and second differences, its formula and its dots) and *series* (partial sums of a geometric series against $S_\infty$, settling only for $-1 < r < 1$).
+
+**New mistake codes:** `surd-simplify`, `surd-add`, `surd-expand`, `rationalise`, `extraneous-root`, `rational-exponent`, `term-number`, `second-difference`, `sigma-notation`, `sum-to-infinity`, `convergence`.
+
+**Not built:** Grade 10 algebraic expressions (binomial × trinomial, sums and differences of cubes, grouping, algebraic fractions) and completing the square.

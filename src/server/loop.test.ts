@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { setText, fromWire } from '../shared/questions/inequality.ts';
+import { surdText, fromTerms } from '../shared/questions/surd.ts';
 
 let fakeAnthropic: Server;
 let app: Server;
@@ -114,6 +115,8 @@ function correctResponse(answer: any): string | string[] {
       return setText(fromWire(answer.set), answer.variable);
     case 'formula':
       return answer.expr;
+    case 'surd':
+      return surdText(fromTerms(answer.terms));
   }
   throw new Error(`unknown answer kind ${answer.kind}`);
 }

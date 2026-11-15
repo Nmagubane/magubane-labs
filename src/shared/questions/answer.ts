@@ -7,6 +7,7 @@ import { parseExpression, toPoly, polyEqual, isExpandedForm, isFactorisedForm, P
 import type { AnswerSpec, InputSpec, Misconception, RichText } from './types.ts';
 import { parseInequality, InequalityError, sameSet, fromWire, toggledEnds, complement, setText, type Interval } from './inequality.ts';
 import { parseFormula, FormulaError, formulasEquivalent, variablesOf } from './formula.ts';
+import { parseSurd, SurdError, sameSurd, fromTerms, surdText, type Surd } from './surd.ts';
 import type { MistakeCode } from './mistakes.ts';
 
 export type ResponseValue = string | string[];
@@ -70,6 +71,7 @@ type Parsed =
   | { kind: 'roots'; values: Rational[] }
   | { kind: 'inequality'; set: Interval[] }
   | { kind: 'formula'; text: string }
+  | { kind: 'surd'; value: Surd; problem: string | null }
   | { kind: 'coefficients'; values: number[] }
   | { kind: 'choice'; id: string }
   | { kind: 'set'; ids: string[] }
@@ -153,6 +155,14 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue,
         return { kind, set: parseInequality(asText(response), variable) };
       } catch (e) {
         return { error: e instanceof InequalityError ? e.message : 'Write the solution like x < 3, -1 ≤ x < 4 or x < -2 or x > 3.' };
+      }
+    }
+    case 'surd': {
+      try {
+        const { value, problem } = parseSurd(asText(response));
+        return { kind, value, problem };
+      } catch (e) {
+        return { error: e instanceof SurdError ? `${e.message}. Type roots with √ (or sqrt), e.g. 3 - 2√5 or (1 + √3)/2.` : 'Check your answer.' };
       }
     }
     case 'formula': {
@@ -254,6 +264,8 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
       return parsed.kind === 'roots' && sameMultiset(parsed.values, spec.values);
     case 'inequality':
       return parsed.kind === 'inequality' && sameSet(parsed.set, fromWire(spec.set));
+    case 'surd':
+      return parsed.kind === 'surd' && sameSurd(parsed.value, fromTerms(spec.terms));
     case 'formula':
       return parsed.kind === 'formula' && formulasEquivalent(parsed.text, spec.expr, spec.variables, spec.domain);
     case 'coefficients':
@@ -276,6 +288,7 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
 
 function formOk(spec: AnswerSpec, parsed: Parsed): boolean {
   if (spec.kind === 'fraction' && spec.requireSimplest && parsed.kind === 'fraction') return parsed.simplest;
+  if (spec.kind === 'surd' && parsed.kind === 'surd') return !spec.requireSimplest || parsed.problem === null;
   if (spec.kind !== 'expression' || !spec.form || parsed.kind !== 'expression') return true;
   const node = parseExpression(parsed.text);
   return spec.form === 'expanded' ? isExpandedForm(node) : isFactorisedForm(node);
@@ -289,6 +302,9 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
     if (formOk(answer, parsed)) return { correct: true };
     if (answer.kind === 'fraction') {
       return { correct: false, mistake: 'unsimplified', feedback: 'That fraction has the right value, but it isn\'t in simplest form.' };
+    }
+    if (answer.kind === 'surd' && parsed.kind === 'surd') {
+      return { correct: false, mistake: 'unsimplified', feedback: `That is the right value, but not in simplest surd form. ${parsed.problem ?? ''}.` };
     }
     if (answer.kind === 'expression' && answer.form === 'factorised') {
       return { correct: false, mistake: 'not-fully-factorised', feedback: 'That is equal to the expression, but it isn\'t fully factorised.' };
@@ -369,6 +385,8 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
       return setText(fromWire(a.set), a.variable);
     case 'formula':
       return a.expr;
+    case 'surd':
+      return surdText(fromTerms(a.terms));
     case 'proof':
       return a.ids.slice();
     case 'point':

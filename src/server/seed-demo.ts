@@ -62,6 +62,8 @@ function wrongResponse(answer: AnswerSpec, misconceptions: { answer: AnswerSpec 
       return 'x > 12345';
     case 'formula':
       return `${answer.expr}+1`;
+    case 'surd':
+      return '12345';
     case 'coefficients':
       return answer.values.map((v) => String(v + 1));
     case 'choice':

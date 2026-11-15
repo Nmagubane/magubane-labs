@@ -1364,3 +1364,14 @@
 .fin-area { stroke: none; }
 .fin-area.paid { fill: var(--rule); }
 .fin-area.interest { fill: color-mix(in srgb, var(--pen) 22%, transparent); }
+
+/* Number labs: surd square and difference table */
+.surd-square { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto; }
+.surd-cell { fill: color-mix(in srgb, var(--pen) 10%, var(--paper)); stroke: var(--pen); stroke-width: 1; }
+.surd-outline { fill: none; stroke: var(--ink); stroke-width: 2.5; }
+.diff-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; table-layout: fixed; }
+.diff-table th { text-align: left; font-weight: 600; font-size: var(--t-xs); color: var(--ink-2); padding: 4px 6px 4px 0; width: 7.5rem; }
+.diff-table td { text-align: center; padding: 4px 0; font-weight: 700; }
+.diff-table tr + tr td { font-weight: 400; color: var(--ink-2); }
+.diff-table td.diff-second { color: var(--pen); font-weight: 700; }
+@media (max-width: 420px) { .diff-table th { width: 5.5rem; } }

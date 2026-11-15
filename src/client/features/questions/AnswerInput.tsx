@@ -65,6 +65,8 @@ export function AnswerInput(props: Props) {
       return <InequalityInput {...props} input={props.input} />;
     case 'formula':
       return <FormulaInput {...props} input={props.input} />;
+    case 'surd':
+      return <FormulaInput {...props} input={{ kind: 'formula', variables: [], ...(props.input.prefix ? { prefix: props.input.prefix } : {}) }} surd />;
   }
 }
 
@@ -341,7 +343,8 @@ function InequalityInput({ input, value, onChange, onSubmit, disabled, autoFocus
 }
 
 /** A formula in letters: "make r the subject" answers like (v - u)/t or sqrt(A/pi). */
-function FormulaInput({ input, value, onChange, onSubmit, disabled, autoFocus, describedBy }: Props & { input: Extract<InputSpec, { kind: 'formula' }> }) {
+/** Also used for surds (`surd`): no letters or π, and the hint is about simplest form. */
+function FormulaInput({ input, value, onChange, onSubmit, disabled, autoFocus, describedBy, surd = false }: Props & { input: Extract<InputSpec, { kind: 'formula' }>; surd?: boolean }) {
   const id = useId();
   const v = typeof value === 'string' ? value : '';
   const { ref, insert } = useInsert(v, onChange);
@@ -358,9 +361,9 @@ function FormulaInput({ input, value, onChange, onSubmit, disabled, autoFocus, d
     { label: '/', text: '/', aria: 'divided by' },
     { label: '(', text: '(', aria: 'open bracket' },
     { label: ')', text: ')', aria: 'close bracket' },
-    { label: '^', text: '^', aria: 'to the power' },
-    { label: '√', text: '√(', aria: 'square root' },
-    { label: 'π', text: 'π', aria: 'pi' },
+    ...(surd ? [] : [{ label: '^', text: '^', aria: 'to the power' }]),
+    { label: '√', text: surd ? '√' : '√(', aria: 'square root' },
+    ...(surd ? [{ label: '+', text: ' + ', aria: 'plus' }, { label: '−', text: ' - ', aria: 'minus' }] : [{ label: 'π', text: 'π', aria: 'pi' }]),
   ];
   return (
     <div className="expr-input">
@@ -387,7 +390,7 @@ function FormulaInput({ input, value, onChange, onSubmit, disabled, autoFocus, d
           disabled={disabled}
           autoFocus={autoFocus}
           aria-describedby={`${id}-preview${describedBy ? ` ${describedBy}` : ''}`}
-          placeholder="e.g. (v - u)/t"
+          placeholder={surd ? 'e.g. 3 - 2√5' : 'e.g. (v - u)/t'}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={enter(onSubmit)}
         />
@@ -402,7 +405,7 @@ function FormulaInput({ input, value, onChange, onSubmit, disabled, autoFocus, d
         ) : preview?.error ? (
           <span className="muted">{preview.error}</span>
         ) : (
-          <span className="muted">Use brackets for a whole top or bottom: (v - u)/t. sqrt(…) or √ for a root.</span>
+          <span className="muted">{surd ? 'Type √ (or sqrt) for a root: 6√2, 3 - 2√5, (1 + √3)/2. Brackets for a whole top or bottom.' : 'Use brackets for a whole top or bottom: (v - u)/t. sqrt(…) or √ for a root.'}</span>
         )}
       </p>
     </div>

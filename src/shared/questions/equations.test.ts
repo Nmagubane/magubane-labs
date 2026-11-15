@@ -274,6 +274,8 @@ test('formula answers are checked by value, not by form', () => {
   assert.ok(formulasEquivalent('(v-u)/t', '(-u + v) / t', vs));
   assert.ok(!formulasEquivalent('(v - u)/t', 'v - u/t', vs));
   assert.ok(formulasEquivalent('√(A/π)', 'sqrt(A)/sqrt(pi)', ['A']));
+  assert.ok(formulasEquivalent('2pi r', '2πr', ['r']), 'pi straight after a number');
+  assert.ok(formulasEquivalent('3sqrt(x)', '3√x', ['x']), 'sqrt straight after a number');
   assert.ok(formulasEquivalent('2(s - ut)/t²', '(2s - 2ut)/t^2', ['s', 'u', 't']));
   assert.ok(!formulasEquivalent('(A - P)/(Pi)', '(A - P)/(π)', ['A', 'P', 'i']), 'capital P then i is not π');
   assert.ok(!formulasEquivalent('F/m', 'F/a', ['F', 'm']), 'a letter that is not in the formula');
