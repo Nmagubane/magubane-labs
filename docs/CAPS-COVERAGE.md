@@ -65,9 +65,11 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 
 ### Grades 10–12
 
+The Grade 10 Algebraic expressions list (six statements) was checked against the CAPS document on 15 November 2026 (FACT).
+
 | Topic | Gr 10 | Gr 11 | Gr 12 |
 |---|---|---|---|
-| Algebraic expressions | ◐ factorising trinomials, surds between whole numbers (✗ binomial × trinomial, sums and differences of cubes, grouping, algebraic fractions) | | |
+| Algebraic expressions | ◐ binomial × trinomial; factorising (trinomials, grouping in pairs, sums and differences of cubes); algebraic fractions (simplifying, ×, ÷, +, −, denominators with cubes, where a fraction is not defined); surds between whole numbers (✗ rational and irrational numbers as a topic, rounding real numbers) | | |
 | Exponents and surds | ✓ laws of exponents | ✓ simplifying, adding, multiplying and rationalising surds; rational exponents; surd equations (with the false root checked) | |
 | Number patterns, sequences and series | ✓ linear patterns (general term, term number, contexts) | ✓ quadratic patterns (second differences, general term, contexts, smallest term) | ✓ arithmetic and geometric sequences and series, sigma notation, sum to infinity and convergence, number of terms, $T_n = S_n - S_{n-1}$ |
 | Equations and inequalities | ✓ linear and quadratic equations, simultaneous linear equations (and word problems), literal equations (changing the subject), linear inequalities (number lines, double inequalities) | ◐ quadratic formula, quadratic inequalities (algebraically and from graphs), nature of roots and conditions on k, one linear and one quadratic equation (✗ completing the square as a method) | |
@@ -101,7 +103,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 | Measurement | Length ✗ · Mass ✗ · Capacity/volume ✗ · Time ✗ · Temperature ✗ · Perimeter, area and volume ✓ |
 | Data handling | Collecting and organising ✗ · Representing ✗ · Analysing and reporting ✗ · Probability ✗ |
 
-**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks), analytical geometry (40), trigonometry (40) and statistics (20) are now built, so all of Paper 2 is covered. On Paper 1, functions and graphs (35), calculus (35), probability (15), finance (15), patterns and sequences (25) and most of algebra and equations (25) are built. Paper 1 gaps left: Grade 10 algebraic expressions (binomial × trinomial, sums and differences of cubes, algebraic fractions) and completing the square. Trig graphs are counted under Functions.
+**Summary.** Mathematics covers algebra and number well. Geometry, measurement, data handling and probability are missing in Grades 4–9. In Grades 10–12, Euclidean geometry (50 of Paper 2's 150 marks), analytical geometry (40), trigonometry (40) and statistics (20) are now built, so all of Paper 2 is covered. On Paper 1, functions and graphs (35), calculus (35), probability (15), finance (15), patterns and sequences (25) and most of algebra and equations (25) are built. Paper 1 gaps left: completing the square, and two small Grade 10 items (rational and irrational numbers, rounding real numbers). Trig graphs are counted under Functions.
 
 **Euclidean geometry: what ✓ means.** Every theorem in the Grades 10–12 list is taught (lesson and lab) and practised: calculate angles and lengths, give the reason for a step, solve for x. Proofs are practised as *complete the proof*: a statement–reason table with blanks, each filled from four options, and each blank marked. This covers six of the seven theorem proofs that the DBE Grade 12 examination guidelines list as examinable (perpendicular from the centre bisects a chord, angle at the centre, opposite angles of a cyclic quad, tan chord, proportionality, equiangular triangles), plus Pythagoras by similar triangles and ten riders. Missing: the converse "a line from the centre to the midpoint of a chord is perpendicular to it". Limit: learners choose each line rather than write it from a blank page, so this is not yet the same as writing a proof in the exam. Free writing needs marking of open text, which is a later decision. Grade 10 stays ◐: CAPS asks learners to prove quadrilateral properties and the midpoint theorem, and those proofs are not built.
 
@@ -109,7 +111,7 @@ Each paper is 150 marks and 3 hours. Paper 1: patterns and sequences 25, algebra
 
 1. **Paper 2, Grades 10–12:** ~~Euclidean geometry~~, ~~analytical geometry~~, ~~trigonometry~~, ~~statistics~~. All built.
 2. ~~**Euclidean proofs**~~: built as complete-the-proof (statement–reason input, riders and the examinable theorem proofs). Grade 10 quadrilateral proofs remain.
-3. **Paper 1 gaps, Grades 10–12:** ~~functions and graphs~~ (built), ~~calculus~~ (built, apart from negative and fractional powers), ~~probability~~ (built), ~~equations and inequalities~~ (built, apart from completing the square), ~~finance~~ (built), ~~surds and patterns~~ (built), ~~calculus with negative and fractional powers~~ (built), then the Grade 10 algebraic expressions gaps and completing the square.
+3. **Paper 1 gaps, Grades 10–12:** ~~functions and graphs~~ (built), ~~calculus~~ (built, apart from negative and fractional powers), ~~probability~~ (built), ~~equations and inequalities~~ (built, apart from completing the square), ~~finance~~ (built), ~~surds and patterns~~ (built), ~~calculus with negative and fractional powers~~ (built), ~~Grade 10 algebraic expressions~~ (built, apart from rational and irrational numbers and rounding), then completing the square.
 4. **Grades 7–9:** geometry (2D, straight lines, construction), exponents, Pythagoras, data handling and probability, patterns.
 5. **Grades 4–6:** measurement, 2D and 3D shapes, patterns, data handling.
 

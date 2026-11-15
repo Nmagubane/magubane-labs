@@ -527,6 +527,15 @@ export const MISTAKES = {
   'arrangement-restriction': { label: 'Arrangements with a rule', kind: 'procedural', tip: 'Fill the restricted places first. "Together": glue them into one block, arrange, then multiply by the ways inside the block. "Not together" = all − together.' },
   'identical-items': { label: 'Identical items', kind: 'conceptual', tip: 'Swapping identical letters makes no new arrangement. Divide n! by the factorial of each repeat count, e.g. BANANA: 6! ÷ (3! × 2!).' },
   'rewrite-first': { label: 'Rewrite before differentiating', kind: 'procedural', tip: 'Write every term as a power of x before you differentiate: divide fractions out, expand brackets, 1/x² = x⁻², √x = x^½. Never differentiate a top and bottom separately.' },
+  // ---- Products, factors and algebraic fractions (Grade 10) ----
+  'multiply-every-term': { label: 'Multiplying every term', kind: 'procedural', tip: 'A binomial times a trinomial has six products: each of the two terms multiplies all three terms of the other bracket. Then collect like terms.' },
+  'grouping': { label: 'Factorising by grouping', kind: 'procedural', tip: 'Group in pairs that share a factor, and take it out so both brackets are the same. Taking out a negative changes the signs inside: −3x − 6 = −3(x + 2).' },
+  'cube-factor': { label: 'Sum and difference of cubes', kind: 'procedural', tip: 'a³ − b³ = (a − b)(a² + ab + b²) and a³ + b³ = (a + b)(a² − ab + b²). Signs: same, opposite, always positive. The middle term is ab, not 2ab, and a³ − b³ is not (a − b)³.' },
+  'cancel-terms': { label: 'Cancelling terms instead of factors', kind: 'conceptual', tip: 'You can only cancel a factor of the whole top and the whole bottom. Factorise both first; x in (x + 3)/(x + 5) is a term, not a factor.' },
+  'fraction-lcd': { label: 'Adding algebraic fractions', kind: 'procedural', tip: 'Fractions add over a common denominator: factorise each denominator, use the LCD, and multiply each top by what its bottom was missing. Never add the tops and add the bottoms.' },
+  'subtract-numerator': { label: 'Subtracting a whole numerator', kind: 'procedural', tip: 'The minus sign in front of a fraction subtracts its whole top. Put the top in brackets: −(2x − 3) = −2x + 3.' },
+  'divide-fraction': { label: 'Dividing by a fraction', kind: 'procedural', tip: 'To divide by a fraction, multiply by its reciprocal: turn the second fraction upside down, then factorise and cancel.' },
+  'undefined-value': { label: 'When a fraction is undefined', kind: 'conceptual', tip: 'A fraction is not defined when its denominator is 0. Factorise the denominator and set each factor to 0. The numerator doesn\'t matter, and x² + 2x + 4 is never 0.' },
   // ---- Surds, patterns and series (Grades 10–12) ----
   'surd-simplify': { label: 'Simplifying surds', kind: 'procedural', tip: 'Find the largest perfect square factor: √72 = √(36 × 2) = 6√2. The square comes out as its square root.' },
   'surd-add': { label: 'Adding surds', kind: 'conceptual', tip: '√a + √b is not √(a + b). Simplify each surd; only like surds (the same number under the root) can be added.' },

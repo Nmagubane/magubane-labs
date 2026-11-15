@@ -332,27 +332,182 @@ function factorList(node: Node): Node[] {
   return [n];
 }
 
+/** The integer content of a polynomial with whole-number coefficients (1 if any coefficient is a fraction). */
+function content(p: Poly): number {
+  const coeffs = [...p.values()];
+  if (coeffs.some((c) => c.d !== 1)) return 1;
+  return coeffs.reduce((acc, c) => gcd(acc, c.n), 0);
+}
+
+const isSquare = (r: Rational): boolean => {
+  if (r.n < 0) return false;
+  const a = Math.round(Math.sqrt(r.n));
+  const b = Math.round(Math.sqrt(r.d));
+  return a * a === r.n && b * b === r.d;
+};
+
 /**
- * Fully factorised over the integers into linear factors (what school factorisation means):
- * a product with no factor of degree > 1, and no linear factor with a common factor left inside it.
+ * A quadratic that has no rational linear factors: one variable ($x^2 + 3x + 9$) or two, homogeneous
+ * ($a^2 + 2ab + 4b^2$). Its discriminant is not a rational square. Anything else of degree 2 returns false.
+ */
+function irreducibleQuadratic(p: Poly): boolean {
+  const vars = new Set<string>();
+  for (const k of p.keys()) for (const v of Object.keys(parseKey(k))) vars.add(v);
+  const [u, w] = [...vars].sort();
+  if (!u) return false;
+  const coef = (powers: Record<string, number>) => p.get(monoKey(powers)) ?? rat(0);
+  let a: Rational, b: Rational, c: Rational;
+  if (vars.size === 1) {
+    if ([...p.keys()].some((k) => !['', u, `${u}^2`].includes(k))) return false;
+    [a, b, c] = [coef({ [u]: 2 }), coef({ [u]: 1 }), coef({})];
+  } else if (vars.size === 2 && w) {
+    if ([...p.keys()].some((k) => Object.values(parseKey(k)).reduce((s, e) => s + e, 0) !== 2)) return false;
+    [a, b, c] = [coef({ [u]: 2 }), coef({ [u]: 1, [w]: 1 }), coef({ [w]: 2 })];
+  } else return false;
+  if (isZero(a) || isZero(c)) return false;
+  return !isSquare(radd(rmul(b, b), rmul(rat(-4), rmul(a, c))));
+}
+
+/**
+ * Fully factorised over the integers (what school factorisation means): a product of factors that are
+ * linear, or quadratics with no rational roots (as in a sum or difference of cubes), with no common
+ * whole-number factor left inside any of them.
  */
 export function isFactorisedForm(node: Node): boolean {
   const factors = factorList(node);
-  const nonConstant = factors.filter((f) => {
-    const p = toPoly(f);
-    return p !== null && polyDegree(p) > 0;
-  });
+  const polys = factors.map(toPoly);
+  if (polys.some((p) => p === null)) return false;
+  const nonConstant = (polys as Poly[]).filter((p) => polyDegree(p) > 0);
   if (nonConstant.length === 0) return false;
-  if (nonConstant.length === 1 && factors.length === 1) return polyDegree(toPoly(nonConstant[0] as Node) ?? new Map()) <= 1;
-  for (const f of nonConstant) {
-    const p = toPoly(f);
-    if (!p || polyDegree(p) > 1) return false;
-    const coeffs = [...p.values()].map((c) => c);
-    if (coeffs.some((c) => c.d !== 1)) continue;
-    const g = coeffs.reduce((acc, c) => gcd(acc, c.n), 0);
-    if (g > 1) return false;
+  if (nonConstant.length === 1 && factors.length === 1) return polyDegree(nonConstant[0] as Poly) <= 1;
+  for (const p of nonConstant) {
+    const deg = polyDegree(p);
+    if (deg > 2 || (deg === 2 && !irreducibleQuadratic(p))) return false;
+    if (content(p) > 1) return false;
   }
   return true;
+}
+
+// ---------- Algebraic fractions ----------
+
+/** An expression as an exact quotient of two polynomials: num / den. */
+export interface RatFn {
+  num: Poly;
+  den: Poly;
+}
+
+/** Exact rational function, or null for division by zero or a negative power. */
+export function toRatFn(node: Node): RatFn | null {
+  const one = constPoly(rat(1));
+  switch (node.t) {
+    case 'num':
+      return { num: constPoly(node.v), den: one };
+    case 'var':
+      return { num: new Map([[node.name, rat(1)]]), den: one };
+    case 'neg': {
+      const a = toRatFn(node.arg);
+      return a && { num: polyMul(a.num, constPoly(rat(-1))), den: a.den };
+    }
+    case 'add': {
+      let acc: RatFn = { num: new Map(), den: one };
+      for (const term of node.terms) {
+        const f = toRatFn(term);
+        if (!f) return null;
+        acc = { num: polyAdd(polyMul(acc.num, f.den), polyMul(f.num, acc.den)), den: polyMul(acc.den, f.den) };
+      }
+      return acc;
+    }
+    case 'mul': {
+      let acc: RatFn = { num: one, den: one };
+      for (const factor of node.factors) {
+        const f = toRatFn(factor);
+        if (!f) return null;
+        acc = { num: polyMul(acc.num, f.num), den: polyMul(acc.den, f.den) };
+      }
+      return acc;
+    }
+    case 'div': {
+      const n = toRatFn(node.num);
+      const d = toRatFn(node.den);
+      if (!n || !d || d.num.size === 0) return null;
+      return { num: polyMul(n.num, d.den), den: polyMul(n.den, d.num) };
+    }
+    case 'pow': {
+      const b = toRatFn(node.base);
+      if (!b || node.exp < 0) return null;
+      let acc: RatFn = { num: one, den: one };
+      for (let i = 0; i < node.exp; i++) acc = { num: polyMul(acc.num, b.num), den: polyMul(acc.den, b.den) };
+      return acc;
+    }
+  }
+}
+
+/** a/b = c/d exactly, by cross-multiplying: a·d = c·b. */
+export function ratFnEqual(a: RatFn, b: RatFn): boolean {
+  return polyEqual(polyMul(a.num, b.den), polyMul(b.num, a.den));
+}
+
+/** Coefficients of a polynomial in one variable, constant first; null if it has another variable. */
+function coeffsIn(p: Poly, v: string): Rational[] | null {
+  const out: Rational[] = [];
+  for (const [k, c] of p) {
+    const powers = parseKey(k);
+    const names = Object.keys(powers);
+    if (names.some((n) => n !== v)) return null;
+    const e = powers[v] ?? 0;
+    while (out.length <= e) out.push(rat(0));
+    out[e] = c;
+  }
+  while (out.length && isZero(out[out.length - 1] as Rational)) out.pop();
+  return out;
+}
+
+/** Remainder of a ÷ b for polynomials in one variable (coefficient lists, constant first). */
+function polyRem(a: Rational[], b: Rational[]): Rational[] {
+  const r = [...a];
+  const lead = b[b.length - 1] as Rational;
+  while (r.length >= b.length && r.length > 0) {
+    const shift = r.length - b.length;
+    const q = rdiv(r[r.length - 1] as Rational, lead);
+    for (let i = 0; i < b.length; i++) r[i + shift] = radd(r[i + shift] as Rational, rmul(rat(-1), rmul(q, b[i] as Rational)));
+    r.pop();
+    while (r.length && isZero(r[r.length - 1] as Rational)) r.pop();
+  }
+  return r;
+}
+
+/** Degree of the greatest common factor of two polynomials in one variable (0: no common factor). */
+function commonFactorDegree(a: Rational[], b: Rational[]): number {
+  let [x, y] = [a, b];
+  while (y.length) [x, y] = [y, polyRem(x, y)];
+  return Math.max(0, x.length - 1);
+}
+
+/**
+ * Why a typed answer is not a fully simplified algebraic fraction, or null if it is.
+ * Simplified means a polynomial, or one fraction whose top and bottom have no common factor.
+ */
+export function fractionFormProblem(node: Node): string | null {
+  const n = stripNeg(node);
+  if (toPoly(n)) return null;
+  const isPolyFraction = (f: Node): boolean => {
+    const g = stripNeg(f);
+    return g.t === 'div' && toPoly(g.num) !== null && toPoly(g.den) !== null;
+  };
+  // One fraction, possibly with whole factors in front of it: 2(x + 1)/(x - 3), -x/(x + 2).
+  const oneFraction = isPolyFraction(n) || (n.t === 'mul' && n.factors.filter((f) => !toPoly(f)).length === 1 && n.factors.every((f) => toPoly(f) !== null || isPolyFraction(f)));
+  if (!oneFraction) return 'Write your answer as a single fraction, with no fractions inside the top or the bottom.';
+  const f = toRatFn(n);
+  if (!f) return null;
+  const vars = new Set<string>();
+  for (const k of [...f.num.keys(), ...f.den.keys()]) for (const v of Object.keys(parseKey(k))) vars.add(v);
+  if (vars.size !== 1) return null; // Only one-variable fractions are checked for common factors.
+  const v = [...vars][0] as string;
+  const a = coeffsIn(f.num, v);
+  const b = coeffsIn(f.den, v);
+  if (!a || !b || !a.length || !b.length) return null;
+  if (commonFactorDegree(a, b) > 0) return 'The top and the bottom still have a common factor. Factorise both fully and cancel it.';
+  return null;
 }
 
 /** Split "lhs = rhs" into its two sides, or null if there isn't exactly one = sign. */
@@ -392,11 +547,12 @@ export function equationsEquivalent(a: string, b: string): boolean {
   }
 }
 
+/** Equal for every value of the variables (exactly; algebraic fractions are compared by cross-multiplying). */
 export function expressionsEquivalent(a: string, b: string): boolean {
   try {
-    const pa = toPoly(parseExpression(a));
-    const pb = toPoly(parseExpression(b));
-    return pa !== null && pb !== null && polyEqual(pa, pb);
+    const fa = toRatFn(parseExpression(a));
+    const fb = toRatFn(parseExpression(b));
+    return fa !== null && fb !== null && ratFnEqual(fa, fb);
   } catch {
     return false;
   }

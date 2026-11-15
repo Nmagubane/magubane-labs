@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (109 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (111 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -130,7 +130,7 @@ The audit checks every screen, every lesson (109 at the last count) and every Ju
 ## 6. Not built yet (on purpose)
 - A guardian dashboard for **Grade 4–12** learners. Their guardians get weekly PDF reports by email. Parent accounts exist, but only for the Grade 1–3 children they create (§8).
 - School-level admin (many teachers, one school) and sponsor/impact dashboards.
-- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients, multiple choice, complete-the-proof, solution sets of inequalities, formulas (§18) and exact surds (§20). Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
+- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients, multiple choice, complete-the-proof, solution sets of inequalities, formulas (§18), exact surds (§20) and algebraic fractions in simplest form (§22). Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
 - Image questions to the tutor, and oral explanation assessments.
 - Career pathways ("I want to be an engineer").
 - Content authoring UI. Content is typed data in `src/shared/content` and is ready to move into the DB.
@@ -415,7 +415,7 @@ Five skills in the `equations` topic (`math-equations.ts`, `lessons-equations.ts
 
 **New mistake codes:** `inequality-endpoint`, `inequality-direction`, `inequality-flip`, `quadratic-inequality`, `simultaneous`, `change-subject`, `discriminant-condition`.
 
-**Not built:** completing the square as a method (Grade 11). The formula checker also unblocks calculus with negative and fractional powers ($-\dfrac{k}{x^2}$, $\dfrac{3}{2}\sqrt{x}$), which is next after finance.
+**Not built:** completing the square as a method (Grade 11). The formula checker is also what marks derivatives of negative and fractional powers ($-\dfrac{k}{x^2}$, $\dfrac{3}{2}\sqrt{x}$), in §21.
 
 ## 19. Finance, growth and decay (Paper 1)
 
@@ -460,7 +460,7 @@ Four skills (`math-surds-patterns.ts`, `lessons-number.ts`, `NumberLabs.tsx`):
 
 **New mistake codes:** `surd-simplify`, `surd-add`, `surd-expand`, `rationalise`, `extraneous-root`, `rational-exponent`, `term-number`, `second-difference`, `sigma-notation`, `sum-to-infinity`, `convergence`.
 
-**Not built:** Grade 10 algebraic expressions (binomial × trinomial, sums and differences of cubes, grouping, algebraic fractions) and completing the square.
+**Not built:** completing the square. The Grade 10 algebraic expressions are in §22.
 
 ## 21. Derivatives of negative and fractional powers (Paper 1)
 
@@ -481,3 +481,28 @@ One Grade 12 skill, `derivative-powers` (`math-calculus-powers.ts`, lesson in `l
 **Lab.** `calculus-lab` gained a *powers* mode: choose $n$ from $-2$ to $3$ (including $\frac{1}{2}$ and $\frac{3}{2}$), move the point, and the tangent's gradient $nx^{n-1}$ is shown next to a tiny secant's, which agrees.
 
 **New mistake code:** `rewrite-first`.
+
+## 22. Products, factors and algebraic fractions (Grade 10, Paper 1)
+
+Two Grade 10 skills in the `algebra` topic (`math-algebra10.ts`, `lessons-algebra10.ts`, `AlgebraLabs.tsx`), after `factorise-trinomial`:
+
+| Skill | Levels |
+|---|---|
+| `products-factors` | 1–2: binomial × trinomial (including $(x - 2)(x^2 + 2x + 4)$, where everything but the cubes cancels); 3: grouping in pairs ($x^3 + 2x^2 + 3x + 6$, $x^2 + 5xy + 3x + 15y$); 4: sums and differences of cubes ($27x^3 + 8$, $64 - x^3$, $a^3 - 8b^3$); 5: a common factor first ($2x^3 - 54$, $x^4 + 8x$), or grouping that leaves a difference of squares |
+| `algebraic-fractions` | 1: cancel a common factor, or where a fraction is not defined; 2: trinomials top and bottom, and $\dfrac{x^2 - 9}{3 - x}$; 3: multiply and divide; 4: add and subtract (LCD from two brackets, or from a difference of squares, sometimes cancelling at the end); 5: denominators with cubes |
+
+**Marking changes.**
+- *Fully factorised* now accepts a quadratic factor with no rational roots (one variable, or two variables like $a^2 + 2ab + 4b^2$), so $(x - 3)(x^2 + 3x + 9)$ is right and $(x + 2)(x^2 - 9)$ is "not fully factorised". A whole-number common factor left inside any bracket still fails.
+- Expressions are now compared as exact algebraic fractions: $\dfrac{a}{b} = \dfrac{c}{d}$ when $ad = bc$ as polynomials. Polynomial answers are unchanged.
+- A new form, `simplified`: a polynomial, or one fraction (a whole factor in front is fine) whose top and bottom share no factor, found by a polynomial highest common factor. Retyping the question, leaving two fractions, or not cancelling are each marked as unsimplified, with the reason.
+- The expression input takes `fraction` (a / key and a fraction placeholder) and `cubes` (a ³ key), and its "Reads as" preview is in display style, so a typed fraction looks like one.
+
+**Predicted mistakes:** multiplying only some terms, the sign of the last product, a sign when taking out a negative in grouping, the cube factor's middle sign (same, opposite, always positive), $2ab$ instead of $ab$, $(a - b)^3$, cancelling terms, adding tops and bottoms, subtracting only part of a numerator, multiplying instead of dividing, and a numerator's zero given as a "not defined" value.
+
+**Checked by value.** `algebra10.test.ts` turns each question's TeX into a function and compares at six points: answers must match, mistakes must not. Quadratic brackets in a factorised answer must have no rational roots (coefficients read off by evaluating), a fraction answer's top must not be 0 where its bottom is 0, and "not defined" answers must be exactly the zeros of the denominator from −40 to 40. Breaking the cube's middle sign, a grouping sign, a subtraction, a "not defined" value, or leaving an answer unsimplified each made the test fail.
+
+**Labs.** `algebra-lab` has two modes: *grid* (the six products of $(x + p)(x^2 + qx + r)$ in a table, with like terms marked; choosing $q = -p$ and $r = p^2$ makes the $x^2$ and $x$ terms cancel, leaving a sum or difference of cubes) and *cancel* (put a value of $x$ into $\dfrac{x^2 + x - 6}{x^2 - 4}$, into $\dfrac{x + 3}{x + 2}$ and into the tempting $\dfrac{3}{2}$; the second matches everywhere except $x = 2$, and the wrong one agrees only at $x = 0$).
+
+**New mistake codes:** `multiply-every-term`, `grouping`, `cube-factor`, `cancel-terms`, `fraction-lcd`, `subtract-numerator`, `divide-fraction`, `undefined-value`.
+
+**Not built:** "real numbers can be rational or irrational" and rounding real numbers, two short items in the same CAPS topic.

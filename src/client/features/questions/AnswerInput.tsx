@@ -166,7 +166,8 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
         if (!sides) return { tex: null, error: v.includes('=') ? 'Use one = sign' : 'Add the = sign' };
         return { tex: `${toTex(parseExpression(sides[0]))} = ${toTex(parseExpression(sides[1]))}`, error: null };
       }
-      return { tex: toTex(parseExpression(v)), error: null };
+      // Display style, so a typed fraction reads as a real fraction, not a small inline one.
+      return { tex: `\\displaystyle ${toTex(parseExpression(v))}`, error: null };
     } catch (e) {
       return { tex: null, error: e instanceof ParseError ? e.message : 'Check your expression' };
     }
@@ -184,7 +185,9 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
       el.setSelectionRange(pos, pos);
     });
   };
-  const keys = [...input.variables, '²', '(', ')', '+', '−', ...(isEq ? ['='] : [])];
+  const fraction = input.kind === 'expression' && input.fraction === true;
+  const cubes = input.kind === 'expression' && input.cubes === true;
+  const keys = [...input.variables, '²', ...(cubes ? ['³'] : []), '(', ')', '+', '−', ...(fraction ? ['/'] : []), ...(isEq ? ['='] : [])];
   return (
     <div className="expr-input">
       <div className="answer-row">
@@ -210,15 +213,15 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
           disabled={disabled}
           autoFocus={autoFocus}
           aria-describedby={`${id}-preview${describedBy ? ` ${describedBy}` : ''}`}
-          placeholder={isEq ? (input.placeholder ?? 'e.g. y = 2x + 3') : 'e.g. (x + 2)(x - 3)'}
+          placeholder={isEq ? (input.placeholder ?? 'e.g. y = 2x + 3') : fraction ? 'e.g. (x + 3)/(x - 2)' : 'e.g. (x + 2)(x - 3)'}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={enter(onSubmit)}
         />
       </div>
       <div className="expr-keys" aria-label="Insert symbol">
         {keys.map((k) => (
-          <button key={k} type="button" className="key" disabled={disabled} onClick={() => insert(k === '²' ? '^2' : k === '−' ? '-' : k)} aria-label={k === '²' ? 'squared' : k === '−' ? 'minus' : k === '+' ? 'plus' : k === '(' ? 'open bracket' : k === ')' ? 'close bracket' : k}>
-            {k === '²' ? <Tex tex="\square^2" /> : k}
+          <button key={k} type="button" className="key" disabled={disabled} onClick={() => insert(k === '²' ? '^2' : k === '³' ? '^3' : k === '−' ? '-' : k)} aria-label={k === '²' ? 'squared' : k === '³' ? 'cubed' : k === '/' ? 'divided by' : k === '−' ? 'minus' : k === '+' ? 'plus' : k === '(' ? 'open bracket' : k === ')' ? 'close bracket' : k}>
+            {k === '²' ? <Tex tex="\square^2" /> : k === '³' ? <Tex tex="\square^3" /> : k}
           </button>
         ))}
       </div>
@@ -231,7 +234,7 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
         ) : preview?.error ? (
           <span className="muted">{preview.error}</span>
         ) : (
-          <span className="muted">{isEq ? 'Type the whole equation, with one = sign. x^2 for x².' : 'Type with the keyboard: x^2 for x², and brackets for factors.'}</span>
+          <span className="muted">{isEq ? 'Type the whole equation, with one = sign. x^2 for x².' : fraction ? 'Put the top and the bottom in brackets: (x + 3)/(x - 2).' : 'Type with the keyboard: x^2 for x², and brackets for factors.'}</span>
         )}
       </p>
     </div>

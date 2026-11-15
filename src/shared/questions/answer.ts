@@ -3,7 +3,7 @@
  * before responding. Accepts the way South African learners write numbers: "2,5" and "2.5".
  */
 import { rat, eq as req, toNumber, type Rational } from './rational.ts';
-import { parseExpression, toPoly, polyEqual, isExpandedForm, isFactorisedForm, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
+import { parseExpression, toRatFn, ratFnEqual, isExpandedForm, isFactorisedForm, fractionFormProblem, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
 import type { AnswerSpec, InputSpec, Misconception, RichText } from './types.ts';
 import { parseInequality, InequalityError, sameSet, fromWire, toggledEnds, complement, setText, type Interval } from './inequality.ts';
 import { parseFormula, FormulaError, formulasEquivalent, variablesOf } from './formula.ts';
@@ -247,9 +247,9 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
     case 'expression': {
       if (parsed.kind !== 'expression') return false;
       try {
-        const a = toPoly(parseExpression(parsed.text));
-        const b = toPoly(parseExpression(spec.expr));
-        return a !== null && b !== null && polyEqual(a, b);
+        const a = toRatFn(parseExpression(parsed.text));
+        const b = toRatFn(parseExpression(spec.expr));
+        return a !== null && b !== null && ratFnEqual(a, b);
       } catch {
         return false;
       }
@@ -291,7 +291,7 @@ function formOk(spec: AnswerSpec, parsed: Parsed): boolean {
   if (spec.kind === 'surd' && parsed.kind === 'surd') return !spec.requireSimplest || parsed.problem === null;
   if (spec.kind !== 'expression' || !spec.form || parsed.kind !== 'expression') return true;
   const node = parseExpression(parsed.text);
-  return spec.form === 'expanded' ? isExpandedForm(node) : isFactorisedForm(node);
+  return spec.form === 'expanded' ? isExpandedForm(node) : spec.form === 'simplified' ? fractionFormProblem(node) === null : isFactorisedForm(node);
 }
 
 export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misconceptions: Misconception[] = []): GradeResult {
@@ -305,6 +305,9 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
     }
     if (answer.kind === 'surd' && parsed.kind === 'surd') {
       return { correct: false, mistake: 'unsimplified', feedback: `That is the right value, but not in simplest surd form. ${parsed.problem ?? ''}.` };
+    }
+    if (answer.kind === 'expression' && answer.form === 'simplified' && parsed.kind === 'expression') {
+      return { correct: false, mistake: 'unsimplified', feedback: `That is equal in value, but not fully simplified. ${fractionFormProblem(parseExpression(parsed.text)) ?? ''}` };
     }
     if (answer.kind === 'expression' && answer.form === 'factorised') {
       return { correct: false, mistake: 'not-fully-factorised', feedback: 'That is equal to the expression, but it isn\'t fully factorised.' };

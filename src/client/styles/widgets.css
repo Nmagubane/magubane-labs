@@ -1375,3 +1375,22 @@
 .diff-table tr + tr td { font-weight: 400; color: var(--ink-2); }
 .diff-table td.diff-second { color: var(--pen); font-weight: 700; }
 @media (max-width: 420px) { .diff-table th { width: 5.5rem; } }
+
+/* Algebra labs: the product grid and the cancelling test */
+.alg-grid { border-collapse: collapse; width: 100%; max-width: 30rem; margin: var(--s3) auto 0; table-layout: fixed; }
+.alg-grid th, .alg-grid td { border: 1px solid var(--rule-strong); padding: var(--s2) 4px; text-align: center; }
+.alg-grid thead th, .alg-grid tbody th { background: var(--desk); font-weight: 400; }
+.alg-grid td { background: var(--paper); }
+.alg-grid td.like-2 { background: color-mix(in srgb, var(--pen) 14%, var(--paper)); }
+.alg-grid td.like-1 { background: color-mix(in srgb, var(--pen) 5%, var(--paper)); outline: 2px dashed var(--pen); outline-offset: -5px; }
+.alg-grid td.zero { color: var(--ink-3); }
+.alg-key { text-align: center; margin: var(--s2) 0 0; }
+.alg-test { border-collapse: collapse; width: 100%; margin-top: var(--s3); }
+.alg-test th, .alg-test td { padding: var(--s2) var(--s2) var(--s2) 0; border-top: 1px solid var(--rule); text-align: left; vertical-align: middle; }
+.alg-test th { font-weight: 400; }
+.alg-test-label { display: block; font-size: var(--t-xs); color: var(--ink-2); font-weight: 600; }
+.alg-test td.num { white-space: nowrap; }
+.alg-test-mark { font-size: var(--t-sm); font-weight: 700; white-space: nowrap; }
+.alg-test-mark .tick { color: var(--tick); }
+@media (max-width: 420px) { .alg-test-mark { font-size: var(--t-xs); } }
+
