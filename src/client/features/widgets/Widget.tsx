@@ -15,6 +15,7 @@ import { StatsLab } from './StatsLabs.tsx';
 import { FunctionLab } from './FunctionLabs.tsx';
 import { CalculusLab } from './CalculusLabs.tsx';
 import { ProbabilityLab } from './ProbabilityLabs.tsx';
+import { EquationLab } from './EquationLabs.tsx';
 import { ExponentLadder, DiscriminantLab, SequencePlotter, TriangleTrig, SavingsGrowth, TangentLab } from './MathLabs3.tsx';
 
 export function Widget({ spec }: { spec: WidgetSpec }) {
@@ -129,6 +130,8 @@ export function Widget({ spec }: { spec: WidgetSpec }) {
       return <CalculusLab mode={spec.mode} />;
     case 'probability-lab':
       return <ProbabilityLab mode={spec.mode} />;
+    case 'equation-lab':
+      return <EquationLab mode={spec.mode} />;
     case 'place-value-chart':
       return <PlaceValueChart start={spec.start} />;
     case 'array-model':

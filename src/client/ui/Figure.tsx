@@ -1,6 +1,7 @@
 import type { Figure as FigureSpec } from '../../shared/questions/types.ts';
 import { Plot, lineSegment } from './Plot.tsx';
 import { Tex } from './RichText.tsx';
+import { NumberLine } from './NumberLine.tsx';
 
 export function Figure({ figure }: { figure: FigureSpec }) {
   if (figure.kind === 'graph') return <GraphFigure f={figure} />;
@@ -9,6 +10,7 @@ export function Figure({ figure }: { figure: FigureSpec }) {
   if (figure.kind === 'venn') return <VennFigure f={figure} />;
   if (figure.kind === 'tree') return <TreeFigure f={figure} />;
   if (figure.kind === 'table') return <TableFigure f={figure} />;
+  if (figure.kind === 'numberline') return <NumberLine set={figure.set} variable={figure.variable} alt={figure.alt} />;
   return <PunnettFigure f={figure} />;
 }
 

@@ -526,6 +526,14 @@ export const MISTAKES = {
   'counting-principle': { label: 'Counting principle', kind: 'procedural', tip: 'Draw a box for each position and write the number of choices in it, then multiply. Without repetition the choices go down by one each time.' },
   'arrangement-restriction': { label: 'Arrangements with a rule', kind: 'procedural', tip: 'Fill the restricted places first. "Together": glue them into one block, arrange, then multiply by the ways inside the block. "Not together" = all − together.' },
   'identical-items': { label: 'Identical items', kind: 'conceptual', tip: 'Swapping identical letters makes no new arrangement. Divide n! by the factorial of each repeat count, e.g. BANANA: 6! ÷ (3! × 2!).' },
+  // ---- Equations and inequalities (Grades 10–12) ----
+  'inequality-endpoint': { label: 'Ends of an inequality', kind: 'procedural', tip: '< and > leave the boundary value out (open dot); ≤ and ≥ include it (closed dot). Keep the sign the question uses.' },
+  'inequality-direction': { label: 'Direction of an inequality', kind: 'conceptual', tip: 'Test one value from your answer in the original inequality. Multiplying or dividing by a negative number reverses the sign.' },
+  'inequality-flip': { label: 'Dividing by a negative', kind: 'procedural', tip: 'Multiplying or dividing both sides by a negative number reverses the inequality: -2x < 6 gives x > -3.' },
+  'quadratic-inequality': { label: 'Quadratic inequalities', kind: 'conceptual', tip: 'Sketch the parabola through its roots. For a > 0 it is below the x-axis between the roots and above it outside them. Get 0 on one side first.' },
+  'simultaneous': { label: 'Simultaneous equations', kind: 'procedural', tip: 'Eliminate one variable (add or subtract the equations, or substitute), solve for the other, then substitute back. Check the pair in both equations.' },
+  'change-subject': { label: 'Changing the subject', kind: 'procedural', tip: 'Undo the operations in reverse order, doing the same to both sides. Keep a whole top or bottom in brackets: a = (v − u)/t, not v − u/t.' },
+  'discriminant-condition': { label: 'Conditions on the discriminant', kind: 'conceptual', tip: 'Equal roots: Δ = 0. Real roots: Δ ≥ 0. Non-real roots: Δ < 0. Real and unequal: Δ > 0. Then solve for k.' },
   // ---- Statistics (Grades 10–12) ----
   'mean-median': { label: 'Mean, median or mode', kind: 'conceptual', tip: 'Mean: add everything and divide by how many there are. Median: the middle value once the data is in order. Mode: the value that appears most often.' },
   'data-order': { label: 'Order the data first', kind: 'procedural', tip: 'The median and quartiles come from the data in order, from smallest to largest. Sort first, then count to the middle.' },

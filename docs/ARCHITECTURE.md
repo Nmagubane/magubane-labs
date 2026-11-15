@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (94 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (99 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -130,7 +130,7 @@ The audit checks every screen, every lesson (94 at the last count) and every Jun
 ## 6. Not built yet (on purpose)
 - A guardian dashboard for **Grade 4–12** learners. Their guardians get weekly PDF reports by email. Parent accounts exist, but only for the Grade 1–3 children they create (§8).
 - School-level admin (many teachers, one school) and sponsor/impact dashboards.
-- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients and multiple choice. Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
+- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients, multiple choice, complete-the-proof, solution sets of inequalities and formulas (§18). Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
 - Image questions to the tutor, and oral explanation assessments.
 - Career pathways ("I want to be an engineer").
 - Content authoring UI. Content is typed data in `src/shared/content` and is ready to move into the DB.
@@ -393,3 +393,26 @@ Three skills in a new `probability` topic (`math-probability.ts`, `lessons-proba
 
 **New mistake codes:** `venn-regions`, `addition-rule`, `complement`, `sample-space`, `independence`, `tree-branches`, `with-replacement`, `counting-principle`, `arrangement-restriction`, `identical-items`.
 
+## 18. Equations and inequalities (Paper 1)
+
+Five skills in the `equations` topic (`math-equations.ts`, `lessons-equations.ts`, `EquationLabs.tsx`), next to the existing `linear-equations`, `quadratic-equations` and `quadratic-formula`:
+
+| Skill | Grade | What it covers |
+|---|---|---|
+| `simultaneous-equations` | 10 (11) | Elimination, substitution, word problems (tickets, pizzas, coins, a quiz, taxis), a line and a parabola, a line and a quadratic in $x$ and $y$ |
+| `literal-equations` | 10 | Changing the subject: 59 formulas from maths and science in five levels (one step, two steps, squares and roots, several steps, the subject appearing twice) |
+| `linear-inequalities` | 10 | Reading a number line, reversing the sign for a negative coefficient, double inequalities, counting integers in a solution, brackets and fractions, the largest or smallest integer |
+| `quadratic-inequalities` | 11 | Factorised and expanded forms, a negative leading coefficient, rearranging, a fractional critical value, reading $f(x) \le 0$ or $f(x) \ge g(x)$ off a graph, perfect squares ($x \ne a$, $x = a$), "all real $x$", difference of squares |
+| `roots-parameter` | 11 | A given root fixes $k$; equal roots ($k = \pm …$); real, unequal or non-real roots as an inequality in $k$, including $k$ in the middle coefficient (a quadratic inequality in $k$) and as the leading coefficient ($k \ne 0$) |
+
+**Two new answer kinds.** `inequality` (`inequality.ts`): learners type a solution set the way they would write it: `x < -2 or x >= 3`, `-1 < x ≤ 4`, `x ≠ 3`, `all real`, or interval notation with semicolons, `(-∞; 2]` (the comma is the decimal comma). Answers are compared as sets, so any correct way of writing the set is right. Two mistakes are diagnosed for every inequality question without the generator listing them: the right boundaries with the wrong ends included (`inequality-endpoint`), and exactly the opposite set (`inequality-direction`). The input shows the set back in TeX and on a number line as the learner types. `formula` (`formula.ts`): a small parser for answers with division by letters, roots and π (`(v - u)/t`, `√(A/π)`, `2(s - ut)/t²`). Two formulas match when they agree at 24 sample points where both are defined; any order or arrangement is right. An answer that still contains the subject, or a letter not in the formula, gets its own feedback. Lower-case `pi` is π; `Pi` is $P \times i$.
+
+**One new figure kind.** `numberline`: a solution set with open and closed dots and arrows to infinity. The same component draws the live preview under the inequality input.
+
+**Checked against the question.** `equations.test.ts` reads every equation back out of the prompt (TeX → formula) and substitutes the answer. Simultaneous answers must satisfy both equations (and the lines must not be parallel; a quadratic system must not be an identity). Formula answers are substituted back into the original formula at five sets of values, and every wrong answer must fail. Inequality answers are checked value by value: at every whole number from −30 to 30, at each boundary and just either side of it, a value is in the answer exactly when it makes the original inequality true. Graph questions are checked against the drawn curve, point by point. Conditions on $k$ are checked by working out the discriminant at each test value of $k$. Building it caught one generator bug (a `-0` answer) and one bound too large for a sensible question.
+
+**Labs.** `equation-lab` has three modes: *lines* (two lines and their crossing; parallel lines give no solution, the same line infinitely many), *flip* (multiply both sides of $a < b$ by $k$ and watch the order reverse for $k < 0$) and *quadratic* (roots, a sign and upside down; the solution is marked on the $x$-axis). The roots-parameter lesson reuses the existing `discriminant-lab`.
+
+**New mistake codes:** `inequality-endpoint`, `inequality-direction`, `inequality-flip`, `quadratic-inequality`, `simultaneous`, `change-subject`, `discriminant-condition`.
+
+**Not built:** completing the square as a method (Grade 11). The formula checker also unblocks calculus with negative and fractional powers ($-\dfrac{k}{x^2}$, $\dfrac{3}{2}\sqrt{x}$), which is next after finance.

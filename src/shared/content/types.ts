@@ -60,6 +60,7 @@ export type WidgetSpec =
   | { type: 'function-lab'; mode: 'algebraic' | 'trig' }
   | { type: 'calculus-lab'; mode: 'secant' | 'cubic' | 'box' }
   | { type: 'probability-lab'; mode: 'dice' | 'venn' | 'slots' }
+  | { type: 'equation-lab'; mode: 'lines' | 'flip' | 'quadratic' }
   // Mathematics, Grades 4–6
   | { type: 'place-value-chart'; start: number }
   | { type: 'array-model'; rows: number; cols: number }

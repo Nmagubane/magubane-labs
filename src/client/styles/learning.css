@@ -1760,3 +1760,17 @@
 .fig-table th, .fig-table td { border: 1px solid var(--rule); padding: var(--s1) var(--s2); text-align: center; }
 .fig-table thead th, .fig-table tbody th { font-weight: 700; background: var(--desk); }
 .fig-table tr:last-child td, .fig-table td:last-child { font-weight: 700; }
+
+/* Number lines for inequalities */
+.numberline { display: block; width: 100%; max-width: 440px; height: auto; margin: 0 auto; overflow: visible; }
+.nl-axis { stroke: var(--ink); stroke-width: 1.5; }
+.nl-tick { stroke: var(--ink); stroke-width: 1; }
+.nl-label { font: 600 12px var(--font); fill: var(--ink-2); }
+.nl-end { fill: var(--pen); font-weight: 800; }
+.nl-set { stroke: var(--pen); stroke-width: 5; stroke-linecap: butt; }
+.nl-arrow { fill: none; stroke: var(--pen); stroke-width: 3; stroke-linejoin: round; }
+.nl-dot { stroke: var(--pen); stroke-width: 2.5; }
+.nl-dot.closed { fill: var(--pen); }
+.nl-dot.open { fill: var(--paper); }
+.ineq-input .numberline { margin-top: var(--s2); }
+.ineq-input .expr-preview p { margin: 0; }

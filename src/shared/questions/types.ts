@@ -23,6 +23,10 @@ export type InputSpec =
   | { kind: 'point'; name: string }
   /** Solutions of an equation. The learner adds as many boxes as they need: how many solutions there are is part of the question. */
   | { kind: 'roots'; variable: string }
+  /** A solution set such as x < -2 or x > 3, typed, with a live number line. */
+  | { kind: 'inequality'; variable: string }
+  /** A formula checked by value (change the subject): division by variables, roots and π allowed. */
+  | { kind: 'formula'; prefix?: string; variables: string[] }
   | { kind: 'coefficients'; species: string[]; arrowAfter: number }
   | { kind: 'choice'; options: ChoiceOption[] }
   // ---- Junior (Grades 1–3): touch-first inputs. See src/shared/junior. ----
@@ -73,6 +77,9 @@ export type AnswerSpec =
   /** The right option for each blank, in blank order, and where each blank sits (for feedback). */
   | { kind: 'proof'; ids: string[]; at: { row: number; part: 'statement' | 'reason' }[] }
   | { kind: 'roots'; values: { n: number; d: number }[] }
+  | { kind: 'inequality'; variable: string; set: IneqInterval[] }
+  /** Graded by evaluating both formulas at sample points; `domain` is the range the variables are sampled from. */
+  | { kind: 'formula'; expr: string; variables: string[]; domain?: [number, number] }
   | { kind: 'coefficients'; values: number[] }
   | { kind: 'choice'; id: string }
   | { kind: 'set'; ids: string[] }
@@ -120,7 +127,17 @@ export type Figure =
   | { kind: 'tree'; alt: string; branches: TreeBranch[] }
   /** A two-way (contingency) table. The first row and column are headings. */
   | { kind: 'table'; alt: string; rows: string[][] }
+  /** A solution set drawn on a number line (open and closed dots, arrows to infinity). */
+  | { kind: 'numberline'; alt: string; set: IneqInterval[]; variable?: string }
   | GeometryFigure;
+
+/** One interval of a solution set; null ends are infinite. */
+export interface IneqInterval {
+  lo: { n: number; d: number } | null;
+  hi: { n: number; d: number } | null;
+  loIn: boolean;
+  hiIn: boolean;
+}
 
 export interface TreeBranch {
   label: string;

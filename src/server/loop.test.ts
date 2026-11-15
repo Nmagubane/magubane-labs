@@ -7,6 +7,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { setText, fromWire } from '../shared/questions/inequality.ts';
 
 let fakeAnthropic: Server;
 let app: Server;
@@ -107,8 +108,14 @@ function correctResponse(answer: any): string | string[] {
       return answer.id;
     case 'proof':
       return answer.ids;
+    case 'point':
+      return [answer.x, answer.y].map((v: any) => (v.d === 1 ? String(v.n) : `${v.n}/${v.d}`));
+    case 'inequality':
+      return setText(fromWire(answer.set), answer.variable);
+    case 'formula':
+      return answer.expr;
   }
-  throw new Error('unknown');
+  throw new Error(`unknown answer kind ${answer.kind}`);
 }
 
 test('the complete learning loop', async () => {

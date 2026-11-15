@@ -9,6 +9,9 @@ import type { ResponseValue } from '../../../shared/questions/answer.ts';
 import { parseExpression, toTex, ParseError, splitEquation } from '../../../shared/questions/expr.ts';
 import { Rich, Tex } from '../../ui/RichText.tsx';
 import { chem } from '../../../shared/questions/tex.ts';
+import { parseInequality, setTex, toWire, InequalityError } from '../../../shared/questions/inequality.ts';
+import { parseFormula, formulaTex, FormulaError } from '../../../shared/questions/formula.ts';
+import { NumberLine } from '../../ui/NumberLine.tsx';
 
 interface Props {
   input: InputSpec;
@@ -55,6 +58,10 @@ export function AnswerInput(props: Props) {
       return <CoefficientsInput {...props} input={props.input} />;
     case 'choice':
       return <ChoiceInput {...props} input={props.input} />;
+    case 'inequality':
+      return <InequalityInput {...props} input={props.input} />;
+    case 'formula':
+      return <FormulaInput {...props} input={props.input} />;
   }
 }
 
@@ -220,6 +227,179 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
           <span className="muted">{preview.error}</span>
         ) : (
           <span className="muted">{isEq ? 'Type the whole equation, with one = sign. x^2 for x².' : 'Type with the keyboard: x^2 for x², and brackets for factors.'}</span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/** Inserts text at the caret and puts the caret back, so on-screen keys behave like typing. */
+function useInsert(v: string, onChange: (v: string) => void) {
+  const ref = useRef<HTMLInputElement>(null);
+  const insert = (s: string) => {
+    const el = ref.current;
+    if (!el) return onChange(v + s);
+    const start = el.selectionStart ?? v.length;
+    const end = el.selectionEnd ?? v.length;
+    onChange(v.slice(0, start) + s + v.slice(end));
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + s.length, start + s.length);
+    });
+  };
+  return { ref, insert };
+}
+
+interface Key {
+  label: string;
+  text: string;
+  aria: string;
+}
+
+function KeyRow({ keys, insert, disabled }: { keys: Key[]; insert: (s: string) => void; disabled?: boolean }) {
+  return (
+    <div className="expr-keys" aria-label="Insert symbol">
+      {keys.map((k) => (
+        <button key={k.label} type="button" className="key" disabled={disabled} onClick={() => insert(k.text)} aria-label={k.aria}>
+          {k.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Solution sets: "x < -2 or x > 3", "-1 <= x < 4", interval notation. Shows the set back as TeX and on a number line. */
+function InequalityInput({ input, value, onChange, onSubmit, disabled, autoFocus, describedBy }: Props & { input: Extract<InputSpec, { kind: 'inequality' }> }) {
+  const id = useId();
+  const v = typeof value === 'string' ? value : '';
+  const { ref, insert } = useInsert(v, onChange);
+  const x = input.variable;
+  const preview = useMemo(() => {
+    if (!v.trim()) return null;
+    try {
+      const set = parseInequality(v, x);
+      return { set, tex: setTex(set, x), error: null };
+    } catch (e) {
+      return { set: null, tex: null, error: e instanceof InequalityError ? e.message : 'Check your inequality' };
+    }
+  }, [v, x]);
+  const keys: Key[] = [
+    { label: x, text: x, aria: x },
+    { label: '<', text: ' < ', aria: 'less than' },
+    { label: '>', text: ' > ', aria: 'greater than' },
+    { label: '≤', text: ' ≤ ', aria: 'less than or equal to' },
+    { label: '≥', text: ' ≥ ', aria: 'greater than or equal to' },
+    { label: '−', text: '-', aria: 'minus' },
+    { label: '/', text: '/', aria: 'over' },
+    { label: 'or', text: ' or ', aria: 'or' },
+  ];
+  return (
+    <div className="expr-input ineq-input">
+      <div className="answer-row">
+        <label htmlFor={id} className="sr-only">
+          Your answer
+        </label>
+        <input
+          ref={ref}
+          id={id}
+          className="answer-box answer-wide"
+          type="text"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          value={v}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          aria-describedby={`${id}-preview${describedBy ? ` ${describedBy}` : ''}`}
+          placeholder={`e.g. ${x} < -2 or ${x} ≥ 3`}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={enter(onSubmit)}
+        />
+      </div>
+      <KeyRow keys={keys} insert={insert} disabled={disabled} />
+      <div className="expr-preview" id={`${id}-preview`} aria-live="polite">
+        {preview?.tex ? (
+          <>
+            <p>
+              <span className="muted">Reads as </span>
+              <Tex tex={preview.tex} />
+            </p>
+            {preview.set ? <NumberLine set={toWire(preview.set)} variable={x} alt={`Your answer on a number line`} /> : null}
+          </>
+        ) : preview?.error ? (
+          <p className="muted">{preview.error}</p>
+        ) : (
+          <p className="muted">Type {x} &lt; 3, {x} &gt;= -1 (or ≥), or two parts joined by “or”. A chain like -1 &lt; {x} ≤ 4 works too.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** A formula in letters: "make r the subject" answers like (v - u)/t or sqrt(A/pi). */
+function FormulaInput({ input, value, onChange, onSubmit, disabled, autoFocus, describedBy }: Props & { input: Extract<InputSpec, { kind: 'formula' }> }) {
+  const id = useId();
+  const v = typeof value === 'string' ? value : '';
+  const { ref, insert } = useInsert(v, onChange);
+  const preview = useMemo(() => {
+    if (!v.trim()) return null;
+    try {
+      return { tex: formulaTex(parseFormula(v.replace(/^\s*[a-zA-Z]\s*=\s*/, ''))), error: null };
+    } catch (e) {
+      return { tex: null, error: e instanceof FormulaError ? e.message : 'Check your formula' };
+    }
+  }, [v]);
+  const keys: Key[] = [
+    ...input.variables.map((k) => ({ label: k, text: k, aria: k })),
+    { label: '/', text: '/', aria: 'divided by' },
+    { label: '(', text: '(', aria: 'open bracket' },
+    { label: ')', text: ')', aria: 'close bracket' },
+    { label: '^', text: '^', aria: 'to the power' },
+    { label: '√', text: '√(', aria: 'square root' },
+    { label: 'π', text: 'π', aria: 'pi' },
+  ];
+  return (
+    <div className="expr-input">
+      <div className="answer-row">
+        {input.prefix ? (
+          <label htmlFor={id} className="answer-prefix">
+            <Tex tex={input.prefix} />
+          </label>
+        ) : (
+          <label htmlFor={id} className="sr-only">
+            Your answer
+          </label>
+        )}
+        <input
+          ref={ref}
+          id={id}
+          className="answer-box answer-wide"
+          type="text"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          value={v}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          aria-describedby={`${id}-preview${describedBy ? ` ${describedBy}` : ''}`}
+          placeholder="e.g. (v - u)/t"
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={enter(onSubmit)}
+        />
+      </div>
+      <KeyRow keys={keys} insert={insert} disabled={disabled} />
+      <p className="expr-preview" id={`${id}-preview`} aria-live="polite">
+        {preview?.tex ? (
+          <>
+            <span className="muted">Reads as </span>
+            <Tex tex={preview.tex} />
+          </>
+        ) : preview?.error ? (
+          <span className="muted">{preview.error}</span>
+        ) : (
+          <span className="muted">Use brackets for a whole top or bottom: (v - u)/t. sqrt(…) or √ for a root.</span>
         )}
       </p>
     </div>

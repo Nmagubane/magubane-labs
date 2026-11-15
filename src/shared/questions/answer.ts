@@ -5,6 +5,8 @@
 import { rat, eq as req, toNumber, type Rational } from './rational.ts';
 import { parseExpression, toPoly, polyEqual, isExpandedForm, isFactorisedForm, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
 import type { AnswerSpec, InputSpec, Misconception, RichText } from './types.ts';
+import { parseInequality, InequalityError, sameSet, fromWire, toggledEnds, complement, setText, type Interval } from './inequality.ts';
+import { parseFormula, FormulaError, formulasEquivalent, variablesOf } from './formula.ts';
 import type { MistakeCode } from './mistakes.ts';
 
 export type ResponseValue = string | string[];
@@ -65,6 +67,8 @@ type Parsed =
   | { kind: 'point'; x: Rational; y: Rational }
   | { kind: 'proof'; ids: string[] }
   | { kind: 'roots'; values: Rational[] }
+  | { kind: 'inequality'; set: Interval[] }
+  | { kind: 'formula'; text: string }
   | { kind: 'coefficients'; values: number[] }
   | { kind: 'choice'; id: string }
   | { kind: 'set'; ids: string[] }
@@ -83,7 +87,8 @@ function asText(r: ResponseValue): string {
   return Array.isArray(r) ? r.join(',') : r;
 }
 
-export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue): Parsed | { error: string } {
+/** `variable` names the letter an inequality answer is written in (x by default). */
+export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue, variable = 'x'): Parsed | { error: string } {
   switch (kind) {
     case 'numeric': {
       const p = parseNumber(asText(response));
@@ -141,6 +146,22 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue)
         values.push(p.exact);
       }
       return { kind, values };
+    }
+    case 'inequality': {
+      try {
+        return { kind, set: parseInequality(asText(response), variable) };
+      } catch (e) {
+        return { error: e instanceof InequalityError ? e.message : 'Write the solution like x < 3, -1 ≤ x < 4 or x < -2 or x > 3.' };
+      }
+    }
+    case 'formula': {
+      const text = asText(response).replace(/^\s*[a-zA-Z]\s*=\s*/, '');
+      try {
+        parseFormula(text);
+        return { kind, text };
+      } catch (e) {
+        return { error: e instanceof FormulaError ? `${e.message}. Use brackets for a whole top or bottom, e.g. (v - u)/t.` : 'Check your formula.' };
+      }
     }
     case 'coefficients': {
       const parts = Array.isArray(response) ? response : response.split(/[,\s]+/);
@@ -230,6 +251,10 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
       return parsed.kind === 'proof' && parsed.ids.length === spec.ids.length && spec.ids.every((id, i) => parsed.ids[i] === id);
     case 'roots':
       return parsed.kind === 'roots' && sameMultiset(parsed.values, spec.values);
+    case 'inequality':
+      return parsed.kind === 'inequality' && sameSet(parsed.set, fromWire(spec.set));
+    case 'formula':
+      return parsed.kind === 'formula' && formulasEquivalent(parsed.text, spec.expr, spec.variables, spec.domain);
     case 'coefficients':
       return parsed.kind === 'coefficients' && parsed.values.length === spec.values.length && parsed.values.every((v, i) => v === spec.values[i]);
     case 'choice':
@@ -256,7 +281,7 @@ function formOk(spec: AnswerSpec, parsed: Parsed): boolean {
 }
 
 export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misconceptions: Misconception[] = []): GradeResult {
-  const parsed = parseResponse(answer.kind, response);
+  const parsed = parseResponse(answer.kind, response, answer.kind === 'inequality' ? answer.variable : 'x');
   if ('error' in parsed) return { correct: false, parseError: parsed.error };
 
   if (matchesValue(answer, parsed)) {
@@ -306,6 +331,17 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
     if (allFound && !allRight) return { correct: false, mistake: 'extra-solutions', feedback: 'You found all the solutions, but you also gave a value that is not a solution (or is outside the interval).' };
   }
 
+  if (answer.kind === 'inequality' && parsed.kind === 'inequality') {
+    const want = fromWire(answer.set);
+    if (sameSet(parsed.set, toggledEnds(want))) return { correct: false, mistake: 'inequality-endpoint', feedback: 'The boundary values are right, but check which ends are included: < and > leave the end out, ≤ and ≥ include it.' };
+    if (sameSet(parsed.set, complement(want))) return { correct: false, mistake: 'inequality-direction', feedback: `That is exactly the opposite set: every ${answer.variable} you gave fails the inequality. Test one value from your answer in the original.` };
+  }
+
+  if (answer.kind === 'formula' && parsed.kind === 'formula') {
+    const extra = [...variablesOf(parseFormula(parsed.text))].filter((v) => !answer.variables.includes(v));
+    if (extra.length) return { correct: false, mistake: 'change-subject', feedback: `Your answer uses ${extra.map((v) => `$${v}$`).join(' and ')}, which ${extra.length > 1 ? 'are' : 'is'} not one of the other letters in the formula. If it is the subject, it must not appear in your answer: collect its terms on one side and factorise.` };
+  }
+
   if (answer.kind === 'coefficients' && parsed.kind === 'coefficients') {
     const k = parsed.values[0]! / answer.values[0]!;
     if (Number.isInteger(k) && k > 1 && parsed.values.every((v, i) => v === answer.values[i]! * k)) {
@@ -327,6 +363,10 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
     case 'expression':
       return a.expr;
     case 'equation':
+      return a.expr;
+    case 'inequality':
+      return setText(fromWire(a.set), a.variable);
+    case 'formula':
       return a.expr;
     case 'proof':
       return a.ids.slice();
