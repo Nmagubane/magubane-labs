@@ -168,10 +168,13 @@
 .form-row {
   display: grid;
   gap: var(--s4);
+  /* A hint or message under one field must not stretch its neighbours' boxes. */
+  align-items: start;
 }
 @media (min-width: 720px) {
   .form-row {
-    grid-template-columns: 2fr 1.2fr 1fr;
+    /* The date column never goes below the width a date picker needs (the text and its calendar icon). */
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(11.5rem, 1fr);
   }
 }
 .field {
@@ -194,6 +197,13 @@
   border: 1.5px solid var(--rule-strong);
   border-radius: var(--r-ctl);
   font-size: var(--t-md);
+}
+.field input[type='date'] {
+  padding-right: var(--s2);
+}
+.field input::-webkit-calendar-picker-indicator {
+  margin-left: var(--s2);
+  cursor: pointer;
 }
 .field input:focus,
 .field select:focus {

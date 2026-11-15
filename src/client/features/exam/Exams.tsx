@@ -1,10 +1,11 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { useResource, invalidate } from '../../lib/useResource.ts';
 import { api, ApiError } from '../../lib/api.ts';
 import { Link, useRouter } from '../../lib/router.tsx';
 import { Button, Loading, ErrorState, PageHeader, TextInput } from '../../ui/primitives.tsx';
 import { inDays } from '../../lib/format.ts';
 import type { ExamDto, CatalogueResponse } from '../../../shared/api.ts';
+import { EXAM_MAX_DAYS, addDays, examDateProblem, isoDay } from '../../../shared/exam-dates.ts';
 
 export function Exams() {
   const exams = useResource<ExamDto[]>('/api/exams');
@@ -16,20 +17,34 @@ export function Exams() {
   const [picked, setPicked] = useState<Set<string> | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The date rule is shown as soon as a date is picked, and again if the form is sent without one.
+  const [dateTouched, setDateTouched] = useState(false);
+  const [skillsError, setSkillsError] = useState(false);
+  const dateRef = useRef<HTMLInputElement>(null);
 
   const subject = cat.data?.subjects.find((s) => s.id === subjectId);
   const skills = useMemo(() => subject?.topics.flatMap((t) => t.skills.map((k) => ({ ...k, topic: t.name }))) ?? [], [subject]);
   const inBand = skills.filter((k) => k.inScope);
   const selected = picked ?? new Set((inBand.length ? inBand : skills).map((k) => k.skillId));
-  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  const today = new Date();
+  const tomorrow = isoDay(addDays(today, 1));
+  const lastDay = isoDay(addDays(today, EXAM_MAX_DAYS));
+  const dateProblem = examDateProblem(date, today);
 
   if ((exams.loading && !exams.data) || (cat.loading && !cat.data)) return <Loading />;
   if (exams.error && !exams.data) return <ErrorState error={exams.error} onRetry={() => void exams.reload()} />;
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
-    setBusy(true);
     setError(null);
+    setDateTouched(true);
+    setSkillsError(selected.size === 0);
+    if (dateProblem) {
+      dateRef.current?.focus();
+      return;
+    }
+    if (selected.size === 0) return;
+    setBusy(true);
     try {
       const ex = await api.post<ExamDto>('/api/exams', { title: title || `${subject?.name ?? ''} exam`, subjectId, examDate: date, skillIds: [...selected] });
       invalidate('/api/exams', '/api/home');
@@ -66,7 +81,7 @@ export function Exams() {
         <h2 id="add-exam" className="sheet-title">
           Add an exam
         </h2>
-        <form onSubmit={create} className="form">
+        <form onSubmit={create} className="form" noValidate>
           <div className="form-row">
             <TextInput label="Name" placeholder="e.g. Maths June exam" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
             <div className="field">
@@ -79,7 +94,19 @@ export function Exams() {
                 ))}
               </select>
             </div>
-            <TextInput label="Date" type="date" min={tomorrow} value={date} onChange={(e) => setDate(e.target.value)} required />
+            <TextInput
+              ref={dateRef}
+              label="Date"
+              type="date"
+              className="field-date"
+              min={tomorrow}
+              max={lastDay}
+              value={date}
+              onChange={(e) => (setDate(e.target.value), setDateTouched(true))}
+              hint="From tomorrow to a year from now."
+              error={dateTouched ? dateProblem : null}
+              required
+            />
           </div>
           <fieldset className="skill-pick">
             <legend>What will be in it?</legend>
@@ -96,6 +123,7 @@ export function Exams() {
                         if (next.has(k.skillId)) next.delete(k.skillId);
                         else next.add(k.skillId);
                         setPicked(next);
+                        if (next.size) setSkillsError(false);
                       }}
                     />
                     <span>
@@ -105,13 +133,18 @@ export function Exams() {
                 </li>
               ))}
             </ul>
+            {skillsError ? (
+              <p className="field-msg" role="alert">
+                Tick at least one skill that will be in the exam.
+              </p>
+            ) : null}
           </fieldset>
           {error ? (
             <p className="form-error" role="alert">
               {error}
             </p>
           ) : null}
-          <Button type="submit" busy={busy} disabled={!date || selected.size === 0}>
+          <Button type="submit" busy={busy}>
             Add exam and build my plan
           </Button>
         </form>

@@ -1,5 +1,6 @@
 /** Read models: catalogue, skill detail, home, progress, exams. Computed from raw learning data. */
 import { randomInt } from 'node:crypto';
+import { examDateProblem } from '../shared/exam-dates.ts';
 import type { Db } from './db.ts';
 import { all, one, run, newId } from './db.ts';
 import { HttpError } from './http.ts';
@@ -15,7 +16,7 @@ import { generateQuestion } from '../shared/questions/registry.ts';
 import { canonicalResponse } from '../shared/questions/answer.ts';
 import type { Difficulty } from '../shared/questions/types.ts';
 import { effectiveMastery, correctAnswersToNextBand, masteryPercent, INITIAL_RATING, type SkillState } from '../shared/mastery/model.ts';
-import { recommend, weakAreas, daysUntil, type Recommendation } from '../shared/mastery/recommend.ts';
+import { recommend, weakAreas, type Recommendation } from '../shared/mastery/recommend.ts';
 import { computeReadiness, buildPlan } from '../shared/mastery/readiness.ts';
 
 function requireProfile(db: Db, user: UserDto): Profile {
@@ -346,9 +347,8 @@ export function listExams(db: Db, user: UserDto): ExamDto[] {
 export function createExam(db: Db, user: UserDto, body: { title: string; subjectId: SubjectId; examDate: string; skillIds?: string[] | undefined }): ExamDto {
   const profile = requireProfile(db, user);
   const at = now();
-  const days = daysUntil(body.examDate, at);
-  if (Number.isNaN(days) || days < 1) throw new HttpError(422, 'invalid', 'Choose a date after today.');
-  if (days > 366) throw new HttpError(422, 'invalid', 'Choose a date within the next year.');
+  const dateProblem = examDateProblem(body.examDate, at);
+  if (dateProblem) throw new HttpError(422, 'invalid', dateProblem);
   const valid = new Set(skillsInSubject(body.subjectId).map((s) => s.id));
   // Default: the subject's skills in the learner's grade band; if none (e.g. a Grade 5 choosing Physical Sciences), the nearest-grade ones.
   const band = skillsForLearner([body.subjectId], profile.grade);
