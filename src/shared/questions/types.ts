@@ -111,7 +111,23 @@ export type Figure =
     }
   | { kind: 'circuit'; voltage: number | null; resistors: (number | null)[]; current: number | null }
   | { kind: 'punnett'; parentA: string; parentB: string; reveal: boolean }
+  /**
+   * A Venn diagram with 2 or 3 sets. `regions` is keyed by the indices of the sets a region is inside:
+   * '0' is in set 0 only, '01' in sets 0 and 1 only, '012' in all three, '' outside every set. Values are TeX.
+   */
+  | { kind: 'venn'; alt: string; sets: string[]; universe: string; regions: Record<string, string> }
+  /** A tree diagram, two stages at most. Branch `p` is TeX (e.g. "\\frac{3}{8}"); `outcome` labels a leaf. */
+  | { kind: 'tree'; alt: string; branches: TreeBranch[] }
+  /** A two-way (contingency) table. The first row and column are headings. */
+  | { kind: 'table'; alt: string; rows: string[][] }
   | GeometryFigure;
+
+export interface TreeBranch {
+  label: string;
+  p: string;
+  outcome?: string;
+  children?: TreeBranch[];
+}
 
 /**
  * A Euclidean geometry diagram, drawn by the client. Coordinates are maths coordinates (y up) in any units;

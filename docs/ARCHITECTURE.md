@@ -120,7 +120,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (91 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (94 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -372,4 +372,24 @@ Five Grade 12 skills (`math-calculus.ts`, `lessons-calculus.ts`, `CalculusLabs.t
 **Labs.** `calculus-lab` has three modes: *secant* (drag $h$ to 0 and watch the secant gradient $2a + h$ become $f'(a)$), *cubic* (change $a$, $b$, $c$, $d$; $f$ and a dashed $f'$ together, with turning points and the point of inflection marked) and *box* (cut squares from a 16 × 10 sheet; the volume graph has a flat tangent at the best cut, 2 cm).
 
 **Known limits.** The expression checker handles polynomials only, so $f'(x) = -\frac{k}{x^2}$ is asked for at a point ($f'(a)$ as a fraction) rather than typed as an expression, and the power rule for negative and fractional powers ($\frac{1}{x}$, $\sqrt{x}$) is not built yet. New mistake codes: `remainder-theorem`, `limits`, `first-principles`, `tangent-line`, `inflection`, `stationary-points`, `rate-of-change`, `optimisation`.
+
+## 17. Probability (Paper 1)
+
+Three skills in a new `probability` topic (`math-probability.ts`, `lessons-probability.ts`, `ProbabilityLabs.tsx`):
+
+| Skill | Grade | What it covers |
+|---|---|---|
+| `probability-rules` | 10 | Reading a Venn diagram, the addition rule (both ways round), mutually exclusive and complementary events, a survey with the overlap unknown ($x$), two dice, relative frequency and expected counts |
+| `independent-events` | 11 | Independent "and"/"or", testing for independence, tree diagrams with and without replacement, two-way tables (independence and the addition rule), three-set Venn diagrams |
+| `counting-principle` | 12 | Outfits and codes (with and without repetition), $n!$, arrangements with a rule (together, apart, at an end, begins with a vowel), words with repeated letters, probability by counting |
+
+**Three new figure kinds.** `venn` (2 or 3 sets; regions keyed by the sets they are inside, values in TeX so a region can read $12 - x$), `tree` (up to two stages; each probability sits 60% along its branch, above a rising branch and below a falling one, so siblings never touch) and `table` (a two-way table with totals). Venn and tree labels are HTML laid over the SVG, so they are KaTeX and stay in place at any width.
+
+**South African contexts.** Taxi ranks, hostels (pap, rice, samp), isiZulu and Sesotho speakers, codes and number plates, and words such as TSHWANE, MZANSI, SOWETO and MAMELODI for the counting questions.
+
+**Checked by listing outcomes.** `probability.test.ts` recomputes every answer from what the question shows: Venn and table answers are recounted from the figure (and the table's totals must add up; in the survey, $x$ is solved from the prompt and every region must be positive), dice by listing all 36 pairs, bags by listing every ordered draw of labelled items (with or without replacement), tree branches must add to 1, and arrangements by listing every permutation. Repeated-letter words are counted by a recursive count of distinct words, not by $\dfrac{n!}{a!\,b!}$. Building it caught a test-side cache collision, not a generator error.
+
+**Labs.** `probability-lab` has three modes: *dice* (roll 1, 10 or 100 at a time; relative frequency against the theoretical line), *venn* (change $n(S)$, $n(A)$, $n(B)$ and the overlap; the addition rule and $P(A) \times P(B)$ against $P(A \text{ and } B)$ update together, and the note says when the events are independent or mutually exclusive) and *slots* (the counting principle as boxes).
+
+**New mistake codes:** `venn-regions`, `addition-rule`, `complement`, `sample-space`, `independence`, `tree-branches`, `with-replacement`, `counting-principle`, `arrangement-restriction`, `identical-items`.
 

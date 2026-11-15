@@ -515,6 +515,17 @@ export const MISTAKES = {
   'stationary-points': { label: 'Turning points of a cubic', kind: 'conceptual', tip: "Solve f'(x) = 0 for x, then use f (not f') for y. If f' changes from + to −, it is a maximum; from − to +, a minimum. With a > 0 the left turning point is the maximum." },
   'rate-of-change': { label: 'Rate of change or value', kind: 'conceptual', tip: "The function gives the amount (height, volume, displacement). Its derivative gives how fast that amount changes (velocity, flow rate). Acceleration is the second derivative." },
   'optimisation': { label: 'Answering the question asked', kind: 'procedural', tip: "Solving f'(x) = 0 gives where the maximum or minimum happens. If the question asks for the maximum value, substitute that x back into the original function." },
+  // ---- Probability and counting (Grades 10–12) ----
+  'venn-regions': { label: 'Reading a Venn diagram', kind: 'conceptual', tip: '"Only" leaves out the overlap; "both" is just the overlap; "or" is everything inside the circles, each region once; "neither" is outside every circle. Shade the regions before you add.' },
+  'addition-rule': { label: 'The addition rule', kind: 'procedural', tip: 'P(A or B) = P(A) + P(B) − P(A and B). Adding P(A) and P(B) counts the overlap twice. Only for mutually exclusive events is P(A and B) = 0.' },
+  'complement': { label: 'Complementary events', kind: 'conceptual', tip: 'P(not A) = 1 − P(A). "Neither A nor B" is the complement of "A or B".' },
+  'sample-space': { label: 'Equally likely outcomes', kind: 'conceptual', tip: 'Probability = favourable ÷ total only when every outcome is equally likely. Two dice give 36 equally likely ordered pairs, not 11 equally likely sums. Expected number = probability × trials.' },
+  'independence': { label: 'Independent events', kind: 'conceptual', tip: 'A and B are independent exactly when P(A and B) = P(A) × P(B). "And" multiplies for independent events; "or" still uses the addition rule.' },
+  'tree-branches': { label: 'Using a tree diagram', kind: 'procedural', tip: 'Multiply along a branch; add the branches that fit the event. "One of each" usually has two branches: AB and BA.' },
+  'with-replacement': { label: 'With or without replacement', kind: 'conceptual', tip: 'Without replacement, the second draw has one item fewer in total, and one fewer of whatever was taken first.' },
+  'counting-principle': { label: 'Counting principle', kind: 'procedural', tip: 'Draw a box for each position and write the number of choices in it, then multiply. Without repetition the choices go down by one each time.' },
+  'arrangement-restriction': { label: 'Arrangements with a rule', kind: 'procedural', tip: 'Fill the restricted places first. "Together": glue them into one block, arrange, then multiply by the ways inside the block. "Not together" = all − together.' },
+  'identical-items': { label: 'Identical items', kind: 'conceptual', tip: 'Swapping identical letters makes no new arrangement. Divide n! by the factorial of each repeat count, e.g. BANANA: 6! ÷ (3! × 2!).' },
   // ---- Statistics (Grades 10–12) ----
   'mean-median': { label: 'Mean, median or mode', kind: 'conceptual', tip: 'Mean: add everything and divide by how many there are. Median: the middle value once the data is in order. Mode: the value that appears most often.' },
   'data-order': { label: 'Order the data first', kind: 'procedural', tip: 'The median and quartiles come from the data in order, from smallest to largest. Sort first, then count to the middle.' },

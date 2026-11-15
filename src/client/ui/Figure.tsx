@@ -1,11 +1,145 @@
 import type { Figure as FigureSpec } from '../../shared/questions/types.ts';
 import { Plot, lineSegment } from './Plot.tsx';
+import { Tex } from './RichText.tsx';
 
 export function Figure({ figure }: { figure: FigureSpec }) {
   if (figure.kind === 'graph') return <GraphFigure f={figure} />;
   if (figure.kind === 'circuit') return <CircuitFigure f={figure} />;
   if (figure.kind === 'geometry') return <GeometryFigure f={figure} />;
+  if (figure.kind === 'venn') return <VennFigure f={figure} />;
+  if (figure.kind === 'tree') return <TreeFigure f={figure} />;
+  if (figure.kind === 'table') return <TableFigure f={figure} />;
   return <PunnettFigure f={figure} />;
+}
+
+/**
+ * Venn diagrams: circles drawn in SVG, labels laid over them as HTML so they can be KaTeX ("15 - x").
+ * Positions are percentages of the box, so labels stay put at any width.
+ */
+const VENN2 = { w: 320, h: 200, circles: [[125, 100], [195, 100]], r: 72, setLabels: [[50, 46], [270, 46]], regions: { '0': [92, 100], '1': [228, 100], '01': [160, 100], '': [292, 182] } } as const;
+const VENN3 = {
+  w: 320,
+  h: 240,
+  circles: [[128, 92], [192, 92], [160, 148]],
+  r: 62,
+  setLabels: [[56, 46], [264, 46], [236, 214]],
+  regions: { '0': [102, 76], '1': [218, 76], '2': [160, 182], '01': [160, 62], '02': [125, 136], '12': [195, 136], '012': [160, 112], '': [294, 226] },
+} as const;
+function VennFigure({ f }: { f: Extract<FigureSpec, { kind: 'venn' }> }) {
+  const L = f.sets.length === 3 ? VENN3 : VENN2;
+  const at = ([x, y]: readonly [number, number]) => ({ left: `${(x / L.w) * 100}%`, top: `${(y / L.h) * 100}%` });
+  return (
+    <div className="venn" role="img" aria-label={f.alt}>
+      <svg viewBox={`0 0 ${L.w} ${L.h}`} aria-hidden>
+        <rect x={2} y={2} width={L.w - 4} height={L.h - 4} rx={8} className="venn-universe" />
+        {L.circles.map(([cx, cy], i) => (
+          <circle key={i} cx={cx} cy={cy} r={L.r} className={`venn-set venn-set-${i}`} />
+        ))}
+      </svg>
+      <span className="venn-label venn-universe-label" style={at([14, 16])} aria-hidden>
+        <Tex tex={f.universe} />
+      </span>
+      {f.sets.map((s, i) => (
+        <span key={s} className="venn-label venn-set-label" style={at(L.setLabels[i]!)} aria-hidden>
+          {s}
+        </span>
+      ))}
+      {Object.entries(f.regions).map(([k, v]) => {
+        const pos = (L.regions as Record<string, readonly [number, number]>)[k];
+        return pos ? (
+          <span key={k} className="venn-label venn-region" style={at(pos)} aria-hidden>
+            <Tex tex={v} />
+          </span>
+        ) : null;
+      })}
+    </div>
+  );
+}
+
+/** Tree diagrams, up to two stages: branches drawn in SVG, probabilities (KaTeX) laid over the middle of each branch. */
+function TreeFigure({ f }: { f: Extract<FigureSpec, { kind: 'tree' }> }) {
+  const W = 360;
+  const leaves = f.branches.flatMap((b) => b.children ?? [b]).length;
+  const H = Math.max(150, leaves * 58);
+  const x0 = 12;
+  const x1 = f.branches.some((b) => b.children) ? 140 : 250;
+  const x2 = 296;
+  const rows: { x: number; y: number; p: string; label: string; px: number; py: number; outcome?: string }[] = [];
+  const lines: [number, number, number, number][] = [];
+  let leaf = 0;
+  const leafY = () => ((leaf++ + 0.5) * H) / leaves;
+  for (const b of f.branches) {
+    const kids = b.children ?? [];
+    const ys = kids.map(() => leafY());
+    const y = kids.length ? ys.reduce((s, v) => s + v, 0) / ys.length : leafY();
+    // Probabilities sit 60% along each branch, above a branch that rises and below one that falls, so siblings never touch.
+    const along = (ax: number, ay: number, bx: number, by: number) => ({ px: ax + 0.6 * (bx - ax), py: ay + 0.6 * (by - ay) + (by < ay ? -14 : 14) });
+    lines.push([x0, H / 2, x1 - 12, y]);
+    rows.push({ x: x1, y, p: b.p, label: b.label, ...along(x0, H / 2, x1 - 12, y), ...(b.outcome ? { outcome: b.outcome } : {}) });
+    kids.forEach((k, i) => {
+      lines.push([x1 + 12, y, x2 - 12, ys[i]!]);
+      rows.push({ x: x2, y: ys[i]!, p: k.p, label: k.label, ...along(x1 + 12, y, x2 - 12, ys[i]!), ...(k.outcome ? { outcome: k.outcome } : {}) });
+    });
+  }
+  const pct = (x: number, y: number) => ({ left: `${(x / W) * 100}%`, top: `${(y / H) * 100}%` });
+  return (
+    <div className="tree-fig" role="img" aria-label={f.alt} style={{ aspectRatio: `${W} / ${H}` }}>
+      <svg viewBox={`0 0 ${W} ${H}`} aria-hidden>
+        {lines.map(([a, b, c, d], i) => (
+          <line key={i} x1={a} y1={b} x2={c} y2={d} className="tree-branch" />
+        ))}
+      </svg>
+      {rows.map((r, i) => (
+        <span key={i} aria-hidden>
+          <span className="tree-node" style={pct(r.x, r.y)}>
+            {r.label}
+          </span>
+          <span className="tree-p" style={pct(r.px, r.py)}>
+            <Tex tex={r.p} />
+          </span>
+          {r.outcome ? (
+            <span className="tree-outcome" style={pct(W - 6, r.y)}>
+              {r.outcome}
+            </span>
+          ) : null}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function TableFigure({ f }: { f: Extract<FigureSpec, { kind: 'table' }> }) {
+  const [head, ...body] = f.rows;
+  return (
+    <div className="fig-table-wrap">
+      <table className="fig-table" aria-label={f.alt}>
+        <thead>
+          <tr>
+            {head!.map((h, i) => (
+              <th key={i} scope="col">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {body.map((r, i) => (
+            <tr key={i}>
+              {r.map((c, j) =>
+                j === 0 ? (
+                  <th key={j} scope="row">
+                    {c}
+                  </th>
+                ) : (
+                  <td key={j}>{c}</td>
+                ),
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function GraphFigure({ f }: { f: Extract<FigureSpec, { kind: 'graph' }> }) {

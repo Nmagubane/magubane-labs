@@ -11,8 +11,9 @@ import { TRIG_LESSONS } from './lessons-trig.ts';
 import { STATS_LESSONS } from './lessons-stats.ts';
 import { GRAPH_LESSONS } from './lessons-graphs.ts';
 import { CALCULUS_LESSONS } from './lessons-calculus.ts';
+import { PROBABILITY_LESSONS } from './lessons-probability.ts';
 
-export const LESSONS: Lesson[] = [...MATHS_LESSONS, ...MATHS_LESSONS_2, ...GEOMETRY_LESSONS, ...ANALYTIC_LESSONS, ...TRIG_LESSONS, ...STATS_LESSONS, ...GRAPH_LESSONS, ...CALCULUS_LESSONS, ...NST_LESSONS, ...NS_LESSONS, ...SCIENCE_LESSONS, ...SCIENCE_LESSONS_2];
+export const LESSONS: Lesson[] = [...MATHS_LESSONS, ...MATHS_LESSONS_2, ...GEOMETRY_LESSONS, ...ANALYTIC_LESSONS, ...TRIG_LESSONS, ...STATS_LESSONS, ...GRAPH_LESSONS, ...CALCULUS_LESSONS, ...PROBABILITY_LESSONS, ...NST_LESSONS, ...NS_LESSONS, ...SCIENCE_LESSONS, ...SCIENCE_LESSONS_2];
 
 const byId = new Map(LESSONS.map((l) => [l.id, l]));
 export const getLesson = (id: string): Lesson | undefined => byId.get(id);

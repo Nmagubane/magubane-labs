@@ -1343,3 +1343,10 @@
 .box-cut { fill: var(--hl); stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 3; }
 .box-fold { fill: none; stroke: var(--pen); stroke-width: 1.5; stroke-dasharray: 6 4; }
 .box-text { font: 600 13px var(--font); fill: var(--ink-2); }
+
+/* Probability labs */
+.lab-buttons { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.cslots { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s2); padding: var(--s3) 0; }
+.cslot { display: grid; justify-items: center; gap: 4px; }
+.cslot-n { display: grid; place-items: center; width: 3rem; height: 3rem; border: 2px solid var(--pen); border-radius: 6px; background: var(--paper); font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cslot-label { font-size: var(--t-xs); color: var(--ink-2); }

@@ -18,6 +18,7 @@ import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSo
 import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, proportionality } from './generators/math-geometry.ts';
 import { circleProofs, similarityProofs } from './generators/math-proofs.ts';
 import { factorTheorem, firstPrinciples, tangentLines, cubicGraphs, optimisation } from './generators/math-calculus.ts';
+import { probabilityRules, independentEvents, countingPrinciple } from './generators/math-probability.ts';
 import { coordinateGeometry, lineEquations, circleEquations } from './generators/math-analytic.ts';
 import { trigSpecial, trigReduction, trigEquations, triangleRules, compoundAngles } from './generators/math-trig.ts';
 import { trig2d3d } from './generators/math-trig-3d.ts';
@@ -74,6 +75,9 @@ export const TEMPLATES: QuestionTemplate[] = [
   tangentLines,
   cubicGraphs,
   optimisation,
+  probabilityRules,
+  independentEvents,
+  countingPrinciple,
   livingNonliving,
   plantNeeds,
   lifeCycles,

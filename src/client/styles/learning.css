@@ -1737,3 +1737,26 @@
 .proof-cell.is-wrong .proof-select { border-style: solid; border-color: var(--red); background: var(--red-tint); }
 .proof-cell.is-wrong .proof-flag { background: var(--red); }
 .proof-select:disabled { opacity: 1; color: var(--ink); }
+
+/* Probability figures: Venn diagrams, tree diagrams, two-way tables. */
+.venn, .tree-fig { position: relative; width: 100%; max-width: 440px; margin: 0 auto; }
+.venn svg, .tree-fig svg { display: block; width: 100%; height: auto; }
+.venn-universe { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+.venn-set { fill: var(--pen); fill-opacity: 0.07; stroke: var(--pen); stroke-width: 2; }
+.venn-set-1 { fill-opacity: 0.09; }
+.venn-set-2 { fill-opacity: 0.11; }
+.venn-label { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height: 1; }
+.venn-region { font-size: var(--t-md, 1rem); font-weight: 600; }
+.venn-set-label { font-weight: 800; color: var(--pen); font-size: var(--t-md, 1rem); }
+.venn-universe-label { transform: none; font-size: var(--t-sm); color: var(--ink-2); }
+.tree-fig svg { position: absolute; inset: 0; height: 100%; }
+.tree-branch { stroke: var(--ink); stroke-width: 1.5; }
+.tree-node, .tree-p, .tree-outcome { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height: 1; }
+.tree-node { font-weight: 800; background: var(--paper); padding: 2px 4px; }
+.tree-p { font-size: 0.95rem; background: var(--paper); padding: 1px 2px; border-radius: 3px; }
+.tree-outcome { transform: translate(-100%, -50%); color: var(--ink-2); font-size: var(--t-sm); }
+.fig-table-wrap { overflow-x: auto; max-width: 100%; }
+.fig-table { border-collapse: collapse; margin: 0 auto; font-variant-numeric: tabular-nums; background: var(--paper); }
+.fig-table th, .fig-table td { border: 1px solid var(--rule); padding: var(--s1) var(--s2); text-align: center; }
+.fig-table thead th, .fig-table tbody th { font-weight: 700; background: var(--desk); }
+.fig-table tr:last-child td, .fig-table td:last-child { font-weight: 700; }
