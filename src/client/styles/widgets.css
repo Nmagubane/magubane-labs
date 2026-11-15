@@ -1394,3 +1394,14 @@
 .alg-test-mark .tick { color: var(--tick); }
 @media (max-width: 420px) { .alg-test-mark { font-size: var(--t-xs); } }
 
+
+/* Completing the square, drawn; decimal digits */
+.cs-figure { display: block; width: 100%; max-width: 320px; height: auto; margin: var(--s3) auto 0; }
+.cs-x2 { fill: color-mix(in srgb, var(--pen) 14%, var(--paper)); stroke: var(--pen); stroke-width: 1.5; }
+.cs-strip { fill: color-mix(in srgb, var(--pen) 6%, var(--paper)); stroke: var(--pen); stroke-width: 1.5; }
+.cs-corner { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 5 4; }
+.cs-label { font-size: 15px; fill: var(--ink); font-style: italic; }
+.dec-pick { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s2); }
+.dec-digits { margin: var(--s4) 0 var(--s2); font-size: var(--t-lg); font-variant-numeric: tabular-nums; letter-spacing: 0.06em; overflow-wrap: anywhere; line-height: 1.8; }
+.dec-digits .dec-block { background: color-mix(in srgb, var(--pen) 18%, transparent); border-bottom: 2px solid var(--pen); }
+.dec-digits .dec-again { color: var(--pen); }

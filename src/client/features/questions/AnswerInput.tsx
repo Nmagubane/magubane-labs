@@ -11,6 +11,7 @@ import { Rich, Tex } from '../../ui/RichText.tsx';
 import { chem } from '../../../shared/questions/tex.ts';
 import { parseInequality, setTex, toWire, InequalityError } from '../../../shared/questions/inequality.ts';
 import { parseFormula, formulaTex, FormulaError } from '../../../shared/questions/formula.ts';
+import { parseSurd, surdTex } from '../../../shared/questions/surd.ts';
 import { NumberLine } from '../../ui/NumberLine.tsx';
 
 interface Props {
@@ -213,7 +214,7 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
           disabled={disabled}
           autoFocus={autoFocus}
           aria-describedby={`${id}-preview${describedBy ? ` ${describedBy}` : ''}`}
-          placeholder={isEq ? (input.placeholder ?? 'e.g. y = 2x + 3') : fraction ? 'e.g. (x + 3)/(x - 2)' : 'e.g. (x + 2)(x - 3)'}
+          placeholder={input.placeholder ?? (isEq ? 'e.g. y = 2x + 3' : fraction ? 'e.g. (x + 3)/(x - 2)' : 'e.g. (x + 2)(x - 3)')}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={enter(onSubmit)}
         />
@@ -234,7 +235,7 @@ function ExpressionInput({ input, value, onChange, onSubmit, disabled, autoFocus
         ) : preview?.error ? (
           <span className="muted">{preview.error}</span>
         ) : (
-          <span className="muted">{isEq ? 'Type the whole equation, with one = sign. x^2 for x².' : fraction ? 'Put the top and the bottom in brackets: (x + 3)/(x - 2).' : 'Type with the keyboard: x^2 for x², and brackets for factors.'}</span>
+          <span className="muted">{isEq ? 'Type the whole equation, with one = sign. x^2 for x².' : fraction ? 'Put the top and the bottom in brackets: (x + 3)/(x - 2).' : 'Type with the keyboard: x^2 for x², and brackets where you need them.'}</span>
         )}
       </p>
     </div>
@@ -420,6 +421,20 @@ function RootsInput({ input, value, onChange, onSubmit, disabled, autoFocus }: P
   const vals = Array.isArray(value) && value.length > 0 ? value : [''];
   const set = (i: number, s: string) => onChange(vals.map((x, j) => (j === i ? s : x)));
   const remove = (i: number) => onChange(vals.filter((_, j) => j !== i));
+  const surds = input.surds === true;
+  // Read surd roots back as maths, with "a ± b" shown as the two roots it stands for.
+  const preview = useMemo(() => {
+    if (!surds) return null;
+    const parts = vals.map((v) => v.replace(/^\s*[a-z]\s*=/i, '').trim()).filter(Boolean);
+    if (!parts.length) return null;
+    try {
+      const all = parts.flatMap((p) => (/±|\+-/.test(p) ? [p.replace(/±|\+-/, '+'), p.replace(/±|\+-/, '-')] : [p]));
+      return { tex: all.map((p) => `${input.variable} = ${surdTex(parseSurd(p).value)}`).join(' \\text{ or } '), error: null };
+    } catch {
+      return { tex: null, error: 'Type roots like -3 + √7, or both at once as -3 ± √7.' };
+    }
+  }, [surds, vals, input.variable]);
+  const insertRoot = (i: number) => set(i, `${vals[i] ?? ''}√`);
   return (
     <div className="roots-input">
       <div className="answer-row roots" role="group" aria-label="Solutions">
@@ -429,10 +444,28 @@ function RootsInput({ input, value, onChange, onSubmit, disabled, autoFocus }: P
             <span className="answer-prefix" aria-hidden>
               <Tex tex={`${input.variable} =`} />
             </span>
-            <input aria-label={`Solution ${i + 1}`} className="answer-box answer-narrow" type="text" inputMode="decimal" autoComplete="off" value={v} disabled={disabled} autoFocus={(autoFocus && i === 0) || (i > 0 && i === vals.length - 1 && v === '')} onChange={(e) => set(i, e.target.value)} onKeyDown={enter(onSubmit)} />
-            <button type="button" className="key key-sign" onClick={() => set(i, toggleSign(v))} disabled={disabled} aria-label={`Make solution ${i + 1} negative or positive`}>
-              ±
-            </button>
+            <input
+              aria-label={`Solution ${i + 1}`}
+              className={`answer-box ${surds ? 'answer-root-surd' : 'answer-narrow'}`}
+              type="text"
+              inputMode={surds ? 'text' : 'decimal'}
+              autoComplete="off"
+              placeholder={surds && i === 0 ? 'e.g. -3 ± √7' : undefined}
+              value={v}
+              disabled={disabled}
+              autoFocus={(autoFocus && i === 0) || (i > 0 && i === vals.length - 1 && v === '')}
+              onChange={(e) => set(i, e.target.value)}
+              onKeyDown={enter(onSubmit)}
+            />
+            {surds ? (
+              <button type="button" className="key" onClick={() => insertRoot(i)} disabled={disabled} aria-label={`Insert a square root in solution ${i + 1}`}>
+                √
+              </button>
+            ) : (
+              <button type="button" className="key key-sign" onClick={() => set(i, toggleSign(v))} disabled={disabled} aria-label={`Make solution ${i + 1} negative or positive`}>
+                ±
+              </button>
+            )}
             {i > 0 ? (
               <button type="button" className="key key-remove" onClick={() => remove(i)} disabled={disabled} aria-label={`Remove solution ${i + 1}`}>
                 ×
@@ -444,6 +477,18 @@ function RootsInput({ input, value, onChange, onSubmit, disabled, autoFocus }: P
       <button type="button" className="roots-add" onClick={() => onChange([...vals, ''])} disabled={disabled || vals.length >= 8}>
         + Add another solution
       </button>
+      {surds ? (
+        <p className="expr-preview" aria-live="polite">
+          {preview?.tex ? (
+            <>
+              <span className="muted">Reads as </span>
+              <Tex tex={preview.tex} />
+            </>
+          ) : (
+            <span className="muted">{preview?.error ?? 'One root per box, or both at once with ±: -3 ± √7. Leave surds in simplest form.'}</span>
+          )}
+        </p>
+      ) : null}
     </div>
   );
 }

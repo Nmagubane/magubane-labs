@@ -15,7 +15,7 @@ export type InputSpec =
   | { kind: 'numeric'; unit?: string; prefix?: string; placeholder?: string }
   | { kind: 'fraction'; prefix?: string }
   /** `fraction` adds a / key and a fraction placeholder; `cubes` adds a ³ key. */
-  | { kind: 'expression'; prefix?: string; variables: string[]; fraction?: boolean; cubes?: boolean }
+  | { kind: 'expression'; prefix?: string; variables: string[]; fraction?: boolean; cubes?: boolean; placeholder?: string }
   /** An equation the learner types with one = sign; any equivalent rearrangement is accepted. */
   | { kind: 'equation'; variables: string[]; placeholder?: string }
   /** Complete a proof: a statement–reason table where some cells are blanks to fill from a list. Plain-text options (∠, ∥, △). */
@@ -23,7 +23,8 @@ export type InputSpec =
   /** A coordinate pair, typed as name(x; y). */
   | { kind: 'point'; name: string }
   /** Solutions of an equation. The learner adds as many boxes as they need: how many solutions there are is part of the question. */
-  | { kind: 'roots'; variable: string }
+  /** `surds`: roots may be surds such as −3 + √7 (a √ key, and ± typed in one box gives two roots). */
+  | { kind: 'roots'; variable: string; surds?: boolean }
   /** A solution set such as x < -2 or x > 3, typed, with a live number line. */
   | { kind: 'inequality'; variable: string }
   /** A formula checked by value (change the subject): division by variables, roots and π allowed. */
@@ -75,12 +76,16 @@ export type AnswerSpec =
   | { kind: 'numeric'; value: number; tolerance: number; relative?: boolean }
   | { kind: 'fraction'; n: number; d: number; requireSimplest: boolean }
   /** `simplified`: one algebraic fraction (or a polynomial) with no common factor top and bottom. */
-  | { kind: 'expression'; expr: string; form?: 'expanded' | 'factorised' | 'simplified' }
+  | { kind: 'expression'; expr: string; form?: 'expanded' | 'factorised' | 'simplified' | 'completed-square' }
   | { kind: 'equation'; expr: string }
   | { kind: 'point'; x: { n: number; d: number }; y: { n: number; d: number } }
   /** The right option for each blank, in blank order, and where each blank sits (for feedback). */
   | { kind: 'proof'; ids: string[]; at: { row: number; part: 'statement' | 'reason' }[] }
-  | { kind: 'roots'; values: { n: number; d: number }[] }
+  /**
+   * Rational roots in `values`. Roots that may be surds go in `surds` instead (each a list of terms with
+   * square-free radicands, r = 1 the rational part); `requireSimplest` then asks for simplest surd form.
+   */
+  | { kind: 'roots'; values: { n: number; d: number }[]; surds?: { r: number; n: number; d: number }[][]; requireSimplest?: boolean }
   | { kind: 'inequality'; variable: string; set: IneqInterval[] }
   /** Graded by evaluating both formulas at sample points; `domain` is the range the variables are sampled from. */
   | { kind: 'formula'; expr: string; variables: string[]; domain?: [number, number] }

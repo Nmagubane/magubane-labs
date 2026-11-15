@@ -21,6 +21,7 @@ import { factorTheorem, firstPrinciples, tangentLines, cubicGraphs, optimisation
 import { probabilityRules, independentEvents, countingPrinciple } from './generators/math-probability.ts';
 import { derivativePowers } from './generators/math-calculus-powers.ts';
 import { productsFactors, algebraicFractions } from './generators/math-algebra10.ts';
+import { completingSquare, realNumbers } from './generators/math-squares-reals.ts';
 import { surds, linearPatterns, quadraticPatterns, series } from './generators/math-surds-patterns.ts';
 import { financeApplications, depreciation, nominalEffective, futureValueAnnuities, presentValueAnnuities } from './generators/math-finance.ts';
 import { simultaneousEquations, literalEquations, linearInequalities, quadraticInequalities, rootsParameter } from './generators/math-equations.ts';
@@ -100,6 +101,8 @@ export const TEMPLATES: QuestionTemplate[] = [
   derivativePowers,
   productsFactors,
   algebraicFractions,
+  completingSquare,
+  realNumbers,
   livingNonliving,
   plantNeeds,
   lifeCycles,

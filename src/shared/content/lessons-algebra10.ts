@@ -1,4 +1,4 @@
-/** Grade 10 algebraic expressions: products, grouping and cubes; algebraic fractions. */
+/** Grade 10 algebraic expressions (products, grouping and cubes; algebraic fractions; real numbers) and Grade 11 completing the square. */
 import type { Lesson } from './types.ts';
 
 export const ALGEBRA10_LESSONS: Lesson[] = [
@@ -62,6 +62,69 @@ export const ALGEBRA10_LESSONS: Lesson[] = [
       { kind: 'check', level: 1 },
       { kind: 'check', level: 2 },
       { kind: 'check', level: 3 },
+      { kind: 'check', level: 5 },
+    ],
+  },
+  {
+    id: 'real-numbers',
+    skillId: 'real-numbers',
+    title: 'Which numbers are fractions?',
+    minutes: 12,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'Is $3{,}14$ rational or irrational?',
+        options: ['Rational', 'Irrational, because it is π'],
+        answer: 0,
+        explanation: '$3{,}14 = \\tfrac{314}{100}$, a fraction of two integers, so it is rational. It is only close to $\\pi$; $\\pi$ itself is irrational, and its decimals never stop or repeat.',
+      },
+      {
+        kind: 'widget',
+        title: 'Watch the digits',
+        task: 'Compare $\\tfrac{1}{7}$, $\\tfrac{5}{12}$ and $\\tfrac{3}{8}$ with $\\sqrt{2}$ and $\\pi$. Which ones repeat? Then look closely at $\\tfrac{22}{7}$ and $\\pi$.',
+        widget: { type: 'algebra-lab', mode: 'decimals' },
+      },
+      {
+        kind: 'key-idea',
+        body: 'A **rational** number can be written as $\\tfrac{a}{b}$ with $a$ and $b$ integers and $b \\ne 0$. Its decimal **terminates** ($\\tfrac{3}{8} = 0{,}375$) or **recurs** ($\\tfrac{5}{12} = 0{,}41\\dot{6}$). An **irrational** number has a decimal that never stops and never repeats: $\\sqrt{2}$, $\\sqrt{39}$, $\\pi$, $3 + \\sqrt{5}$. Simplify before you decide: $\\sqrt{2} \\times \\sqrt{8} = 4$ is rational. **Between two integers:** find the squares (or cubes) on either side, $36 < 40 < 49$, so $6 < \\sqrt{40} < 7$. **Rounding:** look at the next digit; in a real situation, round the way that makes sense. **Recurring to fraction:** let $x = 0{,}\\dot{1}\\dot{2}$, then $100x - x = 12$, so $x = \\tfrac{12}{99} = \\tfrac{4}{33}$.',
+      },
+      { kind: 'trap', wrong: '$135$ learners, buses of $60$: $135 \\div 60 = 2{,}25$, so $2$ buses.', why: 'Two buses carry only $120$ learners and $15$ are left behind. The part left over needs a whole bus: round **up** to $3$.' },
+      { kind: 'example', level: 5 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 2 },
+      { kind: 'check', level: 3 },
+      { kind: 'check', level: 4 },
+    ],
+  },
+  {
+    id: 'completing-square',
+    skillId: 'completing-square',
+    title: 'Completing the square',
+    minutes: 15,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'Which number makes $x^2 + 6x + \\square$ a perfect square?',
+        options: ['6', '9', '36'],
+        answer: 1,
+        explanation: '$(x + 3)^2 = x^2 + 6x + 9$. Halve the $6$ to get $3$, and square it: $9$.',
+      },
+      {
+        kind: 'widget',
+        title: 'The missing corner',
+        task: 'The $x^2$ square and two strips make $x^2 + bx$. What is the missing corner for $b = 6$? For $b = 8$? Try an odd $b$ too.',
+        widget: { type: 'algebra-lab', mode: 'square' },
+      },
+      {
+        kind: 'key-idea',
+        body: '**The form:** halve the coefficient of $x$, square it, add it and take it away: $x^2 + 6x + 2 = (x + 3)^2 - 9 + 2 = (x + 3)^2 - 7$. **Solving:** move the constant across, add the square to **both** sides, then take the square root with $\\pm$: $x^2 + 6x + 2 = 0 \\Rightarrow (x + 3)^2 = 7 \\Rightarrow x = -3 \\pm \\sqrt{7}$. **With $a \\ne 1$:** divide every term by $a$ first (or take $a$ out of the $x$ terms when writing $a(x + p)^2 + q$). **The turning point** of $y = a(x + p)^2 + q$ is $(-p; q)$. Type surd roots in one box with ±: `-3 ± √7`. Completing the square every time is where the quadratic formula comes from.',
+      },
+      { kind: 'trap', wrong: '$x^2 - 8x + 5 = (x - 4)^2 + 21$', why: 'Expand $(x - 4)^2$: you get $x^2 - 8x + 16$. You added $16$, so take $16$ away: $(x - 4)^2 + 5 - 16 = (x - 4)^2 - 11$.' },
+      { kind: 'trap', wrong: '$(x + 3)^2 = 7$, so $x + 3 = \\sqrt{7}$ and $x = -3 + \\sqrt{7}$.', why: 'A square root has two signs: $x + 3 = \\pm\\sqrt{7}$. There are two solutions, $-3 + \\sqrt{7}$ and $-3 - \\sqrt{7}$.' },
+      { kind: 'example', level: 3 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 2 },
+      { kind: 'check', level: 4 },
       { kind: 'check', level: 5 },
     ],
   },

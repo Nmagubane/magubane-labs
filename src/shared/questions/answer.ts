@@ -3,7 +3,7 @@
  * before responding. Accepts the way South African learners write numbers: "2,5" and "2.5".
  */
 import { rat, eq as req, toNumber, type Rational } from './rational.ts';
-import { parseExpression, toRatFn, ratFnEqual, isExpandedForm, isFactorisedForm, fractionFormProblem, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
+import { parseExpression, toRatFn, ratFnEqual, isExpandedForm, isFactorisedForm, isCompletedSquareForm, fractionFormProblem, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
 import type { AnswerSpec, InputSpec, Misconception, RichText } from './types.ts';
 import { parseInequality, InequalityError, sameSet, fromWire, toggledEnds, complement, setText, type Interval } from './inequality.ts';
 import { parseFormula, FormulaError, formulasEquivalent, variablesOf } from './formula.ts';
@@ -68,7 +68,8 @@ type Parsed =
   | { kind: 'equation'; text: string }
   | { kind: 'point'; x: Rational; y: Rational }
   | { kind: 'proof'; ids: string[] }
-  | { kind: 'roots'; values: Rational[] }
+  /** Every root as an exact surd (a rational root is a surd with only a rational part). */
+  | { kind: 'roots'; values: Surd[]; problems: (string | null)[] }
   | { kind: 'inequality'; set: Interval[] }
   | { kind: 'formula'; text: string }
   | { kind: 'surd'; value: Surd; problem: string | null }
@@ -140,15 +141,28 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue,
     case 'roots': {
       const parts = (Array.isArray(response) ? response : response.split(/;|\bor\b|\band\b|,\s+/))
         .map((p) => p.replace(/^\s*[a-z]\s*=/i, '').replace(/°/g, '').trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        // "-3 ± √7" is two roots.
+        .flatMap((p) => (/±|\+\/-|\+-/.test(p) ? [p.replace(/±|\+\/-|\+-/, '+'), p.replace(/±|\+\/-|\+-/, '-')] : [p]));
       if (parts.length === 0) return { error: 'Enter each solution.' };
-      const values: Rational[] = [];
+      const values: Surd[] = [];
+      const problems: (string | null)[] = [];
       for (const part of parts) {
         const p = parseNumber(part);
-        if (!p || !p.exact) return { error: `Can't read "${part}". Enter numbers like -3 or 1/2.` };
-        values.push(p.exact);
+        if (p && p.exact) {
+          values.push(fromTerms([{ r: 1, n: p.exact.n, d: p.exact.d }]));
+          problems.push(null);
+          continue;
+        }
+        try {
+          const s = parseSurd(part);
+          values.push(s.value);
+          problems.push(s.problem);
+        } catch {
+          return { error: `Can't read "${part}". Enter numbers like -3, 1/2 or 2 + √3.` };
+        }
       }
-      return { kind, values };
+      return { kind, values, problems };
     }
     case 'inequality': {
       try {
@@ -213,18 +227,21 @@ function numericMatches(spec: Extract<AnswerSpec, { kind: 'numeric' }>, value: n
   return Math.abs(value - spec.value) <= Math.max(tol, 1e-9);
 }
 
-function sameMultiset(a: Rational[], b: { n: number; d: number }[]): boolean {
+/** The roots an answer expects, as exact surds. */
+const specRoots = (spec: Extract<AnswerSpec, { kind: 'roots' }>): Surd[] => (spec.surds ? spec.surds.map(fromTerms) : spec.values.map((v) => fromTerms([{ r: 1, n: v.n, d: v.d }])));
+
+function sameMultiset(a: Surd[], b: Surd[]): boolean {
   if (a.length !== b.length) {
     // a repeated root may be entered once or twice
-    const uniq = (xs: { n: number; d: number }[]) => xs.filter((x, i) => xs.findIndex((y) => req(rat(x.n, x.d), rat(y.n, y.d))) === i);
+    const uniq = (xs: Surd[]) => xs.filter((x, i) => xs.findIndex((y) => sameSurd(x, y)) === i);
     const ua = uniq(a);
     const ub = uniq(b);
     if (ua.length !== ub.length) return false;
-    return ua.every((x) => ub.some((y) => req(rat(x.n, x.d), rat(y.n, y.d))));
+    return ua.every((x) => ub.some((y) => sameSurd(x, y)));
   }
-  const rest = b.map((x) => rat(x.n, x.d));
+  const rest = [...b];
   for (const x of a) {
-    const i = rest.findIndex((y) => req(x, y));
+    const i = rest.findIndex((y) => sameSurd(x, y));
     if (i < 0) return false;
     rest.splice(i, 1);
   }
@@ -261,7 +278,7 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
     case 'proof':
       return parsed.kind === 'proof' && parsed.ids.length === spec.ids.length && spec.ids.every((id, i) => parsed.ids[i] === id);
     case 'roots':
-      return parsed.kind === 'roots' && sameMultiset(parsed.values, spec.values);
+      return parsed.kind === 'roots' && sameMultiset(parsed.values, specRoots(spec));
     case 'inequality':
       return parsed.kind === 'inequality' && sameSet(parsed.set, fromWire(spec.set));
     case 'surd':
@@ -289,8 +306,10 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
 function formOk(spec: AnswerSpec, parsed: Parsed): boolean {
   if (spec.kind === 'fraction' && spec.requireSimplest && parsed.kind === 'fraction') return parsed.simplest;
   if (spec.kind === 'surd' && parsed.kind === 'surd') return !spec.requireSimplest || parsed.problem === null;
+  if (spec.kind === 'roots' && parsed.kind === 'roots') return !spec.requireSimplest || parsed.problems.every((p) => p === null);
   if (spec.kind !== 'expression' || !spec.form || parsed.kind !== 'expression') return true;
   const node = parseExpression(parsed.text);
+  if (spec.form === 'completed-square') return isCompletedSquareForm(node);
   return spec.form === 'expanded' ? isExpandedForm(node) : spec.form === 'simplified' ? fractionFormProblem(node) === null : isFactorisedForm(node);
 }
 
@@ -303,8 +322,14 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
     if (answer.kind === 'fraction') {
       return { correct: false, mistake: 'unsimplified', feedback: 'That fraction has the right value, but it isn\'t in simplest form.' };
     }
+    if (answer.kind === 'roots' && parsed.kind === 'roots') {
+      return { correct: false, mistake: 'unsimplified', feedback: `Those are the right values, but not in simplest surd form. ${parsed.problems.find((p) => p) ?? ''}.` };
+    }
     if (answer.kind === 'surd' && parsed.kind === 'surd') {
       return { correct: false, mistake: 'unsimplified', feedback: `That is the right value, but not in simplest surd form. ${parsed.problem ?? ''}.` };
+    }
+    if (answer.kind === 'expression' && answer.form === 'completed-square') {
+      return { correct: false, mistake: 'complete-square', feedback: 'That is equal to the expression, but it isn\'t in the form $a(x + p)^2 + q$: one squared bracket and one number.' };
     }
     if (answer.kind === 'expression' && answer.form === 'simplified' && parsed.kind === 'expression') {
       return { correct: false, mistake: 'unsimplified', feedback: `That is equal in value, but not fully simplified. ${fractionFormProblem(parseExpression(parsed.text)) ?? ''}` };
@@ -344,9 +369,9 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
 
   if (answer.kind === 'roots' && parsed.kind === 'roots') {
     // Right values, wrong count: say which, without giving away the missing ones.
-    const want = answer.values.map((v) => rat(v.n, v.d));
-    const allRight = parsed.values.every((p) => want.some((w) => req(w, p)));
-    const allFound = want.every((w) => parsed.values.some((p) => req(w, p)));
+    const want = specRoots(answer);
+    const allRight = parsed.values.every((p) => want.some((w) => sameSurd(w, p)));
+    const allFound = want.every((w) => parsed.values.some((p) => sameSurd(w, p)));
     if (allRight && !allFound) return { correct: false, mistake: 'missing-solutions', feedback: 'Every value you gave is a solution, but there are more. Check every quadrant or case.' };
     if (allFound && !allRight) return { correct: false, mistake: 'extra-solutions', feedback: 'You found all the solutions, but you also gave a value that is not a solution (or is outside the interval).' };
   }
@@ -395,7 +420,7 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
     case 'point':
       return [a.x.d === 1 ? String(a.x.n) : `${a.x.n}/${a.x.d}`, a.y.d === 1 ? String(a.y.n) : `${a.y.n}/${a.y.d}`];
     case 'roots':
-      return a.values.map((v) => (v.d === 1 ? String(v.n) : `${v.n}/${v.d}`));
+      return a.surds ? a.surds.map((t) => surdText(fromTerms(t))) : a.values.map((v) => (v.d === 1 ? String(v.n) : `${v.n}/${v.d}`));
     case 'coefficients':
       return a.values.map(String);
     case 'choice':

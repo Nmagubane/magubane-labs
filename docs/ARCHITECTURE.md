@@ -127,7 +127,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (111 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (113 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -137,7 +137,7 @@ The audit checks every screen, every lesson (111 at the last count) and every Ju
 ## 6. Not built yet (on purpose)
 - A guardian dashboard for **Grade 4–12** learners. Their guardians get weekly PDF reports by email. Parent accounts exist, but only for the Grade 1–3 children they create (§8).
 - School-level admin (many teachers, one school) and sponsor/impact dashboards.
-- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients, multiple choice, complete-the-proof, solution sets of inequalities, formulas (§18), exact surds (§20) and algebraic fractions in simplest form (§22). Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
+- Diagram labelling. Supported today: numeric, exact fraction, expression with a form check (expanded/factorised), equation (any equivalent rearrangement), coordinate pair, root sets, coefficients, multiple choice, complete-the-proof, solution sets of inequalities, formulas (§18), exact surds (§20), algebraic fractions in simplest form (§22), completed-square form and surd roots (§23). Junior adds pick-many, ordering, sorting into groups, building with counters, ten-frames, base-10 blocks and coins, clock setting and spelling with letter tiles. A number-line input exists in the client but no generator uses it yet.
 - Image questions to the tutor, and oral explanation assessments.
 - Career pathways ("I want to be an engineer").
 - Content authoring UI. Content is typed data in `src/shared/content` and is ready to move into the DB.
@@ -422,7 +422,7 @@ Five skills in the `equations` topic (`math-equations.ts`, `lessons-equations.ts
 
 **New mistake codes:** `inequality-endpoint`, `inequality-direction`, `inequality-flip`, `quadratic-inequality`, `simultaneous`, `change-subject`, `discriminant-condition`.
 
-**Not built:** completing the square as a method (Grade 11). The formula checker is also what marks derivatives of negative and fractional powers ($-\dfrac{k}{x^2}$, $\dfrac{3}{2}\sqrt{x}$), in §21.
+**Completing the square** is in §23. The formula checker is also what marks derivatives of negative and fractional powers ($-\dfrac{k}{x^2}$, $\dfrac{3}{2}\sqrt{x}$), in §21.
 
 ## 19. Finance, growth and decay (Paper 1)
 
@@ -467,7 +467,7 @@ Four skills (`math-surds-patterns.ts`, `lessons-number.ts`, `NumberLabs.tsx`):
 
 **New mistake codes:** `surd-simplify`, `surd-add`, `surd-expand`, `rationalise`, `extraneous-root`, `rational-exponent`, `term-number`, `second-difference`, `sigma-notation`, `sum-to-infinity`, `convergence`.
 
-**Not built:** completing the square. The Grade 10 algebraic expressions are in §22.
+The Grade 10 algebraic expressions are in §22, completing the square in §23.
 
 ## 21. Derivatives of negative and fractional powers (Paper 1)
 
@@ -512,4 +512,25 @@ Two Grade 10 skills in the `algebra` topic (`math-algebra10.ts`, `lessons-algebr
 
 **New mistake codes:** `multiply-every-term`, `grouping`, `cube-factor`, `cancel-terms`, `fraction-lcd`, `subtract-numerator`, `divide-fraction`, `undefined-value`.
 
-**Not built:** "real numbers can be rational or irrational" and rounding real numbers, two short items in the same CAPS topic.
+Rational and irrational numbers and rounding, the rest of this CAPS topic, are in §23.
+
+## 23. Completing the square and real numbers (Paper 1)
+
+Two skills (`math-squares-reals.ts`, lessons in `lessons-algebra10.ts`, two more `algebra-lab` modes). With them every Paper 1 topic is built.
+
+| Skill | Grade | Levels |
+|---|---|---|
+| `real-numbers` | 10 | 1: rational or irrational ($\sqrt{39}$, $3{,}14$, $\tfrac{22}{7}$, $0{,}\dot{4}$, $\sqrt{2} \times \sqrt{8}$, $0{,}101001\ldots$); 2: between which two integers a square or cube root lies (and $-\sqrt{n}$); 3: rounding to 1–3 decimal places, some after a calculator step; 4: rounding to suit a situation (buses up, full egg boxes down); 5: recurring decimals as fractions in simplest form |
+| `completing-square` | 11 | 1: $x^2 + bx + c$ as $(x + p)^2 + q$; 2: solving with whole-number roots; 3: surd roots in simplest form; 4: an odd $b$ (fractions) or $a \ne 1$ (divide first, then rationalise); 5: $a(x + p)^2 + q$ with $a \ne 1$, or the turning point |
+
+**Two marking additions.**
+- *Completed-square form* (`form: 'completed-square'`): one squared bracket whose $x$ has coefficient ±1, times a number, plus at most one number. $(x + 3)^2 - 7$ is right; the original quadratic, $(x + 3)^2 - 9 + 2$ or $2(x^2 - 6x + 9) - 13$ are equal but not in the form.
+- *Surd roots* (`roots` with `surds` and `requireSimplest`): roots are compared as exact surds, a learner can type both at once as `-3 ± √7`, and a right value that isn't simplest ("Take the square factors out of √28") is marked as unsimplified. Rational roots work exactly as before. The roots input with `surds: true` has a √ key and a "Reads as" preview that shows the ± as two roots.
+
+**Predicted mistakes:** adding the square instead of subtracting it, using $b$ instead of $\tfrac{b}{2}$, the sign in the bracket, the sign of the roots, dividing only the $x$ terms by $a$, forgetting to multiply the square by $a$, calling $3{,}14$ or a root irrational/rational the wrong way, cutting off instead of rounding, ordinary rounding in a situation that needs up or down, and writing $0{,}\dot{4}$ as $\tfrac{4}{10}$.
+
+**Checked independently.** `squares-reals.test.ts` reads the quadratic from the prompt and requires each form to equal it at four points, each root to solve it (two distinct roots, square-free radicands), and the turning point to be at $-\tfrac{b}{2a}$. Rational or irrational is decided from the number's value (rational when a denominator up to 10 000 makes it whole) or its never-repeating pattern; roots are placed between the chosen integers; rounding, situation rounding and recurring decimals are recomputed from the prompt. Six deliberate errors (the square's constant, a root sign, not dividing by $a$, a root called rational, eggs rounded up, a mixed recurring decimal) each made it fail.
+
+**Labs.** *square*: completing the square drawn literally. $x^2 + bx$ is a square and two strips of $\tfrac{b}{2}$, the dashed corner $(\tfrac{b}{2})^2$ completes it, and the equation updates with $b$ (odd $b$ gives fractions) and $c$. *decimals*: the digits of $\tfrac{1}{7}$, $\tfrac{5}{12}$, $\tfrac{3}{8}$, $\tfrac{7}{13}$, $\tfrac{22}{7}$, $\sqrt{2}$, $\sqrt{10}$ and $\pi$. Fractions come from long division with the repeating block highlighted, and roots are worked out exactly with whole-number arithmetic. $\tfrac{22}{7}$ and $\pi$ part ways after two decimal places.
+
+**New mistake codes:** `rational-irrational`, `context-rounding`, `recurring-decimal`. `complete-square` and `rounding` existed and are reused.

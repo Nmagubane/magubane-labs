@@ -492,7 +492,7 @@ export const MISTAKES = {
   'inclination-quadrant': { label: 'Angle of inclination', kind: 'conceptual', tip: 'tan θ = m, with θ measured anticlockwise from the positive x-axis, between 0° and 180°. If m is negative, θ is obtuse: add 180° to the calculator answer.' },
   'circle-sign': { label: 'Centre of a circle', kind: 'procedural', tip: 'In (x − a)² + (y − b)² = r², the centre is (a; b): the signs inside the brackets are the opposite of the centre\'s coordinates.' },
   'radius-squared': { label: 'r or r²', kind: 'procedural', tip: 'The right-hand side is r², the radius squared. Square the radius when you write the equation; take the square root when you read the radius off.' },
-  'complete-square': { label: 'Completing the square', kind: 'procedural', tip: 'Halve the coefficient of x (and of y), square it, and add it to both sides.' },
+  'complete-square': { label: 'Completing the square', kind: 'procedural', tip: 'Halve the coefficient of x, square it, then add and subtract it: x² + 6x + 2 = (x + 3)² − 9 + 2. In an equation add it to both sides. With a number in front of x², divide by it (or take it out) first.' },
   'tangent-gradient': { label: 'Tangent gradient', kind: 'conceptual', tip: 'A tangent is perpendicular to the radius at the point of contact. Find the gradient of the radius, then use the negative reciprocal.' },
   // ---- Equations with several solutions ----
   'missing-solutions': { label: 'Some solutions missing', kind: 'conceptual', tip: 'An equation can have more than one solution. A quadratic can have two; a trig equation can have one in each of several quadrants. Check every case before you stop.' },
@@ -536,6 +536,9 @@ export const MISTAKES = {
   'subtract-numerator': { label: 'Subtracting a whole numerator', kind: 'procedural', tip: 'The minus sign in front of a fraction subtracts its whole top. Put the top in brackets: −(2x − 3) = −2x + 3.' },
   'divide-fraction': { label: 'Dividing by a fraction', kind: 'procedural', tip: 'To divide by a fraction, multiply by its reciprocal: turn the second fraction upside down, then factorise and cancel.' },
   'undefined-value': { label: 'When a fraction is undefined', kind: 'conceptual', tip: 'A fraction is not defined when its denominator is 0. Factorise the denominator and set each factor to 0. The numerator doesn\'t matter, and x² + 2x + 4 is never 0.' },
+  'rational-irrational': { label: 'Rational and irrational numbers', kind: 'conceptual', tip: 'A rational number can be written as a fraction of two integers: every terminating or recurring decimal is one. √ of a non-square, π and decimals that never repeat are irrational. Simplify first: √2 × √8 = 4.' },
+  'context-rounding': { label: 'Rounding to suit the situation', kind: 'conceptual', tip: 'In a real situation, decide which way makes sense before you round: 130 learners in buses of 60 need 3 buses (round up), and 130 eggs fill only 10 full boxes of 12 (round down).' },
+  'recurring-decimal': { label: 'Recurring decimals as fractions', kind: 'procedural', tip: 'Let x be the decimal, multiply by 10, 100, … to line up the repeating part, and subtract: 0,444… = 4/9, 0,1212… = 12/99 = 4/33.' },
   // ---- Surds, patterns and series (Grades 10–12) ----
   'surd-simplify': { label: 'Simplifying surds', kind: 'procedural', tip: 'Find the largest perfect square factor: √72 = √(36 × 2) = 6√2. The square comes out as its square root.' },
   'surd-add': { label: 'Adding surds', kind: 'conceptual', tip: '√a + √b is not √(a + b). Simplify each surd; only like surds (the same number under the root) can be added.' },

@@ -388,6 +388,34 @@ export function isFactorisedForm(node: Node): boolean {
   return true;
 }
 
+/**
+ * Completed-square form a(x + p)² + q: one squared bracket whose variable has coefficient ±1, times a number,
+ * plus at most one number. (x + 3)² − 7 and 2(x − 1)² + 5 are; x² + 6x + 2 and (x + 3)² − 9 + 2 are not.
+ */
+export function isCompletedSquareForm(node: Node): boolean {
+  const isConst = (n: Node) => {
+    const p = toPoly(n);
+    return p !== null && polyDegree(p) === 0;
+  };
+  const isSquare = (n: Node): boolean => {
+    if (n.t !== 'pow' || n.exp !== 2) return false;
+    const b = toPoly(n.base);
+    if (!b || polyDegree(b) !== 1) return false;
+    const linear = [...b].filter(([k]) => k !== '');
+    return linear.length === 1 && Math.abs((linear[0] as [string, Rational])[1].n) === 1 && (linear[0] as [string, Rational])[1].d === 1;
+  };
+  const terms = topTerms(node);
+  let squares = 0;
+  let constants = 0;
+  for (const t of terms) {
+    const s = stripNeg(t);
+    if (isConst(s)) constants++;
+    else if (isSquare(s) || (s.t === 'mul' && s.factors.filter((f) => !isConst(f)).length === 1 && s.factors.some(isSquare))) squares++;
+    else return false;
+  }
+  return squares === 1 && constants <= 1;
+}
+
 // ---------- Algebraic fractions ----------
 
 /** An expression as an exact quotient of two polynomials: num / den. */
