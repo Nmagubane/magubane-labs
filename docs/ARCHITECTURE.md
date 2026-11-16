@@ -127,7 +127,7 @@ Junior adds its own rules:
 - Tens and ones stay side by side, because left-to-right place value is the lesson.
 - Phones held sideways get compact bars.
 
-The audit checks every screen, every lesson (113 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
+The audit checks every screen, every lesson (115 at the last count) and every Junior question type. It runs at 320, 360, 390 and 412 px and in landscape, in light and dark mode. It flags overlaps, page overflow measured against the phone's real width, labels wider than their buttons, and content hidden under fixed bars.
 
 ### Review against the generic defaults
 - The first draft used a warm cream background with a serif display. That is the commonest generated look, so it became the cool desk green with a single sans.
@@ -347,8 +347,9 @@ Two skills in the `euclidean` topic (`math-proofs.ts`, lessons in `lessons-geome
 
 | Skill | Grade | Levels 1–3 (riders) | Level 4 (harder riders) | Level 5 (theorem proofs) |
 |---|---|---|---|---|
-| `circle-proofs` | 11 | ∠OAB = 90° − x from the centre angle; ∠ACB = 90° − ½y from two tangents; AB = AC from a tangent parallel to a chord | PAOB is cyclic; a parallel from the centre bisects a chord | Perpendicular from the centre; angle at the centre; opposite angles of a cyclic quad; tan chord |
+| `circle-proofs` | 11 | ∠OAB = 90° − x from the centre angle; ∠ACB = 90° − ½y from two tangents; AB = AC from a tangent parallel to a chord | PAOB is cyclic; a parallel from the centre bisects a chord | Perpendicular from the centre; the line from the centre that bisects a chord is ⊥ (SSS, then ∠s on a str line); angle at the centre; opposite angles of a cyclic quad; tan chord |
 | `similarity-proofs` | 12 | △ADE ∣∣∣ △ABC and the ratio; AB² = BD·BC; DE ∥ BC from given lengths (the converse) | Intersecting chords; tangent and secant | Proportionality (area proof); equiangular triangles; Pythagoras |
+| `quadrilateral-proofs` | 10 | Opposite sides of a parallelogram; its diagonals bisect each other; a rectangle's diagonals are equal | A rhombus's diagonals are perpendicular; both pairs of opposite sides equal ⇒ a parallelogram (*alt ∠s =*) | The midpoint theorem (construction: extend DE to F, then DBCF is a parallelogram) |
 
 **Complete the proof.** A new input, `proof`: a statement–reason table in which some cells are blanks, each a native select with four options. Level 1 blanks reasons, level 2 statements, levels 3–5 both, never a statement and its own reason together (each is the clue to the other), and never the final statement (it is in the prompt). The answer is the list of option ids; marking names the steps that are wrong without saying what goes there ("2 of 3 blanks are right. Look again at the reason in step 1"), and after marking each blank shows ✓ or ✗. Option ids are shuffled per question, so the id says nothing about the answer. On phones the table stacks: statement, then reason.
 
@@ -358,7 +359,9 @@ Two skills in the `euclidean` topic (`math-proofs.ts`, lessons in `lessons-geome
 
 **Every statement is measured.** `proofs.test.ts` (300 seeds × 5 levels × 2 skills; it also passed at 1 500 seeds) reads each statement as a claim about the diagram: angles, lengths, areas, ratios, parallel lines, cyclic quads, similar and congruent triangles, with x and y read from the marked angles. Every given statement and every right option must be true in the drawing; every wrong option must be false by more than 1%. Building it found five drawings where a wrong option happened to be true (for example an equilateral triangle, or chords crossing at right angles), now kept out by the generators' ranges. It also checks that every right reason is from `PROOF_REASONS`, that marking names the wrong step, and that an empty blank is refused rather than marked.
 
-**Not built.** Grade 10 proofs (quadrilateral properties, midpoint theorem), the converse "line from the centre to the midpoint of a chord is ⊥", and writing a proof from a blank page.
+**Grade 10 drawings are kept general.** A parallelogram is redrawn until its sides and diagonals are all at least 8% apart, a rhombus avoids 60° (where AB = BD) and the midpoint triangle is clearly scalene, because the measuring test found drawings where a wrong option was true by coincidence. It also found one wrong option that is always true (in a rhombus, △ABE ≡ △CBE by symmetry), which was replaced. The quadrilateral and circle proofs also passed at 1 500 seeds. The test now blanks four-letter names (DBCF) as well as lines when it compares reasons.
+
+**Not built.** Writing a proof from a blank page.
 
 ## 16. Calculus and cubic polynomials (Paper 1)
 
@@ -534,3 +537,26 @@ Two skills (`math-squares-reals.ts`, lessons in `lessons-algebra10.ts`, two more
 **Labs.** *square*: completing the square drawn literally. $x^2 + bx$ is a square and two strips of $\tfrac{b}{2}$, the dashed corner $(\tfrac{b}{2})^2$ completes it, and the equation updates with $b$ (odd $b$ gives fractions) and $c$. *decimals*: the digits of $\tfrac{1}{7}$, $\tfrac{5}{12}$, $\tfrac{3}{8}$, $\tfrac{7}{13}$, $\tfrac{22}{7}$, $\sqrt{2}$, $\sqrt{10}$ and $\pi$. Fractions come from long division with the repeating block highlighted, and roots are worked out exactly with whole-number arithmetic. $\tfrac{22}{7}$ and $\pi$ part ways after two decimal places.
 
 **New mistake codes:** `rational-irrational`, `context-rounding`, `recurring-decimal`. `complete-square` and `rounding` existed and are reused.
+
+## 24. Surface area and volume (Grade 10, Paper 2)
+
+One skill, `surface-area-volume` (`math-measurement.ts`, `lessons-measurement.ts`, `MeasurementLabs.tsx`), on the CAPS Grade 10 list; Grade 11 revises it. With it, every Grades 10–12 Mathematics topic is built.
+
+| Level | What it asks |
+|---|---|
+| 1 | Rectangular and right-triangular prisms, closed cylinders (radius or diameter given), and a cylinder's height from its volume |
+| 2 | Spheres, solid hemispheres, cones (height or slant height given) |
+| 3 | Right pyramids on a square or an equilateral-triangle base, the only bases CAPS allows |
+| 4 | Multiplying dimensions by $k$: every length ($k^2$, $k^3$), only the radius ($k^2$) or only the height ($k$), and a new volume |
+| 5 | Two solids joined (the guidelines' limit): a silo (cylinder + hemisphere), an ice-cream (cone + hemisphere), a pencil (cylinder + cone) |
+
+**A new figure kind, `solid`.** Eleven shapes are drawn the way exam papers draw them: oblique, hidden edges dashed, the given measurements written on, and "Not drawn to scale" underneath (`SolidFigure.tsx`). A label left out is not drawn, so a "find the height" question shows *h*. Every figure has alt text. Slant heights come from Pythagorean triples, so given numbers are whole.
+
+**Answers** are to two decimal places, accepted within 0,1%, so a learner who uses 3,14 for $\pi$ is still right.
+
+**Predicted mistakes:** only three of a box's six faces, one triangular end, the diameter used as the radius, one circle on a closed cylinder, $r^2$ in a volume, a hemisphere without its flat face, a cone or pyramid without the ⅓, the height instead of the slant height, a pyramid without its base, the wrong power of $k$, and the hidden joining circle counted in a composite's surface. New mistake codes: `surface-area`, `one-third`, `slant-height`, `radius-diameter`, `scale-factor`, `composite-solid`.
+
+**Checked from what the learner sees.** `measurement.test.ts` reads the lengths from the prompt and the shape from the figure, applies its own formula table (including Pythagoras for slant heights) and must match every answer at 400 seeds × 5 levels. Every predicted mistake must be off by more than 0,5%, and pyramid bases must be squares or equilateral triangles. Leaving out a cone's ⅓, a hemisphere's flat face, a pyramid's slant height, the $k^2$ for a radius, or counting a silo's hidden circle each made it fail.
+
+**Labs.** `measure-lab` has two modes: *third* (pour cones of water into the cylinder with the same base and height; three fill it) and *scale* (a box and the same box with every length × $k$, its unit squares and cubes visible; a table shows area × $k^2$ and volume × $k^3$).
+

@@ -138,9 +138,16 @@ export type Figure =
   | { kind: 'tree'; alt: string; branches: TreeBranch[] }
   /** A two-way (contingency) table. The first row and column are headings. */
   | { kind: 'table'; alt: string; rows: string[][] }
+  /**
+   * A solid, drawn schematically (not to scale) with its given measurements. Labels are plain text such as
+   * "6 cm"; a label left out is not drawn. Composites stack two shapes on a shared circle.
+   */
+  | { kind: 'solid'; alt: string; shape: SolidShape; labels: Partial<Record<'r' | 'h' | 'h2' | 'slant' | 'l' | 'w' | 'side' | 'a' | 'b', string>> }
   /** A solution set drawn on a number line (open and closed dots, arrows to infinity). */
   | { kind: 'numberline'; alt: string; set: IneqInterval[]; variable?: string }
   | GeometryFigure;
+
+export type SolidShape = 'cuboid' | 'triangular-prism' | 'cylinder' | 'cone' | 'sphere' | 'hemisphere' | 'square-pyramid' | 'triangular-pyramid' | 'cylinder-hemisphere' | 'cone-hemisphere' | 'cylinder-cone';
 
 /** One interval of a solution set; null ends are infinite. */
 export interface IneqInterval {

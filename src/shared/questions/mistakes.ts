@@ -539,6 +539,13 @@ export const MISTAKES = {
   'rational-irrational': { label: 'Rational and irrational numbers', kind: 'conceptual', tip: 'A rational number can be written as a fraction of two integers: every terminating or recurring decimal is one. √ of a non-square, π and decimals that never repeat are irrational. Simplify first: √2 × √8 = 4.' },
   'context-rounding': { label: 'Rounding to suit the situation', kind: 'conceptual', tip: 'In a real situation, decide which way makes sense before you round: 130 learners in buses of 60 need 3 buses (round up), and 130 eggs fill only 10 full boxes of 12 (round down).' },
   'recurring-decimal': { label: 'Recurring decimals as fractions', kind: 'procedural', tip: 'Let x be the decimal, multiply by 10, 100, … to line up the repeating part, and subtract: 0,444… = 4/9, 0,1212… = 12/99 = 4/33.' },
+  // ---- Surface area and volume (Grade 10) ----
+  'surface-area': { label: 'Counting every face', kind: 'procedural', tip: 'Surface area is the total area of every face: a closed cylinder has two circles and a curved side, a triangular prism has two triangles and three rectangles, a solid hemisphere has a curved part and a flat circle.' },
+  'one-third': { label: 'The ⅓ for cones and pyramids', kind: 'conceptual', tip: 'A cone or pyramid holds exactly a third of the cylinder or prism with the same base and height: V = ⅓ × base area × height.' },
+  'slant-height': { label: 'Slant height or height', kind: 'conceptual', tip: 'The perpendicular height goes straight up the middle and gives the volume. The slant height runs along the side and gives the area of the sloping faces. Find one from the other with Pythagoras.' },
+  'radius-diameter': { label: 'Radius or diameter', kind: 'careless', tip: 'The formulas use the radius, half the diameter. Check which one the question gives you.' },
+  'scale-factor': { label: 'Scaling a solid', kind: 'conceptual', tip: 'Multiply every length by k: areas are multiplied by k² and volumes by k³. If only one length changes, ask how many times that length appears in the formula.' },
+  'composite-solid': { label: 'Joined solids', kind: 'procedural', tip: 'Add the volumes. For the outside surface, add only the faces you can touch: the circle where two solids are joined is inside, so it does not count.' },
   // ---- Surds, patterns and series (Grades 10–12) ----
   'surd-simplify': { label: 'Simplifying surds', kind: 'procedural', tip: 'Find the largest perfect square factor: √72 = √(36 × 2) = 6√2. The square comes out as its square root.' },
   'surd-add': { label: 'Adding surds', kind: 'conceptual', tip: '√a + √b is not √(a + b). Simplify each surd; only like surds (the same number under the root) can be added.' },

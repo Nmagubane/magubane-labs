@@ -51,6 +51,9 @@ export const PROOF_REASONS = [
   'tan ⊥ radius', 'tans from common pt', 'tan chord theorem', 'line from centre ⊥ to chord', 'common', 'given', 'RHS', '≡Δs',
   '∠∠∠', '|||Δs', 'line divides two sides of Δ in prop', 'same height', 'same base DE, same height (DE ∥ BC)',
   'alt ∠s; TA ∥ BC', 'corresp ∠s; OD ∥ BC', 'corresp ∠s; DE ∥ BC', '∠s round a pt', 'SAS', 'corresp ∠s =', 'line ∥ one side of Δ',
+  'SSS', '∠s on a str line',
+  'alt ∠s; AB ∥ DC', 'alt ∠s; AD ∥ BC', 'AAS', 'opp sides of ||m', '∠s of rectangle', 'sides of rhombus', 'diags of ||m bisect', 'alt ∠s =',
+  'construction', 'BD = AD (given)', 'DBCF is a ||m (one pair opp sides = and ∥)', 'DE = ½DF (construction)',
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -252,6 +255,189 @@ function theoremPerpendicular(rng: Rng): Proof {
     hints: ['Look for two triangles that share the side OM.', 'Each has a right angle, an equal hypotenuse and a common side. Which congruence test is that?'],
   };
 }
+
+/**
+ * Theorem (the converse, examinable in the DBE guidelines): the line from the centre that bisects a chord is
+ * perpendicular to the chord. No right-angle mark: that is what is being proved.
+ */
+function theoremBisector(rng: Rng): Proof {
+  const a = rng.int(52, 70);
+  const tilt = rng.int(-25, 25);
+  const A = onC('A', -90 - a + tilt);
+  const B = onC('B', -90 + a + tilt);
+  return {
+    prompt: 'Theorem: O is the centre of the circle, and M is the midpoint of the chord AB. Prove that $OM \perp AB$, that is, $\angle OMA = 90^\circ$.',
+    figure: fig('Circle with centre O and chord AB. M is the midpoint of AB, with AM and MB marked equal; OA, OB and OM are drawn.', [CENTRE(), A, B, P('M', (A.x + B.x) / 2, (A.y + B.y) / 2)], [{ a: 'A', b: 'M', ticks: 1 }, { a: 'M', b: 'B', ticks: 1 }, ...segs('OA', 'OB', 'OM')]),
+    steps: [
+      { s: 'OA = OB', sWrong: ['OA = AB', 'OM = MA', 'OM = AB'], r: 'radii', rWrong: ['given', 'line from centre ⊥ to chord', 'common', 'sides opp equal ∠s'] },
+      { s: 'AM = MB', sWrong: ['AM = OM', 'AM = AB', 'MB = OB'], r: 'given', rWrong: ['radii', 'line from centre ⊥ to chord', 'common', '≡Δs'] },
+      { s: 'OM = OM', r: 'common', rWrong: ['given', 'radii', 'line from centre ⊥ to chord', 'sides opp equal ∠s'] },
+      { s: 'ΔOMA ≡ ΔOMB', sWrong: ['ΔOMA ≡ ΔMOB', 'ΔOAB ≡ ΔOMB', 'ΔOMA ≡ ΔOAB'], r: 'SSS', rWrong: ['RHS', 'SAS', 'AAS', '∠∠∠'] },
+      { s: '∠OMA = ∠OMB', sWrong: ['∠OAM = ∠OMA', '∠AOM = ∠OAM', '∠OMA = ∠AOB'], r: '≡Δs', rWrong: ['radii', '∠s opp equal sides', 'given', 'vert opp ∠s'] },
+      { s: '∠OMA = ∠OMB = 90°', r: '∠s on a str line', rWrong: ['sum of ∠s in Δ', '∠s round a pt', 'ext ∠ of Δ', 'line from centre ⊥ to chord'] },
+    ],
+    hints: ['Look for two triangles that share the side OM. Which three pairs of sides are equal?', 'Angles OMA and OMB are equal and together make a straight line. You may not use the theorem you are proving (or its original) as a reason.'],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Grade 10: proving the properties of quadrilaterals, and the midpoint theorem. No circles.
+// Shapes are drawn in general position (a parallelogram that is not a rectangle or a rhombus, a rectangle that
+// is not a square), so every wrong option is false in the drawing.
+
+const NOCIRCLE: GeometryFigure['circles'] = [];
+const r1 = (rng: Rng, lo: number, hi: number) => lo + (hi - lo) * rng.int(0, 100) / 100;
+
+/** A parallelogram with its sides and diagonals all clearly different lengths, so no triangle in it is nearly isosceles. */
+function parallelogram(rng: Rng) {
+  for (;;) {
+    const w = r1(rng, 3.6, 5);
+    const s = r1(rng, 0.9, 1.8) * rng.pick([1, -1]);
+    const h = r1(rng, 2.1, 3);
+    const lens = [w, Math.hypot(s, h), Math.hypot(w + s, h), Math.hypot(w - s, h)]; // AB, AD, AC, BD
+    const apart = lens.every((x, i) => lens.every((y, j) => i === j || Math.abs(x - y) / Math.max(x, y) > 0.08));
+    if (apart) return { A: P('A', 0, 0), B: P('B', w, 0), C: P('C', w + s, h), D: P('D', s, h) };
+  }
+}
+const parallelSides = [
+  { a: 'A', b: 'B', arrows: 1 as const },
+  { a: 'D', b: 'C', arrows: 1 as const },
+  { a: 'A', b: 'D', arrows: 2 as const },
+  { a: 'B', b: 'C', arrows: 2 as const },
+];
+
+/** Opposite sides of a parallelogram are equal (the definition gives only the parallel sides). */
+function quadOppositeSides(rng: Rng): Proof {
+  const { A, B, C, D } = parallelogram(rng);
+  return {
+    prompt: 'ABCD is a parallelogram: AB ∥ DC and AD ∥ BC. Prove that $AB = DC$. Construction: join AC.',
+    figure: fig('Parallelogram ABCD with AB parallel to DC and AD parallel to BC, and the diagonal AC drawn.', [A, B, C, D], [...parallelSides, ...segs('AC')], [], NOCIRCLE),
+    steps: [
+      { s: '∠BAC = ∠DCA', sWrong: ['∠BAC = ∠BCA', '∠BAC = ∠DAC', '∠BAC = ∠ADC'], r: 'alt ∠s; AB ∥ DC', rWrong: ['corresp ∠s =', 'alt ∠s; AD ∥ BC', 'vert opp ∠s', '∠s opp equal sides'] },
+      { s: '∠BCA = ∠DAC', sWrong: ['∠BCA = ∠BAC', '∠BCA = ∠DCA', '∠BCA = ∠ABC'], r: 'alt ∠s; AD ∥ BC', rWrong: ['alt ∠s; AB ∥ DC', 'corresp ∠s =', 'sum of ∠s in Δ', 'vert opp ∠s'] },
+      { s: 'AC = AC', r: 'common', rWrong: ['given', 'opp sides of ||m', 'radii', 'construction'] },
+      { s: 'ΔABC ≡ ΔCDA', sWrong: ['ΔABC ≡ ΔACD', 'ΔABC ≡ ΔDAC', 'ΔABC ≡ ΔADC'], r: 'AAS', rWrong: ['SAS', 'SSS', 'RHS', '∠∠∠'] },
+      { s: 'AB = DC', r: '≡Δs' },
+    ],
+    hints: ['The diagonal AC cuts the parallelogram into two triangles. Which angles are equal because of the parallel lines?', 'You may not use "opp sides of ||m": that is what you are proving.'],
+  };
+}
+
+/** The diagonals of a parallelogram bisect each other. */
+function quadDiagonalsBisect(rng: Rng): Proof {
+  const { A, B, C, D } = parallelogram(rng);
+  const E = P('E', (A.x + C.x) / 2, (A.y + C.y) / 2);
+  return {
+    prompt: 'ABCD is a parallelogram whose diagonals AC and BD meet at E. Prove that $AE = EC$.',
+    figure: fig('Parallelogram ABCD with diagonals AC and BD meeting at E.', [A, B, C, D, E], [...parallelSides, ...segs('AC', 'BD')], [], NOCIRCLE),
+    steps: [
+      { s: 'AB = DC', sWrong: ['AB = AD', 'AB = AC', 'AB = BE'], r: 'opp sides of ||m', rWrong: ['given', 'diags of ||m bisect', 'common', 'sides opp equal ∠s'] },
+      { s: '∠BAE = ∠DCE', sWrong: ['∠BAE = ∠ABE', '∠BAE = ∠DAE', '∠BAE = ∠AEB'], r: 'alt ∠s; AB ∥ DC', rWrong: ['corresp ∠s =', 'alt ∠s; AD ∥ BC', 'vert opp ∠s', '∠s opp equal sides'] },
+      { s: '∠ABE = ∠CDE', sWrong: ['∠ABE = ∠BAE', '∠ABE = ∠AEB', '∠ABE = ∠CBE'], r: 'alt ∠s; AB ∥ DC', rWrong: ['alt ∠s; AD ∥ BC', 'vert opp ∠s', 'corresp ∠s =', 'sum of ∠s in Δ'] },
+      { s: 'ΔABE ≡ ΔCDE', sWrong: ['ΔABE ≡ ΔDCE', 'ΔABE ≡ ΔCED', 'ΔABE ≡ ΔADE'], r: 'AAS', rWrong: ['SAS', 'SSS', 'RHS', '∠∠∠'] },
+      { s: 'AE = EC', r: '≡Δs' },
+    ],
+    hints: ['Look at triangles ABE and CDE. Which sides and angles do the parallel lines make equal?', 'You may not use "diags of ||m bisect": that is what you are proving.'],
+  };
+}
+
+/** The diagonals of a rectangle are equal. */
+function quadRectangle(rng: Rng): Proof {
+  const w = r1(rng, 3.8, 5);
+  let h = r1(rng, 2, 3.2);
+  if (Math.abs(w - h) < 0.6) h -= 0.5;
+  const [A, B, C, D] = [P('A', 0, h), P('B', 0, 0), P('C', w, 0), P('D', w, h)];
+  return {
+    prompt: 'ABCD is a rectangle. Prove that its diagonals are equal: $AC = DB$.',
+    figure: fig('Rectangle ABCD with diagonals AC and DB drawn.', [A, B, C, D], [...segs('AB', 'BC', 'CD', 'DA', 'AC', 'DB')], [{ at: 'B', from: 'A', to: 'C', text: '', right: true }, { at: 'C', from: 'B', to: 'D', text: '', right: true }], NOCIRCLE),
+    steps: [
+      { s: 'AB = DC', sWrong: ['AB = BC', 'AB = AC', 'AB = DB'], r: 'opp sides of ||m', rWrong: ['given', '∠s of rectangle', 'common', 'diags of ||m bisect'] },
+      { s: '∠ABC = ∠DCB = 90°', sWrong: ['∠ABC = ∠BAC = 90°', '∠BAC = ∠BCA', '∠ACB = ∠ABC'], r: '∠s of rectangle', rWrong: ['given', 'alt ∠s =', '∠ in semi-circle', 'sum of ∠s in Δ'] },
+      { s: 'BC = BC', r: 'common', rWrong: ['given', 'opp sides of ||m', 'radii', 'construction'] },
+      { s: 'ΔABC ≡ ΔDCB', sWrong: ['ΔABC ≡ ΔCDB', 'ΔABC ≡ ΔBCD', 'ΔABC ≡ ΔDBC'], r: 'SAS', rWrong: ['AAS', 'SSS', 'RHS', '∠∠∠'] },
+      { s: 'AC = DB', r: '≡Δs' },
+    ],
+    hints: ['Triangles ABC and DCB share the side BC.', 'The angle you use must lie between the two sides you use: that makes it SAS.'],
+  };
+}
+
+/** The diagonals of a rhombus are perpendicular. */
+function quadRhombus(rng: Rng): Proof {
+  const a = r1(rng, 3, 4);
+  // Not 60°: that splits the rhombus into equilateral triangles, and AB = BD would be true.
+  const t = from(rng, [[48, 55], [66, 76]]);
+  const [A, B, D] = [P('A', 0, 0), P('B', a, 0), P('D', a * Math.cos(rad(t)), a * Math.sin(rad(t)))];
+  const C = P('C', B.x + D.x, B.y + D.y);
+  const E = P('E', C.x / 2, C.y / 2);
+  return {
+    prompt: 'ABCD is a rhombus whose diagonals AC and BD meet at E. Prove that the diagonals are perpendicular: $\angle AEB = 90^\circ$.',
+    figure: fig('Rhombus ABCD with all four sides equal, and diagonals AC and BD meeting at E.', [A, B, C, D, E], [{ a: 'A', b: 'B', ticks: 1 }, { a: 'B', b: 'C', ticks: 1 }, { a: 'C', b: 'D', ticks: 1 }, { a: 'D', b: 'A', ticks: 1 }, ...segs('AC', 'BD')], [], NOCIRCLE),
+    steps: [
+      { s: 'AB = AD', sWrong: ['AB = BD', 'AB = AE', 'AE = BE'], r: 'sides of rhombus', rWrong: ['opp sides of ||m', 'given', 'common', 'radii'] },
+      { s: 'BE = ED', sWrong: ['BE = AE', 'BE = AB', 'AE = ED'], r: 'diags of ||m bisect', rWrong: ['sides of rhombus', 'given', 'common', 'opp sides of ||m'] },
+      { s: 'AE = AE', r: 'common', rWrong: ['given', 'diags of ||m bisect', 'radii', 'construction'] },
+      { s: 'ΔABE ≡ ΔADE', sWrong: ['ΔABE ≡ ΔDAE', 'ΔABE ≡ ΔAED', 'ΔABE ≡ ΔBAE'], r: 'SSS', rWrong: ['SAS', 'RHS', 'AAS', '∠∠∠'] },
+      { s: '∠AEB = ∠AED', sWrong: ['∠AEB = ∠ABE', '∠AEB = ∠BAE', '∠ABE = ∠BAE'], r: '≡Δs', rWrong: ['vert opp ∠s', '∠s opp equal sides', 'alt ∠s =', 'given'] },
+      { s: '∠AEB = ∠AED = 90°', r: '∠s on a str line', rWrong: ['sum of ∠s in Δ', '∠s round a pt', 'vert opp ∠s', 'sides of rhombus'] },
+    ],
+    hints: ['A rhombus is a parallelogram, so its diagonals bisect each other. That gives BE = ED.', 'Triangles ABE and ADE then have three pairs of equal sides. Their angles at E sit on a straight line.'],
+  };
+}
+
+/** Converse: a quadrilateral with both pairs of opposite sides equal is a parallelogram. */
+function quadConverse(rng: Rng): Proof {
+  const { A, B, C, D } = parallelogram(rng);
+  return {
+    prompt: 'In quadrilateral ABCD, $AB = CD$ and $BC = DA$. Prove that $AB \parallel DC$. Construction: join AC.',
+    figure: fig('Quadrilateral ABCD with AB marked equal to CD and BC marked equal to DA, and the diagonal AC drawn.', [A, B, C, D], [{ a: 'A', b: 'B', ticks: 1 }, { a: 'D', b: 'C', ticks: 1 }, { a: 'A', b: 'D', ticks: 2 }, { a: 'B', b: 'C', ticks: 2 }, ...segs('AC')], [], NOCIRCLE),
+    steps: [
+      { s: 'AB = CD', sWrong: ['AB = BC', 'AB = AC', 'AB = DA'], r: 'given', rWrong: ['opp sides of ||m', 'common', 'sides of rhombus', 'construction'] },
+      { s: 'BC = DA', sWrong: ['BC = CD', 'BC = AC', 'BC = AB'], r: 'given', rWrong: ['opp sides of ||m', 'common', 'diags of ||m bisect', 'construction'] },
+      { s: 'AC = AC', r: 'common', rWrong: ['given', 'construction', 'opp sides of ||m', 'radii'] },
+      { s: 'ΔABC ≡ ΔCDA', sWrong: ['ΔABC ≡ ΔACD', 'ΔABC ≡ ΔDAC', 'ΔABC ≡ ΔADC'], r: 'SSS', rWrong: ['SAS', 'AAS', 'RHS', '∠∠∠'] },
+      { s: '∠BAC = ∠DCA', sWrong: ['∠BAC = ∠BCA', '∠BAC = ∠DAC', '∠BAC = ∠ABC'], r: '≡Δs', rWrong: ['alt ∠s; AB ∥ DC', '∠s opp equal sides', 'given', 'vert opp ∠s'] },
+      { s: 'AB ∥ DC', r: 'alt ∠s =', rWrong: ['alt ∠s; AB ∥ DC', 'corresp ∠s =', 'opp sides of ||m', '≡Δs'] },
+    ],
+    hints: ['You are proving lines parallel, so you cannot use "alt ∠s; AB ∥ DC": that assumes they already are.', 'Show two alternate angles are equal first. The reason for the parallel lines is then "alt ∠s =".'],
+  };
+}
+
+/** The midpoint theorem, by congruent triangles and a parallelogram. */
+function quadMidpoint(rng: Rng): Proof {
+  // A clearly scalene triangle: no two sides within 12% of each other, so no wrong congruence comes out true.
+  let base = 0;
+  let apexX = 0;
+  let apexY = 0;
+  for (;;) {
+    base = r1(rng, 4.5, 6);
+    apexX = r1(rng, 0.8, base - 1.5);
+    apexY = r1(rng, 3, 4.2);
+    const lens = [base, Math.hypot(apexX, apexY), Math.hypot(base - apexX, apexY)];
+    if (lens.every((x, i) => lens.every((y, j) => i === j || Math.abs(x - y) / Math.max(x, y) > 0.12))) break;
+  }
+  const [A, B, C] = [P('A', apexX, apexY), P('B', 0, 0), P('C', base, 0)];
+  const D = P('D', (A.x + B.x) / 2, (A.y + B.y) / 2);
+  const E = P('E', (A.x + C.x) / 2, (A.y + C.y) / 2);
+  const F = P('F', 2 * E.x - D.x, 2 * E.y - D.y);
+  return {
+    prompt: 'In $\triangle ABC$, D is the midpoint of AB and E is the midpoint of AC. Prove that $DE \parallel BC$ and $DE = \tfrac{1}{2}BC$. Construction: extend DE to F so that $DE = EF$, and join CF.',
+    figure: fig('Triangle ABC with D the midpoint of AB and E the midpoint of AC. DE is extended to F with DE equal to EF, and CF is drawn.', [A, B, C, D, E, F], [{ a: 'A', b: 'D', ticks: 1 }, { a: 'D', b: 'B', ticks: 1 }, { a: 'A', b: 'E', ticks: 2 }, { a: 'E', b: 'C', ticks: 2 }, ...segs('BC', 'DE'), { a: 'E', b: 'F', dashed: true }, { a: 'C', b: 'F', dashed: true }], [], NOCIRCLE),
+    steps: [
+      { s: 'AE = EC', sWrong: ['AE = DE', 'AE = AD', 'AE = CF'], r: 'given', rWrong: ['construction', 'common', 'opp sides of ||m', 'midpt theorem'] },
+      { s: 'DE = EF', r: 'construction', rWrong: ['given', 'common', '≡Δs', 'opp sides of ||m'] },
+      { s: '∠AED = ∠CEF', sWrong: ['∠AED = ∠ADE', '∠AED = ∠DAE', '∠AED = ∠ECF'], r: 'vert opp ∠s', rWrong: ['alt ∠s =', 'corresp ∠s =', '∠s on a str line', '≡Δs'] },
+      { s: 'ΔAED ≡ ΔCEF', sWrong: ['ΔAED ≡ ΔCFE', 'ΔAED ≡ ΔECF', 'ΔAED ≡ ΔFEC'], r: 'SAS', rWrong: ['AAS', 'SSS', 'RHS', '∠∠∠'] },
+      { s: '∠DAE = ∠FCE', sWrong: ['∠DAE = ∠CFE', '∠DAE = ∠ADE', '∠DAE = ∠ABC'], r: '≡Δs', rWrong: ['alt ∠s; AB ∥ DC', 'vert opp ∠s', 'given', '∠s opp equal sides'] },
+      { s: 'AB ∥ CF', r: 'alt ∠s =', rWrong: ['corresp ∠s =', 'opp sides of ||m', '≡Δs', 'given'] },
+      { s: 'BD = CF', sWrong: ['BD = BC', 'BD = DE', 'BD = AE'], r: 'BD = AD (given)', rWrong: ['opp sides of ||m', 'construction', 'common', 'sides of rhombus'] },
+      { s: 'DF ∥ BC', r: 'DBCF is a ||m (one pair opp sides = and ∥)', rWrong: ['alt ∠s =', 'corresp ∠s =', 'midpt theorem', '≡Δs'] },
+      { s: 'DF = BC', r: 'opp sides of ||m', rWrong: ['construction', '≡Δs', 'given', 'midpt theorem'] },
+      { s: 'DE = ½BC', r: 'DE = ½DF (construction)' },
+    ],
+    hints: ['Triangles AED and CEF have two pairs of equal sides and the angle between them.', 'Once BD and CF are equal and parallel, DBCF is a parallelogram. You may not use the midpoint theorem itself.'],
+  };
+}
+
 
 // ---------------------------------------------------------------------------
 // Grade 12: similarity riders
@@ -477,5 +663,6 @@ const proofTemplate = (id: string, pools: [Rider[], Rider[], Rider[]]): Question
   },
 });
 
-export const circleProofs = proofTemplate('circle-proofs', [[riderCentre, riderTangents, riderTangentParallel], [riderCyclicKite, riderDiameterParallel], [theoremCentre, theoremPerpendicular, theoremCyclicQuad, theoremTanChord]]);
+export const circleProofs = proofTemplate('circle-proofs', [[riderCentre, riderTangents, riderTangentParallel], [riderCyclicKite, riderDiameterParallel], [theoremCentre, theoremPerpendicular, theoremBisector, theoremCyclicQuad, theoremTanChord]]);
 export const similarityProofs = proofTemplate('similarity-proofs', [[riderSimilarParallel, riderRightSquare, riderConverse], [riderChords, riderTangentSecant], [theoremPythagoras, theoremProportion, theoremEquiangular]]);
+export const quadrilateralProofs = proofTemplate('quadrilateral-proofs', [[quadOppositeSides, quadDiagonalsBisect, quadRectangle], [quadRhombus, quadConverse], [quadMidpoint]]);

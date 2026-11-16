@@ -2,6 +2,7 @@ import type { Figure as FigureSpec } from '../../shared/questions/types.ts';
 import { Plot, lineSegment } from './Plot.tsx';
 import { Tex } from './RichText.tsx';
 import { NumberLine } from './NumberLine.tsx';
+import { SolidFigure } from './SolidFigure.tsx';
 
 export function Figure({ figure }: { figure: FigureSpec }) {
   if (figure.kind === 'graph') return <GraphFigure f={figure} />;
@@ -11,6 +12,7 @@ export function Figure({ figure }: { figure: FigureSpec }) {
   if (figure.kind === 'tree') return <TreeFigure f={figure} />;
   if (figure.kind === 'table') return <TableFigure f={figure} />;
   if (figure.kind === 'numberline') return <NumberLine set={figure.set} variable={figure.variable} alt={figure.alt} />;
+  if (figure.kind === 'solid') return <SolidFigure f={figure} />;
   return <PunnettFigure f={figure} />;
 }
 

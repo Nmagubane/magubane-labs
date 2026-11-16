@@ -1405,3 +1405,28 @@
 .dec-digits { margin: var(--s4) 0 var(--s2); font-size: var(--t-lg); font-variant-numeric: tabular-nums; letter-spacing: 0.06em; overflow-wrap: anywhere; line-height: 1.8; }
 .dec-digits .dec-block { background: color-mix(in srgb, var(--pen) 18%, transparent); border-bottom: 2px solid var(--pen); }
 .dec-digits .dec-again { color: var(--pen); }
+
+/* Solids in measurement questions */
+.solid-figure { margin: var(--s3) 0 0; max-width: 340px; }
+.solid-figure svg { display: block; width: 100%; height: auto; }
+.solid-figure figcaption { margin-top: var(--s1); }
+.sf-edge { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linejoin: round; }
+.sf-hidden { fill: none; stroke: var(--ink-3); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.sf-fill { fill: color-mix(in srgb, var(--pen) 7%, var(--paper)); }
+.sf-face { fill: color-mix(in srgb, var(--pen) 13%, var(--paper)); stroke: var(--ink); stroke-width: 1.8; }
+.sf-dot { fill: var(--ink); }
+.sf-label { font-size: 13px; fill: var(--ink); font-weight: 600; paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
+.ml-figure { display: block; width: 100%; max-width: 380px; height: auto; margin: var(--s3) auto 0; }
+.ml-front { fill: color-mix(in srgb, var(--pen) 14%, var(--paper)); stroke: var(--ink); stroke-width: 1.5; }
+.ml-top { fill: color-mix(in srgb, var(--pen) 7%, var(--paper)); stroke: var(--ink); stroke-width: 1.5; }
+.ml-side { fill: color-mix(in srgb, var(--pen) 22%, var(--paper)); stroke: var(--ink); stroke-width: 1.5; }
+.ml-grid { stroke: var(--pen); stroke-width: 0.8; opacity: 0.6; }
+.ml-table { width: 100%; border-collapse: collapse; margin-top: var(--s3); font-variant-numeric: tabular-nums; }
+.ml-table th, .ml-table td { padding: var(--s1) var(--s2); border-top: 1px solid var(--rule); text-align: left; }
+.ml-table thead th { font-size: var(--t-xs); color: var(--ink-2); border-top: 0; }
+.ml-hl { color: var(--pen); font-weight: 700; }
+.ml-cone { fill: color-mix(in srgb, var(--pen) 10%, var(--paper)); stroke: var(--ink); stroke-width: 1.5; }
+.ml-cyl { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.ml-water { fill: color-mix(in srgb, var(--pen) 35%, var(--paper)); }
+.ml-water-top { fill: color-mix(in srgb, var(--pen) 25%, var(--paper)); stroke: var(--pen); stroke-width: 1; }
+.sf-side { fill: color-mix(in srgb, var(--pen) 18%, var(--paper)); }

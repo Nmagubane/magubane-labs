@@ -64,6 +64,7 @@ export type WidgetSpec =
   | { type: 'finance-lab'; mode: 'depreciation' | 'effective' | 'savings' | 'loan' }
   | { type: 'number-lab'; mode: 'surd' | 'differences' | 'series' }
   | { type: 'algebra-lab'; mode: 'grid' | 'cancel' | 'square' | 'decimals' }
+  | { type: 'measure-lab'; mode: 'scale' | 'third' }
   // Mathematics, Grades 4–6
   | { type: 'place-value-chart'; start: number }
   | { type: 'array-model'; rows: number; cols: number }

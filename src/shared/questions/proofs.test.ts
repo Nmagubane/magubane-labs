@@ -87,14 +87,17 @@ function gap(stmt: string, m: M): number {
   return Math.max(...parts.slice(1).map((v, i) => rel(parts[i]!, v)));
 }
 
-/** Reasons name lines (DE ∥ BC); compare them with the line names blanked out, since the letters are relabelled. */
-const lineless = (r: string) => r.replace(/(?<![A-Za-z])[A-Z]{2}(?![A-Za-z])/g, '··');
+/**
+ * Reasons name lines (DE ∥ BC) and quadrilaterals (DBCF is a ||m); compare them with those names blanked out, since
+ * the letters are relabelled. Three-letter tests (SSS, SAS, RHS) are left alone so they stay distinct.
+ */
+const lineless = (r: string) => r.replace(/(?<![A-Za-z])(?:[A-Z]{4}|[A-Z]{2})(?![A-Za-z])/g, '··');
 const REASONS = new Set(PROOF_REASONS.map(lineless));
 
 const TRUE_WITHIN = 0.006; // points are stored to 3 decimals
 const FALSE_BEYOND = 0.01; // a wrong option must be clearly wrong in the drawing, not wrong by a whisker
 
-for (const id of ['circle-proofs', 'similarity-proofs']) {
+for (const id of ['circle-proofs', 'similarity-proofs', 'quadrilateral-proofs']) {
   test(`${id}: every right statement is true in its diagram and every wrong one false`, () => {
     for (const level of DIFFICULTIES) {
       const prompts = new Set<string>();

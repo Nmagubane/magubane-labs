@@ -136,6 +136,36 @@ export const GEOMETRY_LESSONS: Lesson[] = [
     ],
   },
   {
+    id: 'quadrilateral-proofs',
+    skillId: 'quadrilateral-proofs',
+    title: 'Proving what you noticed about quadrilaterals',
+    minutes: 15,
+    blocks: [
+      {
+        kind: 'predict',
+        prompt: 'You measured ten parallelograms, and in every one the opposite sides were equal. Is that a proof?',
+        options: ['Yes: ten is plenty', 'No'],
+        answer: 1,
+        explanation: 'Examples support a conjecture but never prove it: the eleventh could be different. A proof starts from the **definition** (both pairs of opposite sides parallel) and shows the property must follow, for every parallelogram.',
+      },
+      {
+        kind: 'widget',
+        title: 'Notice first',
+        task: 'Drag the parallelogram into different shapes. Which properties never change? Those are the ones to prove.',
+        widget: { type: 'quad-lab' },
+      },
+      {
+        kind: 'key-idea',
+        body: 'Most quadrilateral proofs work the same way: **draw a diagonal to make two triangles, prove them congruent, then read off the equal sides or angles** (reason: ≡Δs). Parallel lines give equal **alternate angles**, with the reason naming the lines: *alt ∠s; AB ∥ DC*. To prove lines **are** parallel, the reason turns round: *alt ∠s =*. The congruence tests are SSS, SAS (the angle between the two sides), AAS and RHS. When you prove a property, you may not use that property as a reason. The midpoint theorem (the line joining two midpoints is parallel to the third side and half as long) is proved the same way, by building a parallelogram.',
+      },
+      { kind: 'trap', wrong: 'In parallelogram ABCD, AB = DC (opp sides of ||m), so the opposite sides are equal.', why: 'That uses the very property you are asked to prove. Start from what a parallelogram **is** (two pairs of parallel sides) and prove the sides equal with congruent triangles.' },
+      { kind: 'example', level: 2 },
+      { kind: 'check', level: 1 },
+      { kind: 'check', level: 3 },
+      { kind: 'check', level: 4 },
+    ],
+  },
+  {
     id: 'circle-proofs',
     skillId: 'circle-proofs',
     title: 'Writing circle geometry proofs',
