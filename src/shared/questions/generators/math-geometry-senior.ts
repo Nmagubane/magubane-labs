@@ -122,7 +122,7 @@ function numberQuestion(q: { prompt: string; figure?: GeometryFigure; answer: nu
   return {
     prompt: q.prompt,
     ...(q.figure ? { figure: q.figure } : {}),
-    input: { kind: 'numeric', unit },
+    input: { kind: 'numeric', unit, ...(unit ? { positive: true } : {}) },
     answer: exact(q.answer),
     answerDisplay: q.display ?? (unit === '°' ? `${q.answer}°` : `$${tn(q.answer)}$ ${unit}`),
     hints: q.hints,
@@ -1214,7 +1214,8 @@ export const congruentSimilar: QuestionTemplate = {
         // Shadows at the same time of day make similar triangles.
         const h = rng.pick([1, 1.5, 2]);
         const s = rng.pick([2, 2.5, 3, 4].filter((v) => v !== h));
-        const k = rng.pick([3, 4, 5, 6]);
+        // At most 4 times as big, so the pole stays readable on a phone when both are drawn to one scale.
+        const k = rng.pick([2, 3, 4].filter((v) => s * v <= 12));
         const T = s * k;
         const thing = rng.pick([
           { a: 'a tree', the: 'the tree' },
@@ -1223,7 +1224,8 @@ export const congruentSimilar: QuestionTemplate = {
           { a: 'a block of flats', the: 'the block of flats' },
         ]);
         const pole = [P('P', 0, h), P('Q', 0, 0), P('R', s, 0)] as Tri;
-        const big = [P('X', s + 2, h * k), P('Y', s + 2, 0), P('Z', s + 2 + T, 0)] as Tri;
+        const x0 = s * 1.8 + 0.5;
+        const big = [P('X', x0, h * k), P('Y', x0, 0), P('Z', x0 + T, 0)] as Tri;
         return numberQuestion({
           prompt: `At the same time of day, a ${dc(h)} m pole casts a ${dc(s)} m shadow and ${thing.a} casts ${an8(dc(T))} ${dc(T)} m shadow. How tall is ${thing.the}?`,
           figure: fig(`Two right-angled triangles: a pole PQ ${dc(h)} m tall with shadow QR ${dc(s)} m, and XY with shadow YZ ${dc(T)} m. The sun's rays make the same angle θ with the ground in both.`, [...pole, ...big], [

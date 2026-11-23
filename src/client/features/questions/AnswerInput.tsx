@@ -102,9 +102,11 @@ function NumericInput({ input, value, onChange, onSubmit, disabled, autoFocus, d
         onKeyDown={enter(onSubmit)}
       />
       {input.unit ? <span className="answer-unit">{input.unit}</span> : null}
-      <button type="button" className="key key-sign" onClick={() => onChange(toggleSign(v))} disabled={disabled} aria-label="Make negative or positive">
-        ±
-      </button>
+      {input.positive ? null : (
+        <button type="button" className="key key-sign" onClick={() => onChange(toggleSign(v))} disabled={disabled} aria-label="Make negative or positive">
+          ±
+        </button>
+      )}
     </div>
   );
 }

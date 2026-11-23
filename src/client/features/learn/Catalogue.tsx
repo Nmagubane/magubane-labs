@@ -9,6 +9,14 @@ import { PHASES, isLookAhead, phaseOf, tierOf } from '../../../shared/curriculum
 import type { CatalogueResponse } from '../../../shared/api.ts';
 
 type Data = CatalogueResponse;
+
+/** Scroll to a topic and move focus there, so keyboard and screen-reader users land in the same place. */
+function jumpTo(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  el.focus({ preventScroll: true });
+}
 type Sk = Data['subjects'][number]['topics'][number]['skills'][number];
 
 export function Catalogue() {
@@ -63,21 +71,53 @@ export function Catalogue() {
         ) : null}
       </div>
 
-      {current.topics.map((t) => (
-        <section key={t.id} className="topic" aria-labelledby={`t-${t.id}`}>
-          <h2 id={`t-${t.id}`} className="topic-title">
-            {t.name}
-            {t.strand ? <span className="topic-strand">{t.strand}</span> : null}
-          </h2>
-          <ul className="skill-list">
-            {t.skills.map((s) => (
-              <li key={s.skillId}>
-                <SkillRow s={s} note={s.inScope || data.grade === 0 ? null : 'Earlier grade'} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      {current.topics.length > 3 ? (
+        <nav className="topic-jump" aria-label="Jump to a topic">
+          {current.topics.map((t) => (
+            <button key={t.id} type="button" onClick={() => jumpTo(`t-${t.id}`)}>
+              {t.name}
+            </button>
+          ))}
+        </nav>
+      ) : null}
+
+      {current.topics.map((t) => {
+        // The learner's own band first; skills from below it are catch-up, folded away until wanted.
+        const own = t.skills.filter((s) => s.inScope || data.grade === 0);
+        const earlier = t.skills.filter((s) => !(s.inScope || data.grade === 0));
+        return (
+          <section key={t.id} className="topic" aria-labelledby={`t-${t.id}`}>
+            <h2 id={`t-${t.id}`} className="topic-title" tabIndex={-1}>
+              {t.name}
+              {t.strand ? <span className="topic-strand">{t.strand}</span> : null}
+            </h2>
+            {own.length ? (
+              <ul className="skill-list">
+                {own.map((s) => (
+                  <li key={s.skillId}>
+                    <SkillRow s={s} note={null} />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {earlier.length ? (
+              <details className="earlier-grades" open={!own.length}>
+                <summary>
+                  Earlier grades ({earlier.length}): Grade {Math.min(...earlier.map((s) => s.grade))}
+                  {Math.max(...earlier.map((s) => s.grade)) > Math.min(...earlier.map((s) => s.grade)) ? `–${Math.max(...earlier.map((s) => s.grade))}` : ''}
+                </summary>
+                <ul className="skill-list">
+                  {earlier.map((s) => (
+                    <li key={s.skillId}>
+                      <SkillRow s={s} note="Earlier grade" />
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
+          </section>
+        );
+      })}
 
       {nextUp.length ? (
         <section className="topic" aria-labelledby="t-next">

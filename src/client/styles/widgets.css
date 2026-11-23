@@ -1296,7 +1296,9 @@
 .geo-arc { fill: none; stroke: var(--pen); stroke-width: 1.6; }
 .geo-dot { fill: var(--ink); }
 .geo-label { font-size: 14px; font-weight: 700; fill: var(--ink); }
-.geo-angle { font-size: 12px; font-weight: 700; fill: var(--pen-strong); }
+.geo-angle { font-size: 12px; font-weight: 700; fill: var(--pen-strong); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; stroke-linejoin: round; }
+.lab-legend { font-size: var(--t-sm); margin: var(--s2) 0 0; }
+.geo-line.dashed.overlay { stroke: var(--pen); stroke-width: 2; }
 .geo-lab-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--s3); align-items: center; }
 @media (max-width: 560px) { .geo-lab-grid { grid-template-columns: minmax(0, 1fr); } }
 .geo-props { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); font-size: var(--t-sm); }

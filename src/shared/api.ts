@@ -122,6 +122,8 @@ export const AnswerBody = z.object({
   timeMs: z.number().int().min(0).max(3_600_000),
   confidence: z.enum(['guess', 'unsure', 'sure']).optional(),
   skipped: z.boolean().optional(),
+  /** Learning mode, after a first wrong try: stop trying and show the answer and the worked solution. */
+  reveal: z.boolean().optional(),
 });
 export type AnswerRequest = z.infer<typeof AnswerBody>;
 
@@ -264,11 +266,24 @@ export interface FeedbackDto {
   band: MasteryBand;
 }
 
+/**
+ * Learning mode, Grades 4–12: a first wrong answer gets this instead of the answer. It says what went wrong, never
+ * what is right, and the learner tries again (or asks to see the answer).
+ */
+export interface TryAgainDto {
+  mistake: MistakeDto | null;
+  feedback: RichText | null;
+  /** The first attempt, so the screen can show it and tell whether it has been changed. */
+  response: ResponseValue;
+}
+
 export interface PracticeItem {
   question: QuestionPayload;
   response: ResponseValue | null;
   hints: RichText[];
   feedback: FeedbackDto | null;
+  /** A first wrong try is waiting for a second one. */
+  tryAgain?: TryAgainDto;
 }
 
 export interface ActivityStateResponse {
@@ -281,6 +296,8 @@ export interface ActivityStateResponse {
 export interface AnswerResponse {
   /** Learning mode: immediate feedback. Assessment: just saved. */
   feedback: FeedbackDto | null;
+  /** Learning mode: a first wrong try. Nothing is saved yet; answer again, or reveal. */
+  tryAgain?: TryAgainDto;
   saved: boolean;
   answered: number;
   done: boolean;

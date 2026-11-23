@@ -479,7 +479,7 @@ export const MISTAKES = {
     tip: 'Triangles don\'t change shape when pushed, so frames use them. Folding, rolling or corrugating a material makes it much stiffer.',
   },
   // ---- Euclidean geometry (Grades 10–12) ----
-  'angles-on-line': { label: 'Line, point or right angle?', kind: 'conceptual', tip: 'Angles on a straight line add up to 180°, angles round a point add up to 360°, and the two parts of a right angle add up to 90°. First check which one the diagram shows.' },
+  'angles-on-line': { label: 'Angles on a line or round a point', kind: 'conceptual', tip: 'Angles on a straight line add up to 180°, angles round a point add up to 360°, and the two parts of a right angle add up to 90°. First check which one the diagram shows.' },
   'vert-opp': { label: 'Vertically opposite angles', kind: 'conceptual', tip: 'Where two straight lines cross, the angles opposite each other in the X are equal. Angles next to each other add up to 180°.' },
   'angle-pair': { label: 'Which angle pair?', kind: 'conceptual', tip: 'Corresponding: the same position at each crossing (an F). Alternate: between the parallel lines, on opposite sides of the transversal (a Z). Co-interior: between the lines, on the same side (a U).' },
   'triangle-sum': { label: 'Angles of a triangle', kind: 'conceptual', tip: 'The three angles of a triangle add up to 180°, not 360°. Count every angle, including a right angle, then subtract from 180°.' },

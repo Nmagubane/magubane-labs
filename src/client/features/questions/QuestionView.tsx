@@ -83,9 +83,7 @@ export function FeedbackPanel({ feedback, response, input, children, solutionOpe
         ) : (
         <p className="feedback-mastery" title="Mastery for this skill">
           <span className="num">{feedback.masteryAfter}%</span>
-          <span className={`delta ${gained >= 0 ? 'up' : 'down'}`}>
-            {gained > 0 ? `+${gained}` : gained < 0 ? `${gained}` : '±0'}
-          </span>
+          {gained > 0 ? <span className="delta up">+{gained}</span> : null}
           <span className="muted">{BAND_LABEL[feedback.band]}</span>
         </p>
         )}

@@ -13,6 +13,7 @@ test('migration v7 moves Grade 4–9 science onto CAPS Natural Sciences and keep
     openDb(path).close();
     const raw = new DatabaseSync(path, { enableForeignKeyConstraints: false });
     // Rewind to the v6 schema: undo what later migrations added, then mark the database as v6.
+    raw.exec('ALTER TABLE question_instances DROP COLUMN first_try');
     raw.exec('ALTER TABLE exams DROP COLUMN paper');
     raw.exec('PRAGMA user_version = 6');
     const p = raw.prepare("INSERT INTO learner_profiles (user_id, grade, curriculum_id, subjects, goals, daily_minutes, onboarded_at) VALUES (?, ?, 'za-caps', ?, '[]', 20, '2026-01-01')");

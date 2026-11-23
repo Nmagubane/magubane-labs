@@ -373,7 +373,7 @@ export function GeometryFigure({ f }: { f: Extract<FigureSpec, { kind: 'geometry
     return [(p.sx - from.sx) / n, (p.sy - from.sy) / n];
   };
   return (
-    <figure className="q-figure">
+    <figure className="q-figure q-figure-geo">
       <svg viewBox={`0 0 ${W} ${H}`} className="geo" role="img" aria-label={f.alt}>
         {(f.circles ?? []).map((c, i) => (
           <circle key={i} cx={at(c.c).sx} cy={at(c.c).sy} r={c.r * k} className="geo-circle" />
@@ -433,7 +433,9 @@ export function GeometryFigure({ f }: { f: Extract<FigureSpec, { kind: 'geometry
           while (d <= -Math.PI) d += 2 * Math.PI;
           while (d > Math.PI) d -= 2 * Math.PI;
           a2 = a1 + d;
-          const r = 16 * (g.r ?? 1);
+          // Small angles get a bigger arc, so the arc and its label have room between the two arms.
+          const deg = (Math.abs(d) * 180) / Math.PI;
+          const r = Math.min(40, 16 * Math.max(1, 60 / Math.max(deg, 1))) * (g.r ?? 1);
           const mid = a1 + d / 2;
           const lx = v.sx + Math.cos(mid) * (r + 13);
           const ly = v.sy + Math.sin(mid) * (r + 13);

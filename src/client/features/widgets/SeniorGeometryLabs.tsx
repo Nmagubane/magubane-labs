@@ -18,6 +18,25 @@ function Seg({ a, b, cls = '' }: { a: V; b: V; cls?: string }) {
   return <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className={`geo-line ${cls}`} />;
 }
 
+/** A parallel-line arrowhead at the middle of AB (SVG coordinates). */
+function Chevron({ a, b }: { a: V; b: V }) {
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const [ux, uy] = [(b.x - a.x) / len, (b.y - a.y) / len];
+  const [mx, my] = [(a.x + b.x) / 2, (a.y + b.y) / 2];
+  return <path d={`M ${mx - ux * 6 - uy * 5} ${my - uy * 6 + ux * 5} L ${mx} ${my} L ${mx - ux * 6 + uy * 5} ${my - uy * 6 - ux * 5}`} className="geo-mark" />;
+}
+
+/**
+ * The learner finds the rule before the lab states it: the conclusion appears once they have tried `need` clearly
+ * different settings. Call `tried` with a coarse key (e.g. the angle rounded to 10°) whenever a control changes.
+ */
+function useExplore(need = 3) {
+  const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set());
+  const tried = (key: string | number) => setSeen((s) => (s.has(String(key)) ? s : new Set(s).add(String(key))));
+  return { explored: seen.size >= need, tried };
+}
+const tens = (v: number) => Math.round(v / 10);
+
 export function AngleLab({ mode }: { mode: 'line' | 'cross' | 'parallel' | 'triangle' }) {
   if (mode === 'line') return <LineAngles />;
   if (mode === 'cross') return <CrossingLines />;
@@ -46,6 +65,7 @@ function LineAngles() {
 
 function OnALine() {
   const [a, setA] = useState(50);
+  const { explored, tried } = useExplore();
   const O = { x: 0, y: 0 };
   const A = { x: -1.4, y: 0 };
   const B = { x: 1.4, y: 0 };
@@ -56,7 +76,7 @@ function OnALine() {
     <>
       <p className="widget-readout" aria-live="polite">
         <span>
-          ∠AOC + ∠COB = <strong className="num">{180 - a}°</strong> + <strong className="num">{a}°</strong> = <strong className="num">180°</strong>
+          ∠AOC + ∠COB = <strong className="num">{180 - a}°</strong> + <strong className="num">{a}°</strong> = <strong className="num">{explored ? '180°' : '?'}</strong>
         </span>
       </p>
       <svg viewBox="0 0 300 170" className="geo" role="img" aria-label={`Straight line AOB with a ray OC. Angle AOC is ${180 - a} degrees and angle COB is ${a} degrees.`}>
@@ -71,10 +91,20 @@ function OnALine() {
         <Label p={SO} c={below(SO)} text="O" />
       </svg>
       <div className="widget-controls">
-        <Slider label="Turn the ray OC" value={a} min={10} max={170} onChange={setA} format={(v) => `${v}°`} />
+        <Slider
+          label="Turn the ray OC"
+          value={a}
+          min={10}
+          max={170}
+          onChange={(v) => {
+            setA(v);
+            tried(tens(v));
+          }}
+          format={(v) => `${v}°`}
+        />
       </div>
-      <Note ok={null}>
-        <p>However you turn OC, the two angles on the straight line AOB add up to 180°.</p>
+      <Note ok={explored ? true : null}>
+        <p>{explored ? 'However you turn OC, the two angles on the straight line AOB add up to 180°.' : 'Turn OC to a few different places. Each time, add the two angles. What do you notice?'}</p>
       </Note>
     </>
   );
@@ -83,6 +113,7 @@ function OnALine() {
 function RoundAPoint() {
   const [p, setP] = useState(120);
   const [qRaw, setQ] = useState(130);
+  const { explored, tried } = useExplore();
   // Keep every angle under 180° so each one is a single, clearly marked angle.
   const qMin = Math.max(30, 185 - p);
   const qMax = Math.min(170, 330 - p);
@@ -90,33 +121,53 @@ function RoundAPoint() {
   const r = 360 - p - q;
   const O = { x: 0, y: 0 };
   const [A, B, C] = [dir(0, 1.2), dir(p, 1.2), dir(p + q, 1.2)];
-  const { s } = useView([O, A, B, C], 300, 190, 26, [dir(90, 1.25), dir(180, 1.25), dir(270, 1.25)]);
+  const { s } = useView([O, A, B, C], 300, 210, 18, [dir(90, 1.2), dir(180, 1.2), dir(270, 1.2)]);
   const [SO, SA, SB, SC] = [O, A, B, C].map(s) as [V, V, V, V];
   return (
     <>
       <p className="widget-readout" aria-live="polite">
         <span>
-          <strong className="num">{p}°</strong> + <strong className="num">{q}°</strong> + <strong className="num">{r}°</strong> = <strong className="num">360°</strong>
+          <strong className="num">{p}°</strong> + <strong className="num">{q}°</strong> + <strong className="num">{r}°</strong> = <strong className="num">{explored ? '360°' : '?'}</strong>
         </span>
       </p>
-      <svg viewBox="0 0 300 190" className="geo" role="img" aria-label={`Three rays from O. The angles between them are ${p}, ${q} and ${r} degrees.`}>
+      <svg viewBox="0 0 300 210" className="geo" role="img" aria-label={`Three rays from O. The angles between them are ${p}, ${q} and ${r} degrees.`}>
         {[SA, SB, SC].map((P, i) => (
           <Seg key={i} a={SO} b={P} cls={i === 0 ? '' : 'accent'} />
         ))}
-        <Arc v={SO} a={SA} b={SB} text={`${p}°`} r={20} />
+        <Arc v={SO} a={SA} b={SB} text={`${p}°`} r={26} />
         <Arc v={SO} a={SB} b={SC} text={`${q}°`} r={26} />
-        <Arc v={SO} a={SC} b={SA} text={`${r}°`} r={32} />
+        <Arc v={SO} a={SC} b={SA} text={`${r}°`} r={26} />
         <circle cx={SO.x} cy={SO.y} r={2.5} className="geo-dot" />
         <Label p={SA} c={SO} text="A" />
         <Label p={SB} c={SO} text="B" />
         <Label p={SC} c={SO} text="C" />
       </svg>
       <div className="widget-controls">
-        <Slider label="Turn OB" value={p} min={40} max={170} onChange={setP} format={(v) => `${v}°`} />
-        <Slider label="Turn OC" value={q} min={qMin} max={qMax} onChange={setQ} format={(v) => `${v}°`} />
+        <Slider
+          label="∠AOB"
+          value={p}
+          min={40}
+          max={170}
+          onChange={(v) => {
+            setP(v);
+            tried(`${tens(v)}-${tens(q)}`);
+          }}
+          format={(v) => `${v}°`}
+        />
+        <Slider
+          label="∠BOC"
+          value={q}
+          min={qMin}
+          max={qMax}
+          onChange={(v) => {
+            setQ(v);
+            tried(`${tens(p)}-${tens(v)}`);
+          }}
+          format={(v) => `${v}°`}
+        />
       </div>
-      <Note ok={null}>
-        <p>The three angles go all the way round O: together they always make a full turn, 360°.</p>
+      <Note ok={explored ? true : null}>
+        <p>{explored ? 'The three angles go all the way round O: together they always make a full turn, 360°.' : 'Turn OB and OC to a few different places. Each time, add the three angles. What do you notice?'}</p>
       </Note>
     </>
   );
@@ -125,6 +176,7 @@ function RoundAPoint() {
 // ---------------------------------------------------------------------------
 function CrossingLines() {
   const [a, setA] = useState(55);
+  const { explored, tried } = useExplore();
   const O = { x: 0, y: 0 };
   const A = { x: -1.3, y: 0 };
   const B = { x: 1.3, y: 0 };
@@ -135,12 +187,20 @@ function CrossingLines() {
   return (
     <div className="geo-lab">
       <p className="widget-readout" aria-live="polite">
-        <span>
-          ∠DOB = ∠AOC = <strong className="num">{a}°</strong>
-        </span>
-        <span>
-          ∠AOD = ∠BOC = <strong className="num">{180 - a}°</strong>
-        </span>
+        {explored ? (
+          <>
+            <span>
+              ∠DOB = ∠AOC = <strong className="num">{a}°</strong>
+            </span>
+            <span>
+              ∠AOD = ∠BOC = <strong className="num">{180 - a}°</strong>
+            </span>
+          </>
+        ) : (
+          <span>
+            ∠DOB <strong className="num">{a}°</strong>, ∠AOD <strong className="num">{180 - a}°</strong>, ∠AOC <strong className="num">{a}°</strong>, ∠BOC <strong className="num">{180 - a}°</strong>
+          </span>
+        )}
       </p>
       <svg viewBox="0 0 300 190" className="geo" role="img" aria-label={`Straight lines AB and CD cross at O. Angles DOB and AOC are ${a} degrees; angles AOD and BOC are ${180 - a} degrees.`}>
         <Seg a={SA} b={SB} />
@@ -149,6 +209,8 @@ function CrossingLines() {
         <Arc v={SO} a={SA} b={SC} text={`${a}°`} r={20} />
         <Arc v={SO} a={SD} b={SA} text={`${180 - a}°`} r={30} />
         <Arc v={SO} a={SC} b={SB} text={`${180 - a}°`} r={30} />
+        <circle cx={SO.x} cy={SO.y} r={2.5} className="geo-dot" />
+        <Label p={SO} c={{ x: SO.x, y: SO.y - 10 }} text="O" />
         {(
           [
             [SA, 'A'],
@@ -161,10 +223,20 @@ function CrossingLines() {
         ))}
       </svg>
       <div className="widget-controls">
-        <Slider label="Angle between the lines" value={a} min={15} max={165} onChange={setA} format={(v) => `${v}°`} />
+        <Slider
+          label="Angle between the lines"
+          value={a}
+          min={15}
+          max={165}
+          onChange={(v) => {
+            setA(v);
+            tried(tens(v));
+          }}
+          format={(v) => `${v}°`}
+        />
       </div>
-      <Note ok={null}>
-        <p>Opposite angles in the X stay equal (vertically opposite angles). Angles next to each other sit on a straight line, so they add up to 180°.</p>
+      <Note ok={explored ? true : null}>
+        <p>{explored ? 'Opposite angles in the X stay equal (vertically opposite angles). Angles next to each other sit on a straight line, so they add up to 180°.' : 'Change the angle a few times. Which angles always match each other?'}</p>
       </Note>
     </div>
   );
@@ -176,6 +248,7 @@ function ParallelLines() {
   const [pair, setPair] = useState<Pair>('corresp');
   const [t, setT] = useState(60);
   const [tilt, setTilt] = useState(0);
+  const { explored, tried } = useExplore();
   const H = { x: 0, y: 0 };
   const G = { x: 1 / Math.tan(rad(t)), y: 1 };
   const lo = Math.min(G.x, 0) - 1.3;
@@ -211,11 +284,13 @@ function ParallelLines() {
         <span>
           {atG.name} = <strong className="num">{atG.v}°</strong>, ∠GHD = <strong className="num">{atH}°</strong>
         </span>
-        <span className="muted">{equalPair ? (holds ? 'Equal' : 'Not equal') : `Sum: ${atG.v + atH}°`}</span>
+        {explored || !parallel ? <span className="muted">{equalPair ? (holds ? 'Equal' : 'Not equal') : `Sum: ${atG.v + atH}°`}</span> : null}
       </p>
       <svg viewBox="0 0 300 200" className="geo" role="img" aria-label={`Lines AB and CD${parallel ? ', which are parallel,' : ', which are not parallel,'} are crossed by EF at G and H. ${atG.name} is ${atG.v} degrees and angle GHD is ${atH} degrees.`}>
         <Seg a={SA} b={SB} />
         <Seg a={SC} b={SD} cls={parallel ? '' : 'dashed'} />
+        <Chevron a={SA} b={SB} />
+        {parallel ? <Chevron a={SC} b={SD} /> : null}
         <Seg a={SE} b={SF} cls="accent" />
         <Arc v={SG} a={atG.a} b={atG.b} text={`${atG.v}°`} r={18} />
         <Arc v={SH} a={SG} b={SD} text={`${atH}°`} r={18} />
@@ -235,14 +310,26 @@ function ParallelLines() {
         <Label p={SH} c={{ x: SH.x - 10, y: SH.y - 10 }} text="H" />
       </svg>
       <div className="widget-controls">
-        <Slider label="Turn the transversal EF" value={t} min={30} max={150} onChange={setT} format={(v) => `${v}°`} />
+        <Slider
+          label="Turn the transversal EF"
+          value={t}
+          min={30}
+          max={150}
+          onChange={(v) => {
+            setT(v);
+            if (tilt === 0) tried(tens(v));
+          }}
+          format={(v) => `${v}°`}
+        />
         <Slider label="Turn line CD" value={tilt} min={-15} max={15} onChange={setTilt} format={(v) => (v === 0 ? 'parallel' : `${v > 0 ? '+' : '−'}${Math.abs(v)}°`)} />
       </div>
-      <Note ok={parallel ? true : false}>
+      <Note ok={!parallel ? false : explored ? true : null}>
         <p>
-          {parallel
-            ? `AB ∥ CD. ${NAME[pair]} ${equalPair ? 'are equal' : 'add up to 180°'}, however you turn the transversal.`
-            : `CD is no longer parallel to AB, so the ${NAME[pair].toLowerCase()} ${equalPair ? 'are no longer equal' : 'no longer add up to 180°'}. The rules only work for parallel lines.`}
+          {!parallel
+            ? `CD is no longer parallel to AB, so the ${NAME[pair].toLowerCase()} ${equalPair ? 'are no longer equal' : 'no longer add up to 180°'}. The rules only work for parallel lines.`
+            : explored
+              ? `AB ∥ CD. ${NAME[pair]} ${equalPair ? 'are equal' : 'add up to 180°'}, however you turn the transversal.`
+              : 'Turn the transversal EF to a few different angles. What stays true about the two marked angles?'}
         </p>
       </Note>
     </div>
@@ -254,6 +341,8 @@ function TriangleAngles() {
   const [view, setView] = useState<'inside' | 'exterior'>('inside');
   const [a, setA] = useState(65);
   const [bRaw, setB] = useState(50);
+  const inside = useExplore();
+  const outside = useExplore();
   const bMax = 160 - a;
   const b = Math.min(bMax, bRaw);
   const c = 180 - a - b;
@@ -264,6 +353,8 @@ function TriangleAngles() {
   const len = Math.hypot(C.x - B.x, C.y - B.y);
   const D = { x: C.x + ((C.x - B.x) / len) * 0.7, y: C.y + ((C.y - B.y) / len) * 0.7 };
   const ext = view === 'exterior';
+  const { explored, tried } = ext ? outside : inside;
+  const track = (na: number, nb: number) => tried(`${tens(na)}-${tens(Math.min(160 - na, nb))}`);
   const { s } = useView(ext ? [A, B, C, D] : [A, B, C], 300, 190, 28);
   const [SA, SB, SC, SD] = [A, B, C, D].map(s) as [V, V, V, V];
   const mid = centroid([SA, SB, SC]);
@@ -281,11 +372,12 @@ function TriangleAngles() {
       <p className="widget-readout" aria-live="polite">
         {ext ? (
           <span>
-            ∠ACD = <strong className="num">{a + b}°</strong> = ∠A + ∠B = {a}° + {b}°
+            ∠ACD = <strong className="num">{a + b}°</strong>, ∠A = <strong className="num">{a}°</strong>, ∠B = <strong className="num">{b}°</strong>
+            {explored ? <span className="muted"> ∠ACD = ∠A + ∠B</span> : null}
           </span>
         ) : (
           <span>
-            <strong className="num">{a}°</strong> + <strong className="num">{b}°</strong> + <strong className="num">{c}°</strong> = <strong className="num">180°</strong>
+            <strong className="num">{a}°</strong> + <strong className="num">{b}°</strong> + <strong className="num">{c}°</strong> = <strong className="num">{explored ? '180°' : '?'}</strong>
           </span>
         )}
       </p>
@@ -301,11 +393,39 @@ function TriangleAngles() {
         {ext ? <Label p={SD} c={SC} text="D" /> : null}
       </svg>
       <div className="widget-controls">
-        <Slider label="∠A" value={a} min={20} max={120} onChange={setA} format={(v) => `${v}°`} />
-        <Slider label="∠B" value={b} min={20} max={bMax} onChange={setB} format={(v) => `${v}°`} />
+        <Slider
+          label="∠A"
+          value={a}
+          min={20}
+          max={120}
+          onChange={(v) => {
+            setA(v);
+            track(v, b);
+          }}
+          format={(v) => `${v}°`}
+        />
+        <Slider
+          label="∠B"
+          value={b}
+          min={20}
+          max={bMax}
+          onChange={(v) => {
+            setB(v);
+            track(a, v);
+          }}
+          format={(v) => `${v}°`}
+        />
       </div>
-      <Note ok={null}>
-        <p>{ext ? 'The outside angle at C always equals ∠A + ∠B: the two angles inside the triangle, opposite it.' : 'Whatever the triangle, the three angles add up to 180°.'}</p>
+      <Note ok={explored ? true : null}>
+        <p>
+          {explored
+            ? ext
+              ? 'The outside angle at C always equals ∠A + ∠B: the two angles inside the triangle, opposite it.'
+              : 'Whatever the triangle, the three angles add up to 180°.'
+            : ext
+              ? 'Change ∠A and ∠B a few times. Compare the outside angle at C with ∠A and ∠B. What do you notice?'
+              : 'Change ∠A and ∠B to make a few different triangles. Each time, add the three angles.'}
+        </p>
       </Note>
     </div>
   );
@@ -323,16 +443,22 @@ export function SimilarLab() {
   const [how, setHow] = useState<'multiply' | 'add'>('multiply');
   const [k, setK] = useState(1.5);
   const [d, setD] = useState(1);
+  const mult = useExplore();
+  const plus = useExplore();
+  const { explored, tried } = how === 'multiply' ? mult : plus;
   // △ABC: AB = 3, BC = 2, CA = 2,6 (a scalene triangle).
   const [ab, bc, ca] = [3, 2, 2.6];
   const [de, ef, fd] = how === 'multiply' ? [ab * k, bc * k, ca * k] : [ab + d, bc + d, ca + d];
   const t1 = bySides(bc, ca, ab);
   const t2raw = bySides(ef, fd, de);
-  const gap = Math.max(...t1.map((p) => p.x)) + 0.8;
+  const gap = Math.max(...t1.map((p) => p.x)) + 1.9;
   const t2 = t2raw.map((p) => ({ x: p.x + gap, y: p.y }));
-  const { s } = useView([...t1, ...t2], 300, 190, 30);
+  // △ABC enlarged to the length of DE and placed on D: it covers △DEF exactly only when the triangles are similar.
+  const scaled = t1.map((p) => ({ x: p.x * (de / ab) + gap, y: p.y * (de / ab) }));
+  const { s } = useView([...t1, ...t2, ...scaled], 300, 150, 24);
   const S1 = t1.map(s) as [V, V, V];
   const S2 = t2.map(s) as [V, V, V];
+  const SS = scaled.map(s);
   const ang = (t: [V, V, V] | V[]) => [angleAt(t[0]!, t[1]!, t[2]!), angleAt(t[1]!, t[2]!, t[0]!), angleAt(t[2]!, t[0]!, t[1]!)].map((x) => Math.round(x));
   const a1 = ang(t1);
   const a2 = ang(t2);
@@ -370,9 +496,10 @@ export function SimilarLab() {
           Angles: △ABC {a1.join('°, ')}°; △DEF {a2.join('°, ')}°
         </span>
       </p>
-      <svg viewBox="0 0 300 190" className="geo" role="img" aria-label={`Triangle ABC with sides ${c2(ab, 1)}, ${c2(bc, 1)} and ${c2(ca, 1)}, and triangle DEF with sides ${c2(de, 1)}, ${c2(ef, 1)} and ${c2(fd, 1)}.`}>
+      <svg viewBox="0 0 300 150" className="geo" role="img" aria-label={`Triangle ABC with sides ${c2(ab, 1)}, ${c2(bc, 1)} and ${c2(ca, 1)}, and triangle DEF with sides ${c2(de, 1)}, ${c2(ef, 1)} and ${c2(fd, 1)}.`}>
         <polygon points={S1.map((p) => `${p.x},${p.y}`).join(' ')} className="geo-fill" />
         <polygon points={S2.map((p) => `${p.x},${p.y}`).join(' ')} className="geo-fill" />
+        <polygon points={SS.map((p) => `${p.x},${p.y}`).join(' ')} className="geo-line dashed overlay" fill="none" />
         {(['A', 'B', 'C'] as const).map((l, i) => (
           <Label key={l} p={S1[i]!} c={c1} text={l} />
         ))}
@@ -388,16 +515,43 @@ export function SimilarLab() {
       </svg>
       <div className="widget-controls">
         {how === 'multiply' ? (
-          <Slider label="Scale factor k" value={k} min={0.5} max={2.5} step={0.25} onChange={setK} format={(v) => c2(v)} />
+          <Slider
+            label="Scale factor k"
+            value={k}
+            min={0.5}
+            max={2.5}
+            step={0.25}
+            onChange={(v) => {
+              setK(v);
+              tried(v);
+            }}
+            format={(v) => c2(v)}
+          />
         ) : (
-          <Slider label="Add to every side" value={d} min={0} max={3} step={0.5} onChange={setD} format={(v) => c2(v, 1)} />
+          <Slider
+            label="Add to every side"
+            value={d}
+            min={0}
+            max={3}
+            step={0.5}
+            onChange={(v) => {
+              setD(v);
+              tried(v);
+            }}
+            format={(v) => c2(v, 1)}
+          />
         )}
       </div>
-      <Note ok={same}>
+      <p className="muted lab-legend">Dashed: △ABC enlarged so that AB matches DE.</p>
+      <Note ok={explored ? same : null}>
         <p>
-          {same
-            ? 'Every side is multiplied by the same number, so the ratios are equal and the angles stay the same: the triangles are similar.'
-            : 'Adding the same length to every side changes the ratios, so the angles change: the triangles are not the same shape, and not similar.'}
+          {!explored
+            ? how === 'multiply'
+              ? 'Try a few scale factors. Compare the ratios, the angles, and the dashed triangle with △DEF.'
+              : 'Try adding a few different lengths. Do the ratios and the angles stay the same? Does the dashed triangle still fit △DEF?'
+            : same
+              ? 'Every side is multiplied by the same number, so the ratios are equal, the angles stay the same and the dashed triangle fits exactly: the triangles are similar.'
+              : 'Adding the same length to every side changes the ratios, so the angles change and the dashed triangle no longer fits: the triangles are not the same shape, and not similar.'}
         </p>
       </Note>
     </div>

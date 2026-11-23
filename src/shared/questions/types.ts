@@ -12,7 +12,8 @@ export type RichText = string;
 
 /** What the learner sees and types into. Never contains the answer. */
 export type InputSpec =
-  | { kind: 'numeric'; unit?: string; prefix?: string; placeholder?: string }
+  /** `positive`: the answer can never be negative (a length, an angle in a figure), so no ± key. */
+  | { kind: 'numeric'; unit?: string; prefix?: string; placeholder?: string; positive?: boolean }
   | { kind: 'fraction'; prefix?: string }
   /** `fraction` adds a / key and a fraction placeholder; `cubes` adds a ³ key. */
   | { kind: 'expression'; prefix?: string; variables: string[]; fraction?: boolean; cubes?: boolean; placeholder?: string }

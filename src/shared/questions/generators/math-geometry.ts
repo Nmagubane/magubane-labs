@@ -72,7 +72,7 @@ function numericAngle(q: { prompt: string; figure: GeometryFigure; answer: numbe
   return {
     prompt: q.prompt,
     figure: q.figure,
-    input: { kind: 'numeric' as const, unit: '°' },
+    input: { kind: 'numeric' as const, unit: '°', positive: true },
     answer: exact(q.answer),
     answerDisplay: `${q.answer}°`,
     hints: q.hints,

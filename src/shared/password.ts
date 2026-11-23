@@ -28,7 +28,7 @@ export function passwordRules(password: string, context: { email?: string; name?
     { id: 'upper', label: 'An uppercase letter (A–Z)', ok: /[A-Z]/.test(password) },
     { id: 'lower', label: 'A lowercase letter (a–z)', ok: /[a-z]/.test(password) },
     { id: 'number', label: 'A number (0–9)', ok: /[0-9]/.test(password) },
-    { id: 'special', label: 'A special character, like ! @ # ? or *', ok: /[^A-Za-z0-9\s]/.test(password) },
+    { id: 'special', label: 'A symbol, like ! @ # or ?', ok: /[^A-Za-z0-9\s]/.test(password) },
     { id: 'common', label: 'Not a well-known password', ok: password.length > 0 && !COMMON.has(lower.replace(/\s+/g, '')) },
     { id: 'personal', label: "Doesn't contain your name or email", ok: password.length > 0 && !personal },
   ];

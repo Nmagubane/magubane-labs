@@ -309,6 +309,10 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE exams ADD COLUMN paper INTEGER CHECK (paper IN (1, 2));
   `,
+  // v9: a second try in learning mode. The first wrong attempt is kept here (JSON) until the question is answered.
+  `
+  ALTER TABLE question_instances ADD COLUMN first_try TEXT;
+  `,
 ];
 
 /** A per-installation secret (for signed links in emails), created on first use and kept in the database. */

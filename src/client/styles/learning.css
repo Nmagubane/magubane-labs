@@ -153,7 +153,38 @@
 .topic {
   margin-bottom: var(--s6);
 }
+.topic-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--s4);
+  margin: var(--s2) 0 var(--s4);
+}
+.topic-jump button {
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  min-height: 36px;
+  font: inherit;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.topic-jump button:hover {
+  color: var(--ink);
+}
+.earlier-grades {
+  margin-top: var(--s2);
+}
+.earlier-grades > summary {
+  cursor: pointer;
+  padding: var(--s2) 0;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
 .topic-title {
+  scroll-margin-top: 80px;
   display: flex;
   align-items: baseline;
   gap: var(--s3);
@@ -471,6 +502,31 @@
   border: 1px solid var(--rule);
   border-radius: var(--r-ctl);
   padding: var(--s2);
+}
+/* Geometry diagrams are where the work happens: give them room on wide screens (labels scale with the figure). */
+.q-figure-geo {
+  max-width: 520px;
+}
+.try-again {
+  margin-top: var(--s4);
+  padding: var(--s3) var(--s4);
+  border-radius: var(--r-ctl);
+  background: var(--amber-tint);
+  border-left: 4px solid var(--amber);
+}
+.try-again h3 {
+  margin: 0 0 var(--s2);
+  font-size: var(--t-lg);
+}
+.try-again-label {
+  font-weight: 400;
+}
+.try-again p {
+  margin: 0 0 var(--s2);
+}
+.try-again .try-again-next {
+  margin: 0;
+  font-weight: 700;
 }
 .q-figure figcaption {
   text-align: center;

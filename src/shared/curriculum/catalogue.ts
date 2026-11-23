@@ -932,7 +932,7 @@ export const SKILLS: Skill[] = [
     topicId: 'space-shape',
     name: 'Parallel lines and a transversal',
     outcome: 'Name corresponding, alternate and co-interior angles and use them to find unknown angles, with reasons.',
-    signature: '\\angle EGB = \\angle GHD',
+    signature: 'x + 115^\\circ = 180^\\circ\\ (\\text{co-int } \\angle\\text{s})',
     grade: 8,
     prerequisites: ['straight-line-angles'],
     templateId: 'parallel-lines',

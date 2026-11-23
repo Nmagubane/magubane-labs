@@ -11,7 +11,7 @@ import { all, one, run, newId, tx } from './db.ts';
 import { HttpError } from './http.ts';
 import { now } from './config.ts';
 import { getProfile, getState, getStates, saveState, localDay } from './learner.ts';
-import type { UserDto, ActivityDto, ActivityStateResponse, AnswerResponse, CreateActivityRequest, FeedbackDto, MistakeDto, PracticeItem, ResultsDto, ReviewItem, AnswerRequest } from '../shared/api.ts';
+import type { UserDto, ActivityDto, ActivityStateResponse, AnswerResponse, CreateActivityRequest, FeedbackDto, MistakeDto, PracticeItem, ResultsDto, ReviewItem, AnswerRequest, TryAgainDto } from '../shared/api.ts';
 import { getSkill, getTopic, skillsInTopic, skillsForLearner, subjectOfSkill, type Skill } from '../shared/curriculum/catalogue.ts';
 import { isLookAhead } from '../shared/curriculum/phases.ts';
 import { generateQuestion } from '../shared/questions/registry.ts';
@@ -55,6 +55,32 @@ interface QuestionRow {
   hints_used: number;
   /** Junior "try one like it": the question this one gives a second chance at. */
   retry_of?: string | null;
+  /** Learning mode: the first wrong try (FirstTry JSON), kept until the question is answered. */
+  first_try?: string | null;
+}
+
+/** A first wrong try, waiting for the second. */
+interface FirstTry {
+  response: ResponseValue;
+  timeMs: number;
+}
+
+/**
+ * Grades 4–12 learning mode: a wrong answer gets a second try before the answer is shown. Not for multiple choice
+ * (a second pick from a few options is mostly guessing, and the feedback already explains the chosen option), and not
+ * for Grades 1–3, whose "try one like it" gives a fresh question instead.
+ */
+function allowsSecondTry(q: QuestionRow): boolean {
+  if (q.retry_of || getSkill(q.skill_id)?.phase === 'foundation') return false;
+  const kind = (JSON.parse(q.payload) as { input: { kind: string } }).input.kind;
+  return kind !== 'choice';
+}
+
+function tryAgainOf(q: QuestionRow, secret: Secret, ratingBefore: number): TryAgainDto | undefined {
+  if (!q.first_try) return undefined;
+  const first = JSON.parse(q.first_try) as FirstTry;
+  const g = grade(q, secret, first.response, ratingBefore);
+  return { mistake: mistakeDto(g.mistake), feedback: g.feedback ?? null, response: first.response };
 }
 
 /** At most this many "try one like it" questions in one Junior set: enough to recover, not a slog. */
@@ -428,11 +454,13 @@ export function getActivityState(db: Db, user: UserDto, id: string): ActivitySta
     const r = responses.get(q.id);
     const secret = JSON.parse(q.secret) as Secret;
     const showFeedback = a.mode === 'learning' && r && r.is_correct !== null;
+    const tryAgain = a.mode === 'learning' && !r ? tryAgainOf(q, secret, getState(db, a.user_id, q.skill_id).rating) : undefined;
     return {
       question: payloadOf(q),
-      response: r?.response ? (JSON.parse(r.response) as ResponseValue) : null,
+      response: r?.response ? (JSON.parse(r.response) as ResponseValue) : (tryAgain?.response ?? null),
       hints: a.mode === 'learning' ? secret.hints.slice(0, q.hints_used) : [],
       feedback: showFeedback ? feedbackFrom(q, r, secret, isPreview(a, q.skill_id, learnerGrade)) : null,
+      ...(tryAgain ? { tryAgain } : {}),
     };
   });
   const answered = [...responses.values()].filter((r) => r.response !== null || r.skipped).length;
@@ -451,7 +479,8 @@ export function nextQuestion(db: Db, user: UserDto, id: string, opts: { adjust?:
   if (opts.retry && open && !open.retry_of) throw new HttpError(409, 'no_retry', 'Answer this one first.');
   if (open && !opts.level) {
     const secret = JSON.parse(open.secret) as Secret;
-    return { question: payloadOf(open), response: null, hints: secret.hints.slice(0, open.hints_used), feedback: null };
+    const tryAgain = tryAgainOf(open, secret, getState(db, user.id, open.skill_id).rating);
+    return { question: payloadOf(open), response: tryAgain?.response ?? null, hints: secret.hints.slice(0, open.hints_used), feedback: null, ...(tryAgain ? { tryAgain } : {}) };
   }
   if (opts.retry) return retryQuestion(db, a, questions, responses);
   if (a.kind === 'practice' && responses.size >= a.target_count) throw new HttpError(409, 'complete', 'Practice set complete.');
@@ -535,12 +564,22 @@ export function answerQuestion(db: Db, user: UserDto, questionId: string, body: 
 
   if (a.mode === 'learning') {
     if (one(db, 'SELECT 1 FROM responses WHERE question_id = ?', q.id)) throw new HttpError(409, 'already_answered', 'You have already answered this question.');
-    if (body.response === null) throw new HttpError(422, 'empty', 'Enter an answer first.');
+    const first = q.first_try ? (JSON.parse(q.first_try) as FirstTry) : null;
+    if (body.reveal && !first) throw new HttpError(409, 'nothing_to_reveal', 'Have a go first.');
+    // Revealing ends the question with the first try as the answer.
+    const response = body.reveal && first ? first.response : body.response;
+    if (response === null) throw new HttpError(422, 'empty', 'Enter an answer first.');
     const state = getState(db, user.id, q.skill_id);
-    const g = grade(q, secret, body.response, state.rating);
+    const g = grade(q, secret, response, state.rating);
     if (g.parseError) throw new HttpError(422, 'unreadable', g.parseError);
-    // A second try comes straight after the worked solution, so it counts like an answer with one hint.
-    const score = answerScore(g.correct, q.hints_used + (q.retry_of ? 1 : 0));
+    if (!g.correct && !first && !body.reveal && allowsSecondTry(q)) {
+      // First wrong try: say what went wrong, not what is right. Nothing is recorded against mastery yet.
+      run(db, 'UPDATE question_instances SET first_try = ? WHERE id = ?', JSON.stringify({ response, timeMs: Math.min(body.timeMs, 600_000) } satisfies FirstTry), q.id);
+      const answeredSoFar = (one<{ n: number }>(db, 'SELECT COUNT(*) AS n FROM responses WHERE activity_id = ?', a.id) as { n: number }).n;
+      return { feedback: null, tryAgain: { mistake: mistakeDto(g.mistake), feedback: g.feedback ?? null, response }, saved: false, answered: answeredSoFar, done: false };
+    }
+    // A second try (after a first wrong one, or Junior's "try one like it") counts like an answer with one hint.
+    const score = answerScore(g.correct, q.hints_used + (q.retry_of ? 1 : 0) + (first ? 1 : 0));
     const before = state.rating;
     const preview = isPreview(a, q.skill_id, getProfile(db, user.id)?.grade);
     const after = preview ? before : updateRating({ rating: before, evidence: state.evidence, level: q.difficulty as Difficulty, score, mode: 'learning' });
@@ -555,12 +594,12 @@ export function answerQuestion(db: Db, user: UserDto, questionId: string, body: 
         a.id,
         user.id,
         q.skill_id,
-        JSON.stringify(body.response),
+        JSON.stringify(response),
         g.correct ? 1 : 0,
         score,
         g.mistake,
         g.feedback ?? null,
-        Math.min(body.timeMs, 600_000),
+        Math.min(body.timeMs + (first?.timeMs ?? 0), 600_000),
         before,
         after,
         at.toISOString(),

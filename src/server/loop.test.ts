@@ -211,7 +211,17 @@ test('the complete learning loop', async () => {
   assert.ok(hint.hint.length > 0);
   const secret = secretOf(item.question.id);
   const wrong = secret.misconceptions[0];
-  let fb = await neo.call('POST', `/api/questions/${item.question.id}/answer`, { response: wrong ? correctResponse(wrong.answer) : 'x+1', timeMs: 40000 });
+  const wrongResponse = wrong ? correctResponse(wrong.answer) : 'x+1';
+  // A first wrong try is diagnosed but the answer stays hidden; then the learner asks to see it.
+  const firstTry = await neo.call('POST', `/api/questions/${item.question.id}/answer`, { response: wrongResponse, timeMs: 40000 });
+  assert.equal(firstTry.feedback, null);
+  assert.equal(firstTry.saved, false);
+  if (wrong) assert.equal(firstTry.tryAgain.mistake.code, wrong.code);
+  assert.ok(!/answerDisplay|solution|correctResponse/.test(JSON.stringify(firstTry)), 'a first try does not reveal the answer');
+  const resumed = await neo.call('POST', `/api/activities/${practice.id}/next`, {});
+  assert.equal(resumed.question.id, item.question.id);
+  assert.deepEqual(resumed.tryAgain.response, wrongResponse, 'a pending second try survives a reload');
+  let fb = await neo.call('POST', `/api/questions/${item.question.id}/answer`, { response: null, reveal: true, timeMs: 5000 });
   assert.equal(fb.feedback.correct, false);
   if (wrong) assert.equal(fb.feedback.mistake.code, wrong.code);
   assert.ok(fb.feedback.solution.length > 0);
@@ -587,7 +597,9 @@ test('look ahead: CAPS subjects, preview practice that never moves mastery, no t
   const q = await z.call('POST', `/api/activities/${act.id}/next`, {});
   const input = q.question.input;
   const wrong = input.kind === 'choice' ? input.options.find((o: { id: string }) => o.id !== secretOf(q.question.id).answer.id).id : '987654321';
-  const res = await z.call('POST', `/api/questions/${q.question.id}/answer`, { response: wrong, timeMs: 3000 });
+  let res = await z.call('POST', `/api/questions/${q.question.id}/answer`, { response: wrong, timeMs: 3000 });
+  // Typed answers get a second try first; asking to see the answer ends the question.
+  if (res.tryAgain) res = await z.call('POST', `/api/questions/${q.question.id}/answer`, { response: null, reveal: true, timeMs: 1000 });
   assert.equal(res.feedback.correct, false);
   assert.equal(res.feedback.preview, true);
   assert.equal(res.feedback.masteryAfter, res.feedback.masteryBefore);
@@ -601,4 +613,45 @@ test('look ahead: CAPS subjects, preview practice that never moves mastery, no t
   const r2 = await z.call('POST', `/api/questions/${q2.question.id}/answer`, { response: correctResponse(secretOf(q2.question.id).answer), timeMs: 3000 });
   assert.equal(r2.feedback.preview, undefined);
   assert.ok(db.prepare('SELECT 1 FROM skill_states WHERE skill_id = ? AND user_id = (SELECT id FROM users WHERE email = ?)').get('expand-brackets', 'zinhle@example.com'));
+});
+
+test('second try: a first wrong answer gets a diagnosis, the second is graded, multiple choice is not repeated', async () => {
+  const learner = new Client();
+  await learner.signup({ displayName: 'Sizwe Mahlangu', email: 'sizwe@example.com', password: 'Second-try-2026', ageGroup: 'adult', consent: true });
+  await learner.call('PUT', '/api/profile', { grade: 9, curriculumId: 'za-caps', subjects: ['mathematics'], goals: ['pure-maths'], dailyMinutes: 20 });
+  const lesson = await learner.call('POST', '/api/activities', { kind: 'lesson', skillId: 'triangle-angles' });
+
+  // Wrong, then right: graded once, with less credit than right first time.
+  const q = await learner.call('POST', `/api/activities/${lesson.id}/next`, { level: 1 });
+  assert.equal(q.question.input.kind, 'numeric');
+  const s = secretOf(q.question.id);
+  const first = await learner.call('POST', `/api/questions/${q.question.id}/answer`, { response: correctResponse(s.misconceptions[0].answer), timeMs: 20000 });
+  assert.equal(first.feedback, null);
+  assert.equal(first.tryAgain.mistake.code, s.misconceptions[0].code);
+  assert.ok(first.tryAgain.feedback.length > 0, 'the diagnosis explains the mistake');
+  await learner.call('POST', `/api/questions/${q.question.id}/answer`, { response: null, reveal: true, timeMs: 1000 }, 200).then((r) => assert.equal(r.feedback.correct, false));
+
+  const q2 = await learner.call('POST', `/api/activities/${lesson.id}/next`, { level: 2 });
+  const s2 = secretOf(q2.question.id);
+  await learner.call('POST', `/api/questions/${q2.question.id}/answer`, { response: '1', timeMs: 10000 });
+  const second = await learner.call('POST', `/api/questions/${q2.question.id}/answer`, { response: correctResponse(s2.answer), timeMs: 10000 });
+  assert.equal(second.feedback.correct, true);
+  assert.ok(second.feedback.solution.length > 0);
+  const row = db.prepare('SELECT score, time_ms FROM responses WHERE question_id = ?').get(q2.question.id) as { score: number; time_ms: number };
+  assert.ok(row.score > 0 && row.score < 1, 'right on the second try earns less than right first time');
+  assert.equal(row.time_ms, 20000, 'time on both tries counts');
+  await learner.call('POST', `/api/questions/${q2.question.id}/answer`, { response: correctResponse(s2.answer), timeMs: 1000 }, 409);
+
+  // Nothing to reveal before a first try.
+  const q3 = await learner.call('POST', `/api/activities/${lesson.id}/next`, { level: 3 });
+  await learner.call('POST', `/api/questions/${q3.question.id}/answer`, { response: null, reveal: true, timeMs: 1000 }, 409);
+
+  // Multiple choice: a wrong pick gets the full feedback straight away.
+  const quads = await learner.call('POST', '/api/activities', { kind: 'lesson', skillId: 'quadrilateral-properties' });
+  const mc = await learner.call('POST', `/api/activities/${quads.id}/next`, { level: 3 });
+  assert.equal(mc.question.input.kind, 'choice');
+  const wrongPick = secretOf(mc.question.id).misconceptions[0].answer.id;
+  const mcFb = await learner.call('POST', `/api/questions/${mc.question.id}/answer`, { response: wrongPick, timeMs: 8000 });
+  assert.equal(mcFb.feedback.correct, false);
+  assert.equal(mcFb.tryAgain, undefined);
 });

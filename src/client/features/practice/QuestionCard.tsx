@@ -47,7 +47,8 @@ export function QuestionCard({
   const [value, setValue] = useState<ResponseValue | null>(item.response ?? defaultValue(item));
   const [hints, setHints] = useState<string[]>(item.hints);
   const [feedback, setFeedback] = useState(item.feedback);
-  const [busy, setBusy] = useState<'check' | 'hint' | null>(null);
+  const [tryAgain, setTryAgain] = useState(item.tryAgain);
+  const [busy, setBusy] = useState<'check' | 'hint' | 'reveal' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(performance.now());
   const { ask, error: tutorError } = useAskTutor();
@@ -56,21 +57,46 @@ export function QuestionCard({
     setValue(item.response ?? defaultValue(item));
     setHints(item.hints);
     setFeedback(item.feedback);
+    setTryAgain(item.tryAgain);
     setError(null);
     started.current = performance.now();
   }, [item]);
 
+  // A second try must be a different answer: sending the same one again would just use up the try.
+  const unchanged = !!tryAgain && JSON.stringify(value) === JSON.stringify(tryAgain.response);
+
+  const send = async (body: { response: ResponseValue | null; reveal?: boolean }) => {
+    const res = await api.post<AnswerResponse>(`/api/questions/${item.question.id}/answer`, { ...body, timeMs: Math.round(performance.now() - started.current) });
+    started.current = performance.now();
+    if (res.tryAgain) {
+      setTryAgain(res.tryAgain);
+      return;
+    }
+    setFeedback(res.feedback);
+    onAnswered?.(res);
+  };
+
   const check = async () => {
-    if (feedback || !hasAnswer(item.question.input, value)) return;
+    if (feedback || unchanged || !hasAnswer(item.question.input, value)) return;
     setBusy('check');
     setError(null);
     try {
-      const res = await api.post<AnswerResponse>(`/api/questions/${item.question.id}/answer`, { response: value, timeMs: Math.round(performance.now() - started.current) });
-      setFeedback(res.feedback);
-      onAnswered?.(res);
+      await send({ response: value });
     } catch (e) {
       const ae = e as ApiError;
       setError(ae.code === 'unreadable' ? `${ae.message} This doesn't count against you.` : ae.message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const reveal = async () => {
+    setBusy('reveal');
+    setError(null);
+    try {
+      await send({ response: null, reveal: true });
+    } catch (e) {
+      setError((e as ApiError).message);
     } finally {
       setBusy(null);
     }
@@ -103,6 +129,17 @@ export function QuestionCard({
           ))}
         </ol>
       ) : null}
+      {tryAgain && !feedback ? (
+        <section className="try-again" aria-live="polite">
+          <h3>
+            Not yet{tryAgain.mistake ? <span className="try-again-label">: {tryAgain.mistake.label}</span> : null}
+          </h3>
+          {tryAgain.feedback ? <Rich text={tryAgain.feedback} as="p" /> : null}
+          {tryAgain.mistake ? <p className="feedback-tip">{tryAgain.mistake.tip}</p> : null}
+          {!tryAgain.mistake && !tryAgain.feedback ? <p>That isn&apos;t it. Go back over each step, or take a hint.</p> : null}
+          <p className="try-again-next">{unchanged ? 'Change your answer, then check it again.' : 'Have another go: check your new answer.'}</p>
+        </section>
+      ) : null}
       {error ? (
         <p className="form-error" role="alert">
           {error}
@@ -110,8 +147,8 @@ export function QuestionCard({
       ) : null}
       {!feedback ? (
         <div className="qcard-actions">
-          <Button size="lg" busy={busy === 'check'} disabled={!hasAnswer(item.question.input, value)} onClick={() => void check()}>
-            Check answer
+          <Button size="lg" busy={busy === 'check'} disabled={unchanged || !hasAnswer(item.question.input, value)} onClick={() => void check()}>
+            {tryAgain ? 'Check again' : 'Check answer'}
           </Button>
           {hintsLeft > 0 ? (
             <Button variant="secondary" busy={busy === 'hint'} onClick={() => void hint()}>
@@ -121,6 +158,11 @@ export function QuestionCard({
           <Button variant="quiet" onClick={() => void ask(item.question.id)}>
             Ask the tutor
           </Button>
+          {tryAgain ? (
+            <Button variant="quiet" busy={busy === 'reveal'} onClick={() => void reveal()}>
+              Show me the answer
+            </Button>
+          ) : null}
           {hints.length ? <span className="muted small">Hints lower the credit for this question a little. Learning is what counts.</span> : null}
         </div>
       ) : (

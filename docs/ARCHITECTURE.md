@@ -595,3 +595,17 @@ Building it found two content bugs: a "neither similar nor congruent" pair whose
 **New mistake codes:** `angles-on-line`, `vert-opp`, `angle-pair`, `triangle-sum`, `isosceles-angles`, `exterior-angle`, `quad-sum`, `quad-properties`, `congruence-condition`, `congruence-order`, `similar-ratio`.
 
 **Not built yet.** Constructions with a compass (CAPS Grades 7–9), 3D objects, transformations, and writing a geometry reason from a blank line rather than choosing it.
+
+## 26. A second try before the answer (learning mode, Grades 4–12)
+
+A first wrong answer used to show the right answer and the full working at once, which gave the answer away before the learner had a chance to fix their own mistake. Now (`answerQuestion` in `activities.ts`, `QuestionCard.tsx`):
+
+- **First wrong try:** the server keeps it in `question_instances.first_try` (migration v9) and returns `tryAgain`: the diagnosed mistake, its feedback and tip, and the learner's own answer. Never the right answer, the working or the correct response. Nothing touches mastery yet. The screen shows an amber "Not yet" panel; *Check again* stays disabled until the answer changes, and hints and the tutor stay available.
+- **Second try:** graded as usual and saved once. Right on the second try counts like an answer with one hint; the time on both tries is added together.
+- **Show me the answer:** ends the question with the first try as the answer (`reveal: true`), with the full feedback and working.
+- **Not for multiple choice** (a second pick from a few options is mostly guessing, and the feedback already explains the chosen option), **not in tests**, and **not for Grades 1–3**, whose "try one like it" gives a fresh question instead.
+- A pending second try survives a reload: `PracticeItem.tryAgain` comes back with the activity state and from `next`.
+
+`loop.test.ts` checks that a first try leaks nothing (no `answerDisplay`, `solution` or `correctResponse`), that the second try is graded once with less credit and both times, that reveal works and is refused before a first try, and that multiple choice is unchanged.
+
+**Related changes from the same review.** Wrong-answer panels show a mastery gain but no longer a drop (the percentage stays). Numeric inputs whose answer can't be negative (`positive`: lengths and angles in geometry figures) have no ± key. Learn shows the learner's own grade band first, folds skills from below the band into "Earlier grades", and has links to jump to a topic. Geometry diagrams can be 520 px wide, small angles get a bigger arc, and angle labels have a halo so lines don't cut through them. The Grades 7–9 labs (§25) hold back their conclusion until the learner has tried three clearly different settings, so the learner finds the rule before the lab states it.
