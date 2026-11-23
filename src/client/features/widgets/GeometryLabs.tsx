@@ -9,7 +9,7 @@ const rad = (d: number) => (d * Math.PI) / 180;
 const deg = (r: number) => (r * 180) / Math.PI;
 const dist = (a: V, b: V) => Math.hypot(b.x - a.x, b.y - a.y);
 const sub = (a: V, b: V): V => ({ x: a.x - b.x, y: a.y - b.y });
-const angleAt = (v: V, a: V, b: V) => {
+export const angleAt = (v: V, a: V, b: V) => {
   const u = sub(a, v);
   const w = sub(b, v);
   return deg(Math.acos(Math.max(-1, Math.min(1, (u.x * w.x + u.y * w.y) / (Math.hypot(u.x, u.y) * Math.hypot(w.x, w.y))))));
@@ -19,7 +19,7 @@ const c2 = (v: number, dp = 2) => v.toFixed(dp).replace('.', ',');
 const onC = (d: number, r = 1): V => ({ x: r * Math.cos(rad(d)), y: r * Math.sin(rad(d)) });
 
 /** Fit points (maths coords, y up) into an SVG box. */
-function useView(pts: V[], W: number, H: number, pad = 28, extra: V[] = []) {
+export function useView(pts: V[], W: number, H: number, pad = 28, extra: V[] = []) {
   const all = [...pts, ...extra];
   const xs = all.map((p) => p.x);
   const ys = all.map((p) => p.y);
@@ -30,7 +30,7 @@ function useView(pts: V[], W: number, H: number, pad = 28, extra: V[] = []) {
   return { k, s: (p: V) => ({ x: ox + k * (p.x - x0), y: H - (oy + k * (p.y - y0)) }) };
 }
 
-function Label({ p, c, text }: { p: { x: number; y: number }; c: { x: number; y: number }; text: string }) {
+export function Label({ p, c, text }: { p: { x: number; y: number }; c: { x: number; y: number }; text: string }) {
   const dx = p.x - c.x;
   const dy = p.y - c.y;
   const n = Math.hypot(dx, dy) || 1;
@@ -40,7 +40,7 @@ function Label({ p, c, text }: { p: { x: number; y: number }; c: { x: number; y:
     </text>
   );
 }
-const centroid = (ps: { x: number; y: number }[]) => ({ x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length });
+export const centroid = (ps: { x: number; y: number }[]) => ({ x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length });
 
 // ---------------------------------------------------------------------------
 type Quad = 'parallelogram' | 'rectangle' | 'rhombus' | 'square' | 'kite' | 'trapezium';
@@ -204,7 +204,7 @@ export function MidpointLab() {
 
 // ---------------------------------------------------------------------------
 // Circle theorems. "centre": angle at the centre, same segment, semicircle. "cyclic": cyclic quad, tangent–chord.
-function Arc({ v, a, b, text, r = 18 }: { v: V; a: V; b: V; text: string; r?: number }) {
+export function Arc({ v, a, b, text, r = 18 }: { v: V; a: V; b: V; text: string; r?: number }) {
   const a1 = Math.atan2(a.y - v.y, a.x - v.x);
   let d = Math.atan2(b.y - v.y, b.x - v.x) - a1;
   while (d <= -Math.PI) d += 2 * Math.PI;

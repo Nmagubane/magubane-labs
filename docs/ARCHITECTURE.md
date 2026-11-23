@@ -560,3 +560,38 @@ One skill, `surface-area-volume` (`math-measurement.ts`, `lessons-measurement.ts
 
 **Labs.** `measure-lab` has two modes: *third* (pour cones of water into the cylinder with the same base and height; three fill it) and *scale* (a box and the same box with every length × $k$, its unit squares and cubes visible; a table shows area × $k^2$ and volume × $k^3$).
 
+## 25. Space and shape, Grades 7–9 (CAPS Senior Phase)
+
+Five skills in a new `space-shape` topic (`math-geometry-senior.ts`, `lessons-geometry-senior.ts`, `SeniorGeometryLabs.tsx`). They come before the Grades 10–12 Euclidean geometry they feed: the Grade 10 `quadrilaterals` skill now builds on `quadrilateral-properties`. `docs/CAPS-COVERAGE.md` §4 has the CAPS check.
+
+| Skill | Grade | Levels 1 → 5 |
+|---|---|---|
+| `straight-line-angles` | 7 | Angles on a straight line; vertically opposite; round a point, or the two parts of a right angle; the reason; angles as expressions in $x$ |
+| `parallel-lines` | 8 | Name the pair (corresponding, alternate, co-interior, vertically opposite); find $x$; the reason; two steps (corresponding, then a straight line); expressions in $x$ |
+| `triangle-angles` | 8 | Angle sum; right-angled, isosceles and equilateral; isosceles from the top angle, or sides opposite equal angles; the exterior angle; expressions in $x$, or an isosceles triangle with its base extended |
+| `quadrilateral-properties` | 9 | Name it from a definition or from marks on its sides; angle sum and the trapezium's co-interior angles; name it from how its diagonals meet; the kite's equal angles; parallelogram angles in $x$ |
+| `congruent-similar` | 9 | Which condition (S,S,S; S,A,S; A,A,S; R,H,S; or not necessarily congruent); matching vertices from the order of the letters; scale factors, including shadows; congruent, similar or neither; $DE \parallel BC$ cuts off a similar triangle |
+
+**Reasons in Senior Phase wording.** CAPS asks for a reason with every written statement (pp. 136–137), so every skill has a reason level. `SP_REASONS` holds the short forms teachers use (∠s on a str line, ∠s round a pt, vert opp ∠s, ∠s of Δ, ext ∠ of Δ, ∠s opp = sides, ∠s of quad), and reuses the Grades 10–12 wording for corresp, alt and co-int ∠s.
+
+**Most specific name.** "Name the quadrilateral" questions show only the marks that make it that shape. A square is also a rectangle, rhombus, parallelogram and kite, so those are wrong answers there, and the feedback says why ("the marks show more than a rectangle needs"). Description questions never offer a shape the description names ("It is a parallelogram with a right angle" never offers Parallelogram).
+
+**Expressions in $x$ always end.** Level 5 questions choose the angles first, then $x$ from the range that keeps every constant between −40 and 60 (`exprsFor`). Choosing $x$ first left some combinations with no valid expressions, which looped forever; the test found it.
+
+**Checked from the drawing.** `geometry-senior.test.ts` (300 seeds × 5 levels × 5 skills; it also passed at 1 500):
+- every numeric angle mark, right-angle mark and unknown $x$ matches the drawing to within 1,5°, and expression marks such as $(3x + 10)^\circ$ match at the answer;
+- labelled lengths are to one scale, and the unknown ? is the answer at that scale;
+- equal tick marks are equal lengths, and equal arrows are parallel;
+- the congruence condition is read from the marks (and whether the angle is between the two sides), and the triangles are measured to be congruent, or similar but a different size;
+- congruent, similar or neither is decided from the drawn side lengths;
+- the matching-vertices answer follows the letters, and the naive match is a different length;
+- quadrilateral descriptions are checked against a property table (what is true of every shape of each kind), and marked drawings are named from the marks alone;
+- every question has at least one predicted mistake, distinct from the answer.
+
+Building it found two content bugs: a "neither similar nor congruent" pair whose third angles made the triangles similar after all, and an isosceles question at 60° where the triangle was equilateral and the "wrong" side was right. Breaking eight things on purpose (co-interior treated as equal, the exterior angle, the kite's halving, similar triangles added, the neither check, a square offered for the rectangle definition, the order of the letters, the S,A,S angle) each made the test fail.
+
+**Labs.** `angle-lab` has four modes: *line* (turn a ray on a straight line; switch to three rays round a point), *cross* (two lines crossing: the vertically opposite pairs stay equal), *parallel* (choose a pair and turn the transversal, then turn CD off parallel and watch the rule fail) and *triangle* (change ∠A and ∠B; extend BC and compare the exterior angle with ∠A + ∠B). `similar-lab` multiplies every side by $k$ (ratios equal, angles unchanged), or adds the same length to every side (ratios and angles change), because adding instead of multiplying is the commonest similarity mistake. The quadrilateral lesson reuses `quad-lab`, which already has the kite and trapezium.
+
+**New mistake codes:** `angles-on-line`, `vert-opp`, `angle-pair`, `triangle-sum`, `isosceles-angles`, `exterior-angle`, `quad-sum`, `quad-properties`, `congruence-condition`, `congruence-order`, `similar-ratio`.
+
+**Not built yet.** Constructions with a compass (CAPS Grades 7–9), 3D objects, transformations, and writing a geometry reason from a blank line rather than choosing it.

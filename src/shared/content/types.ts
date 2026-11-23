@@ -49,6 +49,9 @@ export type WidgetSpec =
   | { type: 'rock-cycle-lab' }
   | { type: 'atmosphere-climb' }
   | { type: 'star-lab' }
+  // Space and shape (Grades 7–9)
+  | { type: 'angle-lab'; mode: 'line' | 'cross' | 'parallel' | 'triangle' }
+  | { type: 'similar-lab' }
   // Euclidean geometry (Grades 10–12)
   | { type: 'quad-lab' }
   | { type: 'midpoint-lab' }
