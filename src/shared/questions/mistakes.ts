@@ -479,6 +479,11 @@ export const MISTAKES = {
     tip: 'Triangles don\'t change shape when pushed, so frames use them. Folding, rolling or corrugating a material makes it much stiffer.',
   },
   // ---- Euclidean geometry (Grades 10–12) ----
+  'pythagoras-sides': { label: 'Which side is the hypotenuse?', kind: 'conceptual', tip: 'The hypotenuse is the longest side, opposite the right angle. To find it, add the squares of the other two. To find a shorter side, subtract: hypotenuse² − the other side².' },
+  'pythagoras-root': { label: 'Squares, then the square root', kind: 'conceptual', tip: 'Square the sides, add or subtract the squares, then take the square root at the end. Adding the lengths, or stopping at the squares, gives the wrong length.' },
+  'pythagoras-steps': { label: 'Two triangles, two steps', kind: 'procedural', tip: 'Find the side the two right-angled triangles share first. Then use Pythagoras again in the triangle that holds the unknown.' },
+  'pythagoras-converse': { label: 'Is it right-angled?', kind: 'conceptual', tip: 'Square the longest side and compare it with the sum of the squares of the other two. Equal means right-angled, with the right angle opposite the longest side.' },
+  'surd-form': { label: 'Leave it in surd form', kind: 'procedural', tip: 'When a length is not a whole number, leave the square root in the answer, like √41, instead of rounding it.' },
   'angles-on-line': { label: 'Angles on a line or round a point', kind: 'conceptual', tip: 'Angles on a straight line add up to 180°, angles round a point add up to 360°, and the two parts of a right angle add up to 90°. First check which one the diagram shows.' },
   'vert-opp': { label: 'Vertically opposite angles', kind: 'conceptual', tip: 'Where two straight lines cross, the angles opposite each other in the X are equal. Angles next to each other add up to 180°.' },
   'angle-pair': { label: 'Which angle pair?', kind: 'conceptual', tip: 'Corresponding: the same position at each crossing (an F). Alternate: between the parallel lines, on opposite sides of the transversal (a Z). Co-interior: between the lines, on the same side (a U).' },

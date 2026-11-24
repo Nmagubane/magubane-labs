@@ -8,7 +8,7 @@ import { generateQuestion } from './registry.ts';
 import { DIFFICULTIES, type GeneratedQuestion, type GeometryFigure } from './types.ts';
 import { SP_REASONS } from './generators/math-geometry-senior.ts';
 
-const IDS = ['straight-line-angles', 'parallel-lines', 'triangle-angles', 'quadrilateral-properties', 'congruent-similar'];
+const IDS = ['straight-line-angles', 'parallel-lines', 'triangle-angles', 'quadrilateral-properties', 'congruent-similar', 'pythagoras'];
 const SEEDS = Number(process.env.SEEDS ?? 300);
 
 type Pt = GeometryFigure['points'][number];
@@ -36,8 +36,14 @@ function evalLabel(text: string, x: number): number | null {
   const q = m[3] ? Number(m[3]) * (m[2] === '−' ? -1 : 1) : 0;
   return p * x + q;
 }
+/** The value of a numeric or exact-surd answer. */
+function answerValue(q: GeneratedQuestion): number | null {
+  if (q.answer.kind === 'numeric') return q.answer.value;
+  if (q.answer.kind === 'surd') return q.answer.terms.reduce((sum, t) => sum + (t.n / t.d) * Math.sqrt(t.r), 0);
+  return null;
+}
 const lengthLabel = (text?: string) => {
-  const m = text?.match(/^(\d+(?:,\d+)?) (cm|m)$/);
+  const m = text?.match(/^(\d+(?:,\d+)?) (cm|mm|m)$/);
   return m ? Number(m[1]!.replace(',', '.')) : null;
 };
 
@@ -82,9 +88,10 @@ test('Grades 7–9 geometry: labelled lengths are to scale, and the unknown leng
     const scale = scales[0]!;
     for (const [i, s] of labelled.entries()) assert.ok(Math.abs(scales[i]! / scale - 1) < 0.02, `${where}: ${s.a}${s.b} labelled ${s.text} is not to scale`);
     const unknown = (f.segments ?? []).find((s) => s.text === '?');
-    if (unknown && q.answer.kind === 'numeric') {
+    const value = answerValue(q);
+    if (unknown && value !== null) {
       const drawn = dist(f, unknown.a, unknown.b) / scale;
-      assert.ok(Math.abs(drawn / q.answer.value - 1) < 0.02, `${where}: ? is drawn ${drawn.toFixed(2)} but the answer is ${q.answer.value}`);
+      assert.ok(Math.abs(drawn / value - 1) < 0.02, `${where}: ? is drawn ${drawn.toFixed(2)} but the answer is ${value}`);
     }
   });
 });
@@ -271,4 +278,85 @@ test('matching vertices: the answer follows the order of the letters, and the na
     assert.equal(q.answer.value, label(pre(m[2]!), pre(m[3]!)), `seed ${seed}`);
     assert.notEqual(label('ABC'['PQR'.indexOf(m[2]!)]!, 'ABC'['PQR'.indexOf(m[3]!)]!), q.answer.value, `seed ${seed}: naive match differs`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Pythagoras: lengths are worked out from the labels alone, never from the generator or the drawing.
+const keyOf = (u: string, v: string) => [u, v].sort().join('');
+/** Fill in unknown sides of every marked right-angled triangle from the labelled ones, as often as it helps. */
+function inferLengths(f: GeometryFigure, known: Map<string, number>): Map<string, number> {
+  const rights = (f.angles ?? []).filter((g) => g.right);
+  for (let pass = 0; pass < 4; pass++) {
+    for (const g of rights) {
+      const legs = [keyOf(g.at, g.from), keyOf(g.at, g.to)];
+      const hyp = keyOf(g.from, g.to);
+      // A right angle on a straight line (M on BC) uses the sub-segments; they may be halves of a labelled side.
+      const [l1, l2] = legs.map((k) => known.get(k));
+      const h = known.get(hyp);
+      if (l1 !== undefined && l2 !== undefined && h === undefined) known.set(hyp, Math.hypot(l1, l2));
+      if (h !== undefined && l1 !== undefined && l2 === undefined) known.set(legs[1]!, Math.sqrt(h * h - l1 * l1));
+      if (h !== undefined && l2 !== undefined && l1 === undefined) known.set(legs[0]!, Math.sqrt(h * h - l2 * l2));
+    }
+  }
+  return known;
+}
+
+test('Pythagoras: every missing length follows from the labelled lengths, and every marked right triangle has a² + b² = c²', () => {
+  for (const level of [1, 2, 3, 4, 5] as const) {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const q = generateQuestion('pythagoras', seed, level);
+      if (q.answer.kind === 'choice') continue;
+      const f = q.figure as GeometryFigure;
+      const where = `L${level} seed ${seed}`;
+      const known = new Map<string, number>();
+      for (const s of f.segments ?? []) {
+        const v = lengthLabel(s.text) ?? (s.text && /^\d+$/.test(s.text) ? Number(s.text) : null);
+        if (v !== null) known.set(keyOf(s.a, s.b), v);
+      }
+      // Ticked sides are equal.
+      for (const t of [1, 2]) {
+        const group = (f.segments ?? []).filter((g) => g.ticks === t).map((g) => keyOf(g.a, g.b));
+        const v = group.map((k) => known.get(k)).find((x) => x !== undefined);
+        if (v !== undefined) for (const k of group) known.set(k, v);
+      }
+      // An isosceles triangle's height meets the base at its midpoint M (ticked equal sides): BM is half of BC.
+      if (f.points.some((p) => p.id === 'M') && known.has('BC')) known.set('BM', known.get('BC')! / 2), known.set('CM', known.get('BC')! / 2);
+      inferLengths(f, known);
+      const unknown = (f.segments ?? []).find((s) => s.text === '?');
+      const value = answerValue(q)!;
+      if (unknown) {
+        const v = known.get(keyOf(unknown.a, unknown.b));
+        assert.ok(v !== undefined, `${where}: the unknown can be worked out from the labels`);
+        assert.ok(Math.abs(v - value) < 1e-9, `${where}: worked out ${v}, answer ${value}`);
+      } else {
+        assert.match(q.prompt, /area/, `${where}: no ? means an area question`);
+        assert.ok(Math.abs(0.5 * known.get('BC')! * known.get('AM')! - value) < 1e-9, `${where}: area`);
+      }
+      for (const g of (f.angles ?? []).filter((a) => a.right)) {
+        const [l1, l2, h] = [known.get(keyOf(g.at, g.from)), known.get(keyOf(g.at, g.to)), known.get(keyOf(g.from, g.to))];
+        if (l1 !== undefined && l2 !== undefined && h !== undefined) assert.ok(Math.abs(l1 * l1 + l2 * l2 - h * h) < 1e-6, `${where}: right angle at ${g.at}`);
+      }
+      // Irrational answers are exact surds, and a rounded decimal is diagnosed as a form mistake.
+      if (!Number.isInteger(Math.round(value * 1e9) / 1e9)) assert.ok(q.misconceptions.some((m) => m.code === 'surd-form'), `${where}: rounded decimal diagnosed`);
+    }
+  }
+});
+
+test('Pythagoras: "is it right-angled?" is decided from the three sides in the question', () => {
+  let right = 0;
+  let notRight = 0;
+  for (let seed = 1; seed <= SEEDS * 3; seed++) {
+    const q = generateQuestion('pythagoras', seed, 3);
+    if (q.answer.kind !== 'choice') continue;
+    const sides = [...q.prompt.matchAll(/\$([A-Z])([A-Z]) = (\d+)\$/g)].map((m) => ({ from: m[1]!, to: m[2]!, v: Number(m[3]) }));
+    assert.equal(sides.length, 3, `seed ${seed}: three sides`);
+    const sorted = [...sides].sort((a, b) => a.v - b.v);
+    const isRight = sorted[0]!.v ** 2 + sorted[1]!.v ** 2 === sorted[2]!.v ** 2;
+    const letters = new Set(sides.flatMap((s) => [s.from, s.to]));
+    const opposite = [...letters].find((l) => l !== sorted[2]!.from && l !== sorted[2]!.to);
+    assert.equal(q.answer.id, isRight ? opposite : 'no', `seed ${seed}: ${q.prompt}`);
+    if (isRight) right++;
+    else notRight++;
+  }
+  assert.ok(right > 20 && notRight > 20, 'both kinds are asked');
 });

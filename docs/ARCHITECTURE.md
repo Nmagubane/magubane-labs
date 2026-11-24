@@ -609,3 +609,25 @@ A first wrong answer used to show the right answer and the full working at once,
 `loop.test.ts` checks that a first try leaks nothing (no `answerDisplay`, `solution` or `correctResponse`), that the second try is graded once with less credit and both times, that reveal works and is refused before a first try, and that multiple choice is unchanged.
 
 **Related changes from the same review.** Wrong-answer panels show a mastery gain but no longer a drop (the percentage stays). Numeric inputs whose answer can't be negative (`positive`: lengths and angles in geometry figures) have no ± key. Learn shows the learner's own grade band first, folds skills from below the band into "Earlier grades", and has links to jump to a topic. Geometry diagrams can be 520 px wide, small angles get a bigger arc, and angle labels have a halo so lines don't cut through them. The Grades 7–9 labs (§25) hold back their conclusion until the learner has tried three clearly different settings, so the learner finds the rule before the lab states it.
+
+## 27. The Theorem of Pythagoras (Grades 8–9)
+
+One skill, `pythagoras`, in the `measurement` topic (`math-pythagoras.ts`, lesson in `lessons-measurement.ts`, `PythagorasLab` in `SeniorGeometryLabs.tsx`). Grade 10 trigonometry, analytical geometry and surface area now build on it.
+
+| Level | What it asks |
+|---|---|
+| 1 | The hypotenuse from the two shorter sides (Pythagorean triples) |
+| 2 | A shorter side from the hypotenuse and the other side |
+| 3 | Either, with a surd answer; or "is it right-angled, and where is the right angle?" from three sides |
+| 4 | Contexts: a ladder against a wall, a kite on a string, a school ramp, a gate brace, a TV screen's diagonal |
+| 5 | Grade 9 figures: two right-angled triangles sharing a side (Pythagoras twice); an isosceles triangle's height or area |
+
+**Surd form, as CAPS asks.** Every missing length is typed into the exact-surd input, whole or not, so the input never hints that the answer is whole. √28 and 2√7 are both right (Grade 8 doesn't require simplest form). A rounded decimal is diagnosed as `surd-form`, with the exact answer in the feedback. The triangle is turned to a random position, so the hypotenuse isn't always in the same place.
+
+**Checked from the labels.** `geometry-senior.test.ts` (Pythagoras joins the Grades 7–9 measuring tests) works out every unknown length from the labelled lengths alone: ticked sides are equal, a midpoint halves the base, and lengths are filled in through each marked right angle, two triangles deep. Every marked right triangle must satisfy a² + b² = c². "Is it right-angled?" is decided from the three numbers in the prompt, and both kinds are asked. Breaking six things on purpose (a shorter side found by adding, the second step, the right angle at the wrong vertex, the whole base used for the height, the ladder added, no rounded-decimal diagnosis) each made the tests fail.
+
+**Lab.** `pythagoras-lab`: squares drawn on the sides of a triangle with sides a and b and the angle between them. a² + b² equals c² only at 90°; wider, c² is bigger; narrower, smaller. The conclusion appears after the learner has tried three different settings.
+
+**New mistake codes:** `pythagoras-sides`, `pythagoras-root`, `pythagoras-steps`, `pythagoras-converse`, `surd-form`.
+
+**A guard found on the way.** A TeX command written with a single backslash in a TypeScript string loses the backslash and still renders, as plain letters ("sqrt41" instead of √41). `content.test.ts` now fails on a TeX command name inside maths without its backslash.

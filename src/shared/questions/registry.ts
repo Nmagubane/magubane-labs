@@ -17,6 +17,7 @@ import { sound, simpleCircuits, earthMoon, solarSystem, structures } from './gen
 import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSolarSystem, earthSystems, atmosphere, starLife } from './generators/ns-senior.ts';
 import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, proportionality } from './generators/math-geometry.ts';
 import { straightLineAngles, parallelLines, triangleAngles, quadrilateralProperties, congruentSimilar } from './generators/math-geometry-senior.ts';
+import { pythagoras } from './generators/math-pythagoras.ts';
 import { circleProofs, similarityProofs, quadrilateralProofs } from './generators/math-proofs.ts';
 import { factorTheorem, firstPrinciples, tangentLines, cubicGraphs, optimisation } from './generators/math-calculus.ts';
 import { probabilityRules, independentEvents, countingPrinciple } from './generators/math-probability.ts';
@@ -131,6 +132,7 @@ export const TEMPLATES: QuestionTemplate[] = [
   triangleAngles,
   quadrilateralProperties,
   congruentSimilar,
+  pythagoras,
   quadrilaterals,
   midpointTheorem,
   circleTheorems,

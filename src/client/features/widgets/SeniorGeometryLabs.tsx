@@ -557,3 +557,99 @@ export function SimilarLab() {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+/** Squares on the sides of a triangle: a² + b² = c² exactly when the angle between a and b is 90°. */
+export function PythagorasLab() {
+  const [a, setA] = useState(3);
+  const [b, setB] = useState(4);
+  const [angle, setAngle] = useState(90);
+  const { explored, tried } = useExplore();
+  const C = { x: 0, y: 0 };
+  const B = { x: a, y: 0 };
+  const A = dir(angle, b);
+  const cc = a * a + b * b - 2 * a * b * Math.cos(rad(angle));
+  // The square on side PQ, built outwards (away from the triangle's third vertex).
+  const squareOn = (P: V, Q: V, third: V): V[] => {
+    let [nx, ny] = [-(Q.y - P.y), Q.x - P.x];
+    if ((third.x - P.x) * nx + (third.y - P.y) * ny > 0) [nx, ny] = [-nx, -ny];
+    return [P, Q, { x: Q.x + nx, y: Q.y + ny }, { x: P.x + nx, y: P.y + ny }];
+  };
+  const sa = squareOn(C, B, A);
+  const sb = squareOn(C, A, B);
+  const sc = squareOn(A, B, C);
+  const { s } = useView([...sa, ...sb, ...sc], 300, 240, 14);
+  const poly = (ps: V[]) => ps.map(s).map((p) => `${p.x},${p.y}`).join(' ');
+  const mid = (ps: V[]) => s({ x: ps.reduce((t, p) => t + p.x, 0) / ps.length, y: ps.reduce((t, p) => t + p.y, 0) / ps.length });
+  const [SA, SB, SC] = [A, B, C].map(s) as [V, V, V];
+  const sum = a * a + b * b;
+  const isRight = angle === 90;
+  const track = (na: number, nb: number, ang: number) => tried(`${na}-${nb}-${ang === 90 ? 'r' : ang > 90 ? 'w' : 'n'}`);
+  return (
+    <div className="geo-lab">
+      <p className="widget-readout" aria-live="polite">
+        <span>
+          a² + b² = <strong className="num">{sum}</strong>
+        </span>
+        <span>
+          c² = <strong className="num">{c2(cc, 1)}</strong>
+        </span>
+        {explored ? <span className="muted">{isRight ? 'Equal' : cc > sum ? 'c² is bigger' : 'c² is smaller'}</span> : null}
+      </p>
+      <svg viewBox="0 0 300 240" className="geo" role="img" aria-label={`A triangle with sides a = ${a} and b = ${b} meeting at ${angle} degrees, and a square on each side. The squares on a and b have areas ${a * a} and ${b * b}; the square on c has area ${c2(cc, 1)}.`}>
+        <polygon points={poly(sa)} className="geo-fill" />
+        <polygon points={poly(sb)} className="geo-fill" />
+        <polygon points={poly(sc)} className="geo-fill pyth-c" />
+        <polygon points={[SA, SB, SC].map((p) => `${p.x},${p.y}`).join(' ')} className="geo-line" fill="none" />
+        {isRight ? <Arc v={SC} a={SB} b={SA} text="" r={12} /> : <Arc v={SC} a={SB} b={SA} text={`${angle}°`} r={16} />}
+        <text {...mid(sa)} textAnchor="middle" className="geo-angle">{`a² = ${a * a}`}</text>
+        <text {...mid(sb)} textAnchor="middle" className="geo-angle">{`b² = ${b * b}`}</text>
+        <text {...mid(sc)} textAnchor="middle" className="geo-angle">{`c² = ${c2(cc, 1)}`}</text>
+      </svg>
+      <div className="widget-controls">
+        <Slider
+          label="Side a"
+          value={a}
+          min={2}
+          max={8}
+          onChange={(v) => {
+            setA(v);
+            track(v, b, angle);
+          }}
+        />
+        <Slider
+          label="Side b"
+          value={b}
+          min={2}
+          max={8}
+          onChange={(v) => {
+            setB(v);
+            track(a, v, angle);
+          }}
+        />
+        <Slider
+          label="Angle between a and b"
+          value={angle}
+          min={60}
+          max={120}
+          onChange={(v) => {
+            setAngle(v);
+            track(a, b, v);
+          }}
+          format={(v) => `${v}°`}
+        />
+      </div>
+      <Note ok={explored ? isRight : null}>
+        <p>
+          {!explored
+            ? 'Keep the angle at 90° and try different sides a and b: compare a² + b² with c². Then make the angle bigger or smaller.'
+            : isRight
+              ? 'At 90°, the two smaller squares exactly fill the big one: a² + b² = c², whatever a and b are. That is the Theorem of Pythagoras.'
+              : angle > 90
+                ? 'Wider than 90°: c² is bigger than a² + b². Only a right angle makes them equal, so a² + b² = c² tells you a triangle is right-angled.'
+                : 'Narrower than 90°: c² is smaller than a² + b². Only a right angle makes them equal, so a² + b² = c² tells you a triangle is right-angled.'}
+        </p>
+      </Note>
+    </div>
+  );
+}

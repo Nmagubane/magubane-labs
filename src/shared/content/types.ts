@@ -52,6 +52,7 @@ export type WidgetSpec =
   // Space and shape (Grades 7–9)
   | { type: 'angle-lab'; mode: 'line' | 'cross' | 'parallel' | 'triangle' }
   | { type: 'similar-lab' }
+  | { type: 'pythagoras-lab' }
   // Euclidean geometry (Grades 10–12)
   | { type: 'quad-lab' }
   | { type: 'midpoint-lab' }

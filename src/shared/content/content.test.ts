@@ -11,6 +11,9 @@ function texOk(text: string, where: string) {
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
     if (m[0] === '\\$') continue;
+    // A TeX command that lost its backslash (a single \ in a TS string) still renders, as plain letters: "sqrt{41}".
+    const lost = (m[1] ?? m[2] ?? '').match(/(?:^|[^\\a-zA-Z])(sqrt|frac|dfrac|tfrac|angle|circ|times|div|triangle|parallel|hat|perp|equiv|text)\{?/);
+    assert.equal(lost, null, `${where}: "${lost?.[1]}" needs a backslash in "${m[0]}"`);
     try {
       katex.renderToString((m[1] ?? m[2]) as string, { throwOnError: true, strict: 'ignore' });
     } catch (e) {
