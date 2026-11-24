@@ -3,7 +3,7 @@
  * before responding. Accepts the way South African learners write numbers: "2,5" and "2.5".
  */
 import { rat, eq as req, toNumber, type Rational } from './rational.ts';
-import { parseExpression, toRatFn, ratFnEqual, isExpandedForm, isFactorisedForm, isCompletedSquareForm, fractionFormProblem, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
+import { parseExpression, toRatFn, ratFnEqual, isExpandedForm, isFactorisedForm, isCompletedSquareForm, fractionFormProblem, powerFormProblem, ParseError, splitEquation, equationsEquivalent } from './expr.ts';
 import type { AnswerSpec, InputSpec, Misconception, RichText } from './types.ts';
 import { parseInequality, InequalityError, sameSet, fromWire, toggledEnds, complement, setText, type Interval } from './inequality.ts';
 import { parseFormula, FormulaError, formulasEquivalent, variablesOf } from './formula.ts';
@@ -67,6 +67,8 @@ type Parsed =
   | { kind: 'expression'; text: string }
   | { kind: 'equation'; text: string }
   | { kind: 'point'; x: Rational; y: Rational }
+  /** `key` identifies the value exactly (significant digits @ position of the point); `a` is the number in front. */
+  | { kind: 'scientific'; key: string; a: number }
   | { kind: 'proof'; ids: string[] }
   /** Every root as an exact surd (a rational root is a surd with only a rational part). */
   | { kind: 'roots'; values: Surd[]; problems: (string | null)[] }
@@ -79,6 +81,24 @@ type Parsed =
   | { kind: 'sequence'; ids: string[] }
   | { kind: 'groups'; pairs: Record<string, string> }
   | { kind: 'text'; value: string };
+
+/**
+ * An exact key for the decimal a × 10^e: its significant digits and where the decimal point falls.
+ * 4,5 × 10^3 and 45 × 10^2 both give "45@4". Null if `a` isn't a decimal number.
+ */
+export function scientificKey(a: string, e: number): string | null {
+  const m = /^(-?)(\d*)(?:[.,](\d*))?$/.exec(a.trim().replace(/[−–—]/g, '-').replace(/[\s\u00a0\u202f]/g, ''));
+  if (!m || !(m[2] || m[3])) return null;
+  let digits = `${m[2]}${m[3] ?? ''}`;
+  let point = (m[2] ?? '').length + e;
+  while (digits.startsWith('0')) {
+    digits = digits.slice(1);
+    point--;
+  }
+  digits = digits.replace(/0+$/, '');
+  if (!digits) return '0';
+  return `${m[1]}${digits}@${point}`;
+}
 
 /** Words are compared without case, spaces at the ends, or curly apostrophes. */
 export const normaliseWord = (s: string): string => s.trim().toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, ' ');
@@ -133,6 +153,16 @@ export function parseResponse(kind: AnswerSpec['kind'], response: ResponseValue,
       const [px, py] = parts.map((x) => parseNumber(x));
       if (!px?.exact || !py?.exact) return { error: 'Enter each coordinate as a number, like -3, 2,5 or 7/2.' };
       return { kind, x: px.exact, y: py.exact };
+    }
+    case 'scientific': {
+      // Two boxes, [number in front, exponent]; or one string like "4,5 × 10^6".
+      const parts = Array.isArray(response) ? response : (/^(.*?)(?:[×x*·]\s*10\s*\^\s*\(?([^)]*)\)?)?$/.exec(response.trim()) ?? []).slice(1).map((p) => p ?? '');
+      const [aRaw = '', eRaw = ''] = parts.map((p) => p.trim().replace(/[−–—]/g, '-'));
+      if (!aRaw || !eRaw) return { error: 'Fill in both boxes: the number in front and the power of 10.' };
+      if (!/^-?\d+$/.test(eRaw)) return { error: 'The power of 10 is a whole number, like 6 or -3.' };
+      const key = scientificKey(aRaw, Number(eRaw));
+      if (!key) return { error: 'Type the number in front as a decimal, like 4,5.' };
+      return { kind, key, a: Number(aRaw.replace(',', '.').replace(/\s/g, '')) };
     }
     case 'proof': {
       const ids = Array.isArray(response) ? response.map((r) => r.trim()) : response.split(',').map((r) => r.trim());
@@ -273,6 +303,8 @@ function matchesValue(spec: AnswerSpec, parsed: Parsed): boolean {
     }
     case 'equation':
       return parsed.kind === 'equation' && equationsEquivalent(parsed.text, spec.expr);
+    case 'scientific':
+      return parsed.kind === 'scientific' && parsed.key === scientificKey(String(spec.a), spec.e);
     case 'point':
       return parsed.kind === 'point' && req(parsed.x, rat(spec.x.n, spec.x.d)) && req(parsed.y, rat(spec.y.n, spec.y.d));
     case 'proof':
@@ -307,15 +339,23 @@ function formOk(spec: AnswerSpec, parsed: Parsed): boolean {
   if (spec.kind === 'fraction' && spec.requireSimplest && parsed.kind === 'fraction') return parsed.simplest;
   if (spec.kind === 'surd' && parsed.kind === 'surd') return !spec.requireSimplest || parsed.problem === null;
   if (spec.kind === 'roots' && parsed.kind === 'roots') return !spec.requireSimplest || parsed.problems.every((p) => p === null);
+  if (spec.kind === 'scientific' && parsed.kind === 'scientific') return Math.abs(parsed.a) >= 1 && Math.abs(parsed.a) < 10;
   if (spec.kind !== 'expression' || !spec.form || parsed.kind !== 'expression') return true;
   const node = parseExpression(parsed.text);
   if (spec.form === 'completed-square') return isCompletedSquareForm(node);
+  if (spec.form === 'power') return powerFormProblem(node) === null;
   return spec.form === 'expanded' ? isExpandedForm(node) : spec.form === 'simplified' ? fractionFormProblem(node) === null : isFactorisedForm(node);
 }
 
 export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misconceptions: Misconception[] = []): GradeResult {
   const parsed = parseResponse(answer.kind, response, answer.kind === 'inequality' ? answer.variable : 'x');
-  if ('error' in parsed) return { correct: false, parseError: parsed.error };
+  if ('error' in parsed) {
+    // Exponent questions want positive exponents in the final answer, so say how to write one.
+    if (answer.kind === 'expression' && answer.form === 'power' && parsed.error.startsWith('Negative powers')) {
+      return { correct: false, parseError: 'Write your answer with positive exponents: x⁻³ = 1/x³, so type 1/x^3.' };
+    }
+    return { correct: false, parseError: parsed.error };
+  }
 
   if (matchesValue(answer, parsed)) {
     if (formOk(answer, parsed)) return { correct: true };
@@ -327,6 +367,12 @@ export function gradeResponse(answer: AnswerSpec, response: ResponseValue, misco
     }
     if (answer.kind === 'surd' && parsed.kind === 'surd') {
       return { correct: false, mistake: 'unsimplified', feedback: `That is the right value, but not in simplest surd form. ${parsed.problem ?? ''}.` };
+    }
+    if (answer.kind === 'scientific') {
+      return { correct: false, mistake: 'scientific-notation', feedback: 'That is equal in value, but it isn\'t scientific notation: the number in front must be at least 1 and less than 10, like $4{,}5 \\times 10^{6}$.' };
+    }
+    if (answer.kind === 'expression' && answer.form === 'power' && parsed.kind === 'expression') {
+      return { correct: false, mistake: 'unsimplified', feedback: `That is equal in value, but not simplified yet. ${powerFormProblem(parseExpression(parsed.text)) ?? ''}` };
     }
     if (answer.kind === 'expression' && answer.form === 'completed-square') {
       return { correct: false, mistake: 'complete-square', feedback: 'That is equal to the expression, but it isn\'t in the form $a(x + p)^2 + q$: one squared bracket and one number.' };
@@ -405,6 +451,8 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
       return String(a.value);
     case 'fraction':
       return a.d === 1 ? String(a.n) : `${a.n}/${a.d}`;
+    case 'scientific':
+      return [String(a.a), String(a.e)];
     case 'expression':
       return a.expr;
     case 'equation':
@@ -438,6 +486,7 @@ export function canonicalResponse(a: AnswerSpec): ResponseValue {
 /** Human-readable echo of what the learner entered, for review screens. */
 export function responseText(response: ResponseValue, input?: InputSpec): string {
   // A point is written (x; y): with decimal commas, "3,5, -4" would be ambiguous.
+  if (input?.kind === 'scientific' && Array.isArray(response)) return `${(response[0] ?? '').trim()} × 10^${(response[1] ?? '').trim()}`;
   if (input?.kind === 'point' && Array.isArray(response)) return `${input.name}(${response.map((r) => r.trim()).join('; ')})`;
   // A proof answer is option ids: show the words the learner chose, in blank order.
   if (input?.kind === 'proof' && Array.isArray(response)) {

@@ -15,6 +15,8 @@ export type InputSpec =
   /** `positive`: the answer can never be negative (a length, an angle in a figure), so no ± key. */
   | { kind: 'numeric'; unit?: string; prefix?: string; placeholder?: string; positive?: boolean }
   | { kind: 'fraction'; prefix?: string }
+  /** Scientific notation: a number box, × 10, and an exponent box (with a ± key: the exponent may be negative). */
+  | { kind: 'scientific' }
   /** `fraction` adds a / key and a fraction placeholder; `cubes` adds a ³ key. */
   | { kind: 'expression'; prefix?: string; variables: string[]; fraction?: boolean; cubes?: boolean; placeholder?: string }
   /** An equation the learner types with one = sign; any equivalent rearrangement is accepted. */
@@ -76,8 +78,13 @@ export interface ChoiceOption {
 export type AnswerSpec =
   | { kind: 'numeric'; value: number; tolerance: number; relative?: boolean }
   | { kind: 'fraction'; n: number; d: number; requireSimplest: boolean }
-  /** `simplified`: one algebraic fraction (or a polynomial) with no common factor top and bottom. */
-  | { kind: 'expression'; expr: string; form?: 'expanded' | 'factorised' | 'simplified' | 'completed-square' }
+  /**
+   * `simplified`: one algebraic fraction (or a polynomial) with no common factor top and bottom.
+   * `power`: one term with the exponent laws fully applied, each letter once with a positive exponent: 6x^5y^2, b^2/a^3.
+   */
+  | { kind: 'expression'; expr: string; form?: 'expanded' | 'factorised' | 'simplified' | 'completed-square' | 'power' }
+  /** a × 10^e. Any equal value is "right in value"; scientific notation also needs 1 ≤ |a| < 10. */
+  | { kind: 'scientific'; a: number; e: number }
   | { kind: 'equation'; expr: string }
   | { kind: 'point'; x: { n: number; d: number }; y: { n: number; d: number } }
   /** The right option for each blank, in blank order, and where each blank sits (for feedback). */

@@ -538,6 +538,52 @@ export function fractionFormProblem(node: Node): string | null {
   return null;
 }
 
+// ---------- Simplest power form (exponent laws applied) ----------
+
+interface Mono {
+  coef: Rational;
+  vars: Map<string, number>;
+}
+
+/** A number times letters, each letter once, to a positive whole power: 3x^4y, -a^2, 5. Null if not in that form. */
+function monomial(node: Node): Mono | null {
+  const factors = node.t === 'mul' ? node.factors : [node];
+  let coef: Rational | null = null;
+  const vars = new Map<string, number>();
+  for (const f of factors) {
+    const isNum = f.t === 'num' || (f.t === 'div' && f.num.t === 'num' && f.den.t === 'num' && !isZero(f.den.v));
+    if (isNum) {
+      if (coef) return null;
+      coef = f.t === 'num' ? f.v : rdiv((f.num as { v: Rational }).v, (f.den as { v: Rational }).v);
+      continue;
+    }
+    const name = f.t === 'var' ? f.name : f.t === 'pow' && f.base.t === 'var' && f.exp >= 1 ? f.base.name : null;
+    if (!name || vars.has(name)) return null;
+    vars.set(name, f.t === 'pow' ? f.exp : 1);
+  }
+  return { coef: coef ?? rat(1), vars };
+}
+
+const POWER_FORM = 'Write it as one term, like 6x^5y^2, or one fraction, like b^2/a^3: every number multiplied out and each letter once, with one positive exponent.';
+
+/**
+ * Is this one term with the exponent laws fully applied? 6x^5y^2, -a^4, b^2/a^3, 3/(2x^4) are; a^5 * a^3, (a^4)^2,
+ * 2^3x, x^7/x^2 and 4/(2x) are not. A problem message, or null when it is in that form.
+ */
+export function powerFormProblem(node: Node): string | null {
+  const n = stripNeg(node);
+  if (n.t !== 'div') return monomial(n) ? null : POWER_FORM;
+  const top = monomial(stripNeg(n.num));
+  const bottom = monomial(stripNeg(n.den));
+  if (!top || !bottom) return POWER_FORM;
+  if ([...top.vars.keys()].some((v) => bottom.vars.has(v))) return 'The same letter is on the top and the bottom. Subtract its exponents so that it appears only once.';
+  if (bottom.vars.size === 0 && bottom.coef.n === bottom.coef.d) return POWER_FORM;
+  const whole = (r: Rational) => r.d === 1;
+  if (!whole(top.coef) || !whole(bottom.coef)) return POWER_FORM;
+  if (gcd(Math.abs(top.coef.n), Math.abs(bottom.coef.n)) !== 1) return 'The numbers on the top and the bottom still have a common factor. Divide them.';
+  return null;
+}
+
 /** Split "lhs = rhs" into its two sides, or null if there isn't exactly one = sign. */
 export function splitEquation(src: string): [string, string] | null {
   const parts = src.split('=');

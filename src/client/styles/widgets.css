@@ -1300,6 +1300,26 @@
 .lab-legend { font-size: var(--t-sm); margin: var(--s2) 0 0; }
 .geo-line.dashed.overlay { stroke: var(--pen); stroke-width: 2; }
 .geo-fill.pyth-c { fill: var(--hl); fill-opacity: 0.45; }
+/* Exponent labs: squares and cubes of unit pieces; powers written out as factors. */
+.power-picture { max-width: 280px; }
+.grid-thin { stroke: var(--ink); stroke-width: 1; stroke-opacity: 0.45; }
+.geo-fill.cube-top { fill: var(--hl); fill-opacity: 0.5; }
+.geo-fill.cube-right { fill-opacity: 0.55; }
+.geo-fill.cube-left { fill-opacity: 0.25; }
+.factor-board { display: grid; place-items: center; min-height: 7rem; padding: var(--s3) 0; overflow-x: auto; }
+.factor-row, .factor-row-inline { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; }
+.factor-group { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.factor { display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border: 1.5px solid var(--ink); border-radius: 4px; font-family: 'KaTeX_Math', 'Times New Roman', serif; font-style: italic; font-size: 1.1rem; background: var(--paper); }
+.factor-b { background: var(--hl); }
+.factor { position: relative; }
+.factor.gone { color: var(--ink-2); border-color: var(--ink-2); background: transparent; }
+.factor.gone::after { content: ''; position: absolute; inset: -4px; background: linear-gradient(to top right, transparent calc(50% - 1.5px), var(--pen) calc(50% - 1.5px), var(--pen) calc(50% + 1.5px), transparent calc(50% + 1.5px)); }
+.exp-lab .widget-readout { margin-top: var(--s3); min-height: 3rem; }
+.factor-bracket, .factor-op, .factor-one { font-size: var(--t-xl); color: var(--ink-2); }
+.factor-one { color: var(--ink); font-family: 'KaTeX_Main', 'Times New Roman', serif; margin-left: var(--s2); }
+.factor-fraction { display: grid; justify-items: center; gap: var(--s2); }
+.factor-bar { width: 100%; min-width: 6rem; border-top: 2px solid var(--ink); }
+@media (prefers-reduced-motion: no-preference) { .factor { transition: opacity 0.15s ease; } }
 .geo-lab-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--s3); align-items: center; }
 @media (max-width: 560px) { .geo-lab-grid { grid-template-columns: minmax(0, 1fr); } }
 .geo-props { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); font-size: var(--t-sm); }

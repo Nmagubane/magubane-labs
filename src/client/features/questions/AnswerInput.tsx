@@ -54,6 +54,8 @@ export function AnswerInput(props: Props) {
       return <ExpressionInput {...props} input={props.input} />;
     case 'point':
       return <PointInput {...props} input={props.input} />;
+    case 'scientific':
+      return <ScientificInput {...props} />;
     case 'proof':
       return <ProofInput {...props} input={props.input} />;
     case 'roots':
@@ -526,6 +528,26 @@ function PointInput({ input, value, onChange, onSubmit, disabled, autoFocus }: P
       <input aria-label={`${input.name}, y-coordinate`} className="answer-box answer-narrow" type="text" inputMode="decimal" autoComplete="off" value={vals[1]} disabled={disabled} onChange={(e) => set(1, e.target.value)} onKeyDown={enter(onSubmit)} />
       <span className="answer-prefix" aria-hidden>
         <Tex tex=")" />
+      </span>
+    </div>
+  );
+}
+
+/** a × 10^n: the exponent box sits raised, like the power it is, with its own ± (it is often negative). */
+function ScientificInput({ value, onChange, onSubmit, disabled, autoFocus, describedBy }: Props) {
+  const vals = Array.isArray(value) && value.length === 2 ? value : ['', ''];
+  const set = (i: number, s: string) => onChange(vals.map((x, j) => (j === i ? s : x)));
+  return (
+    <div className="answer-row sci-input" role="group" aria-label="Scientific notation" aria-describedby={describedBy}>
+      <input aria-label="Number in front" className="answer-box answer-narrow" type="text" inputMode="decimal" autoComplete="off" value={vals[0]} disabled={disabled} autoFocus={autoFocus} onChange={(e) => set(0, e.target.value)} onKeyDown={enter(onSubmit)} />
+      <span className="sci-ten" aria-hidden>
+        <Tex tex="\times 10" />
+      </span>
+      <span className="sci-power">
+        <input aria-label="Power of 10" className="answer-box sci-exp" type="text" inputMode="numeric" autoComplete="off" value={vals[1]} disabled={disabled} onChange={(e) => set(1, e.target.value)} onKeyDown={enter(onSubmit)} />
+        <button type="button" className="key key-sign" onClick={() => set(1, toggleSign(vals[1] ?? ''))} disabled={disabled} aria-label="Make the power negative or positive">
+          ±
+        </button>
       </span>
     </div>
   );

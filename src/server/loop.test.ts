@@ -109,6 +109,8 @@ function correctResponse(answer: any): string | string[] {
       return answer.id;
     case 'proof':
       return answer.ids;
+    case 'scientific':
+      return [String(answer.a), String(answer.e)];
     case 'point':
       return [answer.x, answer.y].map((v: any) => (v.d === 1 ? String(v.n) : `${v.n}/${v.d}`));
     case 'inequality':

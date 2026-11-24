@@ -10,6 +10,7 @@ import { PlaceValueChart, ArrayModel, FractionOfSet, DecimalGrid, RectangleLab }
 import { FossilLayers, ElementTable, SeasonsLab, TideLab, ReflectionLab, LightTravel, RockCycleLab, AtmosphereClimb, StarLab } from './EarthSpaceLabs.tsx';
 import { QuadLab, MidpointLab, CircleLab, ProportionLab } from './GeometryLabs.tsx';
 import { AngleLab, SimilarLab, PythagorasLab } from './SeniorGeometryLabs.tsx';
+import { SquareLab, FactorLab } from './ExponentLabs.tsx';
 import { CoordLab } from './AnalyticLabs.tsx';
 import { TrigLab } from './TrigLabs.tsx';
 import { StatsLab } from './StatsLabs.tsx';
@@ -121,6 +122,10 @@ export function Widget({ spec }: { spec: WidgetSpec }) {
       return <SimilarLab />;
     case 'pythagoras-lab':
       return <PythagorasLab />;
+    case 'square-lab':
+      return <SquareLab />;
+    case 'factor-lab':
+      return <FactorLab />;
     case 'quad-lab':
       return <QuadLab />;
     case 'midpoint-lab':

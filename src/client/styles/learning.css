@@ -581,6 +581,28 @@
 .key-sign {
   font-size: var(--t-xl);
 }
+/* Scientific notation: [4,5] × 10^[6]. The exponent box is smaller and raised, as a power is written. */
+.sci-input {
+  align-items: center;
+}
+.sci-ten {
+  font-size: var(--t-xl);
+}
+.sci-power {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: -1rem;
+}
+/* 44 px tall: still a comfortable touch target. */
+.sci-exp {
+  width: 3.75rem;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 var(--s2);
+  font-size: var(--t-lg);
+}
 .frac-input {
   display: inline-grid;
   justify-items: center;

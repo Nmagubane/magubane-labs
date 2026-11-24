@@ -18,6 +18,7 @@ import { rocksFossils, periodicTable, seasons, moonTides, visibleLight, beyondSo
 import { quadrilaterals, midpointTheorem, circleTheorems, cyclicTangents, proportionality } from './generators/math-geometry.ts';
 import { straightLineAngles, parallelLines, triangleAngles, quadrilateralProperties, congruentSimilar } from './generators/math-geometry-senior.ts';
 import { pythagoras } from './generators/math-pythagoras.ts';
+import { powersRoots, exponentLaws } from './generators/math-exponents.ts';
 import { circleProofs, similarityProofs, quadrilateralProofs } from './generators/math-proofs.ts';
 import { factorTheorem, firstPrinciples, tangentLines, cubicGraphs, optimisation } from './generators/math-calculus.ts';
 import { probabilityRules, independentEvents, countingPrinciple } from './generators/math-probability.ts';
@@ -133,6 +134,8 @@ export const TEMPLATES: QuestionTemplate[] = [
   quadrilateralProperties,
   congruentSimilar,
   pythagoras,
+  powersRoots,
+  exponentLaws,
   quadrilaterals,
   midpointTheorem,
   circleTheorems,

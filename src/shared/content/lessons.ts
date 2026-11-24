@@ -7,6 +7,7 @@ import { MATHS_LESSONS_2 } from './lessons-maths-2.ts';
 import { NS_LESSONS } from './lessons-ns.ts';
 import { GEOMETRY_LESSONS } from './lessons-geometry.ts';
 import { SENIOR_GEOMETRY_LESSONS } from './lessons-geometry-senior.ts';
+import { EXPONENT_LESSONS } from './lessons-exponents.ts';
 import { ANALYTIC_LESSONS } from './lessons-analytic.ts';
 import { TRIG_LESSONS } from './lessons-trig.ts';
 import { STATS_LESSONS } from './lessons-stats.ts';
@@ -19,7 +20,7 @@ import { NUMBER_LESSONS } from './lessons-number.ts';
 import { ALGEBRA10_LESSONS } from './lessons-algebra10.ts';
 import { MEASUREMENT_LESSONS } from './lessons-measurement.ts';
 
-export const LESSONS: Lesson[] = [...MATHS_LESSONS, ...MATHS_LESSONS_2, ...SENIOR_GEOMETRY_LESSONS, ...GEOMETRY_LESSONS, ...ANALYTIC_LESSONS, ...TRIG_LESSONS, ...STATS_LESSONS, ...GRAPH_LESSONS, ...CALCULUS_LESSONS, ...PROBABILITY_LESSONS, ...EQUATION_LESSONS, ...FINANCE_LESSONS, ...NUMBER_LESSONS, ...ALGEBRA10_LESSONS, ...MEASUREMENT_LESSONS, ...NST_LESSONS, ...NS_LESSONS, ...SCIENCE_LESSONS, ...SCIENCE_LESSONS_2];
+export const LESSONS: Lesson[] = [...MATHS_LESSONS, ...MATHS_LESSONS_2, ...SENIOR_GEOMETRY_LESSONS, ...EXPONENT_LESSONS, ...GEOMETRY_LESSONS, ...ANALYTIC_LESSONS, ...TRIG_LESSONS, ...STATS_LESSONS, ...GRAPH_LESSONS, ...CALCULUS_LESSONS, ...PROBABILITY_LESSONS, ...EQUATION_LESSONS, ...FINANCE_LESSONS, ...NUMBER_LESSONS, ...ALGEBRA10_LESSONS, ...MEASUREMENT_LESSONS, ...NST_LESSONS, ...NS_LESSONS, ...SCIENCE_LESSONS, ...SCIENCE_LESSONS_2];
 
 const byId = new Map(LESSONS.map((l) => [l.id, l]));
 export const getLesson = (id: string): Lesson | undefined => byId.get(id);

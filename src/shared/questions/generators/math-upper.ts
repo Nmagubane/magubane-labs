@@ -107,7 +107,7 @@ export const exponents: QuestionTemplate = {
       return {
         prompt: `Simplify $(${c}x^{${p}})^{${k}}$.`,
         input: { kind: 'expression', variables: ['x'] },
-        answer: { kind: 'expression', expr: ans },
+        answer: { kind: 'expression', expr: ans, form: 'power' },
         answerDisplay: `$${c ** k}x^{${p * k}}$`,
         hints: [`Everything inside the bracket is raised to the power ${k}: the ${c} as well as the $x^{${p}}$.`],
         solution: [`$(${c}x^{${p}})^{${k}} = ${c}^{${k}} \\cdot x^{${p} \\times ${k}} = ${c ** k}x^{${p * k}}$.`],

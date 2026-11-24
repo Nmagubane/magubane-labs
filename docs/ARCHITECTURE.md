@@ -631,3 +631,30 @@ One skill, `pythagoras`, in the `measurement` topic (`math-pythagoras.ts`, lesso
 **New mistake codes:** `pythagoras-sides`, `pythagoras-root`, `pythagoras-steps`, `pythagoras-converse`, `surd-form`.
 
 **A guard found on the way.** A TeX command written with a single backslash in a TypeScript string loses the backslash and still renders, as plain letters ("sqrt41" instead of √41). `content.test.ts` now fails on a TeX command name inside maths without its backslash.
+
+## 28. Exponents (Grades 7–9)
+
+Two skills (`math-exponents.ts`, lessons in `lessons-exponents.ts`, labs in `ExponentLabs.tsx`). Grade 10 `exponents` now has `exponent-laws` as its prerequisite, and Grade 7 `order-of-operations` has `powers-roots`.
+
+| Skill | Level | What it asks |
+|---|---|---|
+| `powers-roots` (Grade 7, `number`) | 1 | The value of a power; exponential form; a power of 10 |
+| | 2 | Squares to 12², cubes to 6³, and their roots |
+| | 3 | Calculations: powers before × and +, a root over a sum, a bracket squared |
+| | 4 | Which is bigger: 2⁵ or 5², √50 or 7 |
+| | 5 | Contexts: a square garden's side, a cube box's edge, doubling, folding, a chain message |
+| `exponent-laws` (Grade 8, `algebra`) | 1 | Product and quotient laws with numbers in front, one or two letters |
+| | 2 | Power of a power and of a product; a⁰ = 1; (−3)² against −3² |
+| | 3 | Scientific notation with positive exponents: to and from, and multiplying |
+| | 4 | Grade 9: negative exponents (as a fraction, simplified with positive exponents); small numbers in scientific notation |
+| | 5 | Grade 9: mixed simplification; exponential equations (2^(x+1) = 1/8); multiplying and dividing in scientific notation, with the number in front put back between 1 and 10 |
+
+**Applying the law is the answer.** An expression answer can now be graded in *power form* (`form: 'power'`, `powerFormProblem` in `expr.ts`): one term, every number multiplied out, each letter once with a positive exponent, or one such term over another with no letter on both sides and no common number factor. `a^5*a^3` is equal to `a^8` in value, so before this it was marked right; now it is "not simplified yet", with what to fix. A typed negative power gets a message that says how to write it with a positive one. The Grade 10 skill's level 4 had the same gap and now uses the power form too.
+
+**Scientific notation input.** A new answer kind, `scientific`: a box for the number in front, × 10, and a raised box for the exponent with its own ± key (on a phone keypad there is often no minus). Values are compared exactly, by significant digits and the position of the point, not as floating-point numbers. An equal value with the number in front outside 1 to 10 (36 × 10⁶) is diagnosed as `scientific-notation`, not marked right.
+
+**Checked from the prompt.** `exponents.test.ts` works out every answer again from the prompt alone, with a small evaluator that reads the prompt's TeX (powers, roots, fractions, decimal commas, thin spaces), at two sets of letter values for algebra. Every prompt must match one of the known patterns, so a new question type can't slip in unchecked. It caught a real bug while being written: 2 × 2 × 2 × 2 offered 4² as a wrong option, which equals 2⁴. Breaking seven things on purpose (exponents, the scientific-notation exponent, the equation, the comparison, the garden, the coefficient in a mixed simplification, renormalising the number in front) each made it fail.
+
+**Labs.** `square-lab`: a square of side n filled with n² unit squares, or a cube with edge n drawn with its n³ unit cubes; the readout shows the root going back, and what n × 2 would have given. `factor-lab`: powers written out as factors of a. Multiply puts two groups side by side; power of a power repeats a group; divide cancels top against bottom. Making the bottom exponent as big as the top leaves 1, which is why a⁰ = 1; making it bigger leaves factors on the bottom, which is why a⁻ⁿ = 1/aⁿ.
+
+**New mistake codes:** `power-meaning`, `square-root`, `root-of-sum`, `power-coefficient`, `scientific-notation`.
